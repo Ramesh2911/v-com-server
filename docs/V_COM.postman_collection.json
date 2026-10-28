@@ -1,0 +1,1529 @@
+{
+  "info": {
+    "name": "V_COM Platform API",
+    "description": "Full API contract for V_COM — auth, public, customer app, vendor app and admin endpoints. Run the Login request first; it auto-saves accessToken & refreshToken into collection variables.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5000/api" },
+    { "key": "fileBase", "value": "http://localhost:5000" },
+    { "key": "accessToken", "value": "" },
+    { "key": "refreshToken", "value": "" },
+    { "key": "customerId", "value": "1" },
+    { "key": "vendorId", "value": "1" },
+    { "key": "requestId", "value": "1" },
+    { "key": "quotationId", "value": "1" },
+    { "key": "jobId", "value": "1" },
+    { "key": "sosId", "value": "1" },
+    { "key": "propertyId", "value": "1" },
+    { "key": "employeeId", "value": "1" },
+    { "key": "leaveId", "value": "1" },
+    { "key": "ticketId", "value": "1" },
+    { "key": "roleId", "value": "1" },
+    { "key": "staffId", "value": "1" },
+    { "key": "moduleId", "value": "1" },
+    { "key": "categoryId", "value": "1" },
+    { "key": "builderId", "value": "1" },
+    { "key": "projectId", "value": "1" },
+    { "key": "areaId", "value": "1" },
+    { "key": "enquiryId", "value": "1" },
+    { "key": "templateId", "value": "1" },
+    { "key": "reportType", "value": "requests" }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }]
+  },
+  "item": [
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "Register (customer)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Test Customer\",\n  \"email\": \"test.customer@example.com\",\n  \"phone\": \"9876543210\",\n  \"password\": \"Test@123\"\n}" }
+          }
+        },
+        {
+          "name": "Login (admin@vcom.com)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Login OK', () => pm.response.to.have.status(200));",
+                  "const d = pm.response.json().data;",
+                  "pm.collectionVariables.set('accessToken', d.accessToken);",
+                  "pm.collectionVariables.set('refreshToken', d.refreshToken);",
+                  "console.log('permissions:', d.user.permissions.length);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@vcom.com\",\n  \"password\": \"Admin@123\"\n}" }
+          }
+        },
+        {
+          "name": "Login (customer)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = pm.response.json().data;",
+                  "pm.collectionVariables.set('accessToken', d.accessToken);",
+                  "pm.collectionVariables.set('refreshToken', d.refreshToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"customer@vcom.com\",\n  \"password\": \"Customer@123\"\n}" }
+          }
+        },
+        {
+          "name": "Login (vendor)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const d = pm.response.json().data;",
+                  "pm.collectionVariables.set('accessToken', d.accessToken);",
+                  "pm.collectionVariables.set('refreshToken', d.refreshToken);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"vendor@vcom.com\",\n  \"password\": \"Vendor@123\"\n}" }
+          }
+        },
+        {
+          "name": "Refresh token",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "noauth" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth", "refresh"] },
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/logout", "host": ["{{baseUrl}}"], "path": ["auth", "logout"] },
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}" }
+          }
+        },
+        {
+          "name": "Forgot password",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "noauth" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/forgot-password", "host": ["{{baseUrl}}"], "path": ["auth", "forgot-password"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"customer@vcom.com\"\n}" }
+          }
+        },
+        {
+          "name": "Reset password",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "noauth" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/reset-password", "host": ["{{baseUrl}}"], "path": ["auth", "reset-password"] },
+            "body": { "mode": "raw", "raw": "{\n  \"token\": \"<reset-token>\",\n  \"password\": \"NewPass@123\"\n}" }
+          }
+        },
+        {
+          "name": "Change password",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/change-password", "host": ["{{baseUrl}}"], "path": ["auth", "change-password"] },
+            "body": { "mode": "raw", "raw": "{\n  \"currentPassword\": \"Admin@123\",\n  \"newPassword\": \"Admin@123\"\n}" }
+          }
+        },
+        {
+          "name": "GET /me",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/me", "host": ["{{baseUrl}}"], "path": ["me"] }
+          }
+        },
+        {
+          "name": "PUT /me (update profile)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/me", "host": ["{{baseUrl}}"], "path": ["me"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Updated Name\",\n  \"phone\": \"9876543210\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Public",
+      "item": [
+        {
+          "name": "List service modules",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "noauth" },
+            "url": { "raw": "{{baseUrl}}/services", "host": ["{{baseUrl}}"], "path": ["services"] }
+          }
+        },
+        {
+          "name": "Featured services",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "noauth" },
+            "url": { "raw": "{{baseUrl}}/services/featured", "host": ["{{baseUrl}}"], "path": ["services", "featured"] }
+          }
+        },
+        {
+          "name": "Search services",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "noauth" },
+            "url": {
+              "raw": "{{baseUrl}}/services/search?q=cctv",
+              "host": ["{{baseUrl}}"],
+              "path": ["services", "search"],
+              "query": [{ "key": "q", "value": "cctv" }]
+            }
+          }
+        },
+        {
+          "name": "Service module detail",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "noauth" },
+            "url": { "raw": "{{baseUrl}}/services/{{moduleId}}", "host": ["{{baseUrl}}"], "path": ["services", "{{moduleId}}"] }
+          }
+        },
+        {
+          "name": "Search properties",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "noauth" },
+            "url": {
+              "raw": "{{baseUrl}}/properties?listing_type=sale&page=1&limit=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["properties"],
+              "query": [
+                { "key": "listing_type", "value": "sale" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "search", "value": "" },
+                { "key": "city", "value": "" },
+                { "key": "area_id", "value": "" },
+                { "key": "builder_id", "value": "" },
+                { "key": "project_id", "value": "" },
+                { "key": "min_amount", "value": "" },
+                { "key": "max_amount", "value": "" },
+                { "key": "featured", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Property filters",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "noauth" },
+            "url": { "raw": "{{baseUrl}}/properties/filters", "host": ["{{baseUrl}}"], "path": ["properties", "filters"] }
+          }
+        },
+        {
+          "name": "Property detail",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "noauth" },
+            "url": { "raw": "{{baseUrl}}/properties/{{propertyId}}", "host": ["{{baseUrl}}"], "path": ["properties", "{{propertyId}}"] }
+          }
+        },
+        {
+          "name": "Post property enquiry",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "noauth" },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/properties/{{propertyId}}/enquiry", "host": ["{{baseUrl}}"], "path": ["properties", "{{propertyId}}", "enquiry"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Enquirer\",\n  \"email\": \"enq@example.com\",\n  \"phone\": \"9876543210\",\n  \"message\": \"Interested in this property\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Customer app",
+      "item": [
+        {
+          "name": "My requests",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/customer/requests?status=&module_id=&search=",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "requests"],
+              "query": [
+                { "key": "status", "value": "" },
+                { "key": "module_id", "value": "" },
+                { "key": "search", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Request detail (by id or ticket no)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/customer/requests/{{requestId}}", "host": ["{{baseUrl}}"], "path": ["customer", "requests", "{{requestId}}"] }
+          }
+        },
+        {
+          "name": "Create request (JSON)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/customer/requests", "host": ["{{baseUrl}}"], "path": ["customer", "requests"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"module_id\": 1,\n  \"category_id\": 1,\n  \"title\": \"CCTV installation for 2nd floor\",\n  \"description\": \"Need 8 cameras + NVR setup\",\n  \"site_location\": \"Office, Indiranagar\",\n  \"city\": \"Bangalore\",\n  \"latitude\": 12.9784,\n  \"longitude\": 77.6408,\n  \"quantity\": 8,\n  \"specifications\": \"Night vision, mobile viewing\",\n  \"priority\": \"high\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Create request (multipart + files)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "multipart/form-data" }],
+            "url": { "raw": "{{baseUrl}}/customer/requests", "host": ["{{baseUrl}}"], "path": ["customer", "requests"] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "module_id", "value": "1", "type": "text" },
+                { "key": "title", "value": "Scrap pickup", "type": "text" },
+                { "key": "description", "value": "Old furniture and electronics", "type": "text" },
+                { "key": "priority", "value": "normal", "type": "text" },
+                { "key": "attachments", "type": "file", "src": [], "description": "up to 8 files (image/video/pdf)" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Cancel request",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/customer/requests/{{requestId}}/cancel", "host": ["{{baseUrl}}"], "path": ["customer", "requests", "{{requestId}}", "cancel"] }
+          }
+        },
+        {
+          "name": "My quotations",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/customer/quotations?status=",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "quotations"],
+              "query": [{ "key": "status", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Quotation detail",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/customer/quotations/{{quotationId}}", "host": ["{{baseUrl}}"], "path": ["customer", "quotations", "{{quotationId}}"] }
+          }
+        },
+        {
+          "name": "Quotation decision (accept/reject/clarify)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/customer/quotations/{{quotationId}}/decision", "host": ["{{baseUrl}}"], "path": ["customer", "quotations", "{{quotationId}}", "decision"] },
+            "body": { "mode": "raw", "raw": "{\n  \"decision\": \"accepted\",\n  \"note\": \"Looks good, proceed\"\n}" }
+          }
+        },
+        {
+          "name": "Raise SOS",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/customer/sos", "host": ["{{baseUrl}}"], "path": ["customer", "sos"] },
+            "body": { "mode": "raw", "raw": "{\n  \"description\": \"Fire smoke near electrical panel\",\n  \"latitude\": 12.9784,\n  \"longitude\": 77.6408,\n  \"address\": \"3rd floor, Tower B\",\n  \"priority\": \"critical\"\n}" }
+          }
+        },
+        {
+          "name": "My SOS list",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/customer/sos", "host": ["{{baseUrl}}"], "path": ["customer", "sos"] }
+          }
+        },
+        {
+          "name": "SOS detail",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/customer/sos/{{sosId}}", "host": ["{{baseUrl}}"], "path": ["customer", "sos", "{{sosId}}"] }
+          }
+        },
+        {
+          "name": "HR: my employee profile",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/customer/hr/me", "host": ["{{baseUrl}}"], "path": ["customer", "hr", "me"] }
+          }
+        },
+        {
+          "name": "HR: check-in",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/customer/hr/attendance/check-in", "host": ["{{baseUrl}}"], "path": ["customer", "hr", "attendance", "check-in"] }
+          }
+        },
+        {
+          "name": "HR: check-out",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/customer/hr/attendance/check-out", "host": ["{{baseUrl}}"], "path": ["customer", "hr", "attendance", "check-out"] }
+          }
+        },
+        {
+          "name": "HR: my attendance (month)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/customer/hr/attendance?month=2026-10",
+              "host": ["{{baseUrl}}"],
+              "path": ["customer", "hr", "attendance"],
+              "query": [{ "key": "month", "value": "2026-10" }]
+            }
+          }
+        },
+        {
+          "name": "HR: apply leave",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/customer/hr/leaves", "host": ["{{baseUrl}}"], "path": ["customer", "hr", "leaves"] },
+            "body": { "mode": "raw", "raw": "{\n  \"leave_type\": \"casual\",\n  \"from_date\": \"2026-10-20\",\n  \"to_date\": \"2026-10-21\",\n  \"reason\": \"Family function\"\n}" }
+          }
+        },
+        {
+          "name": "HR: my leaves",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/customer/hr/leaves", "host": ["{{baseUrl}}"], "path": ["customer", "hr", "leaves"] }
+          }
+        },
+        {
+          "name": "Notifications list",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/customer/notifications", "host": ["{{baseUrl}}"], "path": ["customer", "notifications"] }
+          }
+        },
+        {
+          "name": "Mark notifications read",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/customer/notifications/read", "host": ["{{baseUrl}}"], "path": ["customer", "notifications", "read"] },
+            "body": { "mode": "raw", "raw": "{\n  \"ids\": []\n}" }
+          }
+        },
+        {
+          "name": "Clear notifications",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/customer/notifications", "host": ["{{baseUrl}}"], "path": ["customer", "notifications"] }
+          }
+        },
+        {
+          "name": "Create support ticket",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/customer/support", "host": ["{{baseUrl}}"], "path": ["customer", "support"] },
+            "body": { "mode": "raw", "raw": "{\n  \"subject\": \"Payment not reflected\",\n  \"message\": \"I paid via UPI but the status is still pending.\",\n  \"category\": \"billing\",\n  \"priority\": \"high\"\n}" }
+          }
+        },
+        {
+          "name": "My support tickets",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/customer/support", "host": ["{{baseUrl}}"], "path": ["customer", "support"] }
+          }
+        },
+        {
+          "name": "Support ticket detail",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/customer/support/{{ticketId}}", "host": ["{{baseUrl}}"], "path": ["customer", "support", "{{ticketId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Vendor app",
+      "item": [
+        {
+          "name": "Profile",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/vendor/profile", "host": ["{{baseUrl}}"], "path": ["vendor", "profile"] }
+          }
+        },
+        {
+          "name": "Update profile",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/vendor/profile", "host": ["{{baseUrl}}"], "path": ["vendor", "profile"] },
+            "body": { "mode": "raw", "raw": "{\n  \"business_name\": \"SafeHands Electricals\",\n  \"contact_person\": \"Ravi Kumar\",\n  \"city\": \"Bangalore\",\n  \"state\": \"Karnataka\",\n  \"pincode\": \"560038\",\n  \"coverage_areas\": \"Indiranagar, HSR, Whitefield\",\n  \"address\": \"12, 100ft Road\",\n  \"gst_number\": \"29ABCDE1234F1Z5\"\n}" }
+          }
+        },
+        {
+          "name": "Summary",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/vendor/summary", "host": ["{{baseUrl}}"], "path": ["vendor", "summary"] }
+          }
+        },
+        {
+          "name": "Available service categories",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/vendor/available-categories", "host": ["{{baseUrl}}"], "path": ["vendor", "available-categories"] }
+          }
+        },
+        {
+          "name": "Set service categories",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/vendor/service-categories", "host": ["{{baseUrl}}"], "path": ["vendor", "service-categories"] },
+            "body": { "mode": "raw", "raw": "{\n  \"category_ids\": [1, 2, 3]\n}" }
+          }
+        },
+        {
+          "name": "Assigned requests",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/vendor/requests?status=&scope=assigned",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendor", "requests"],
+              "query": [
+                { "key": "status", "value": "" },
+                { "key": "scope", "value": "assigned" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Accept request",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/vendor/requests/{{requestId}}/accept", "host": ["{{baseUrl}}"], "path": ["vendor", "requests", "{{requestId}}", "accept"] }
+          }
+        },
+        {
+          "name": "Decline request",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/vendor/requests/{{requestId}}/decline", "host": ["{{baseUrl}}"], "path": ["vendor", "requests", "{{requestId}}", "decline"] },
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Not in our coverage area\"\n}" }
+          }
+        },
+        {
+          "name": "Update request status",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/vendor/requests/{{requestId}}/status", "host": ["{{baseUrl}}"], "path": ["vendor", "requests", "{{requestId}}", "status"] },
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"in_progress\",\n  \"note\": \"Team dispatched\",\n  \"schedule_date\": \"2026-10-18\"\n}" }
+          }
+        },
+        {
+          "name": "My quotations",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/vendor/quotations?status=",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendor", "quotations"],
+              "query": [{ "key": "status", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Submit quotation",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/vendor/quotations", "host": ["{{baseUrl}}"], "path": ["vendor", "quotations"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"request_id\": 1,\n  \"items\": [\n    { \"item_name\": \"2MP dome camera\", \"description\": \"Night vision\", \"quantity\": 8, \"unit\": \"unit\", \"rate\": 2200 },\n    { \"item_name\": \"NVR 8 channel\", \"quantity\": 1, \"unit\": \"unit\", \"rate\": 9500 },\n    { \"item_name\": \"Installation\", \"quantity\": 1, \"unit\": \"job\", \"rate\": 3000 }\n  ],\n  \"tax_rate\": 18,\n  \"discount\": 500,\n  \"notes\": \"Includes 1 year warranty\",\n  \"valid_until\": \"2026-11-15\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Quotation detail",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/vendor/quotations/{{quotationId}}", "host": ["{{baseUrl}}"], "path": ["vendor", "quotations", "{{quotationId}}"] }
+          }
+        },
+        {
+          "name": "Withdraw quotation",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/vendor/quotations/{{quotationId}}/withdraw", "host": ["{{baseUrl}}"], "path": ["vendor", "quotations", "{{quotationId}}", "withdraw"] }
+          }
+        },
+        {
+          "name": "My jobs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/vendor/jobs?stage=",
+              "host": ["{{baseUrl}}"],
+              "path": ["vendor", "jobs"],
+              "query": [{ "key": "stage", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Create job",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/vendor/jobs", "host": ["{{baseUrl}}"], "path": ["vendor", "jobs"] },
+            "body": { "mode": "raw", "raw": "{\n  \"request_id\": 1,\n  \"schedule_date\": \"2026-10-18\",\n  \"amount\": 34600\n}" }
+          }
+        },
+        {
+          "name": "Update job stage",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/vendor/jobs/{{jobId}}/status", "host": ["{{baseUrl}}"], "path": ["vendor", "jobs", "{{jobId}}", "status"] },
+            "body": { "mode": "raw", "raw": "{\n  \"stage\": \"in_progress\",\n  \"note\": \"Work started\"\n}" }
+          }
+        },
+        {
+          "name": "Job attachments (multipart)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "multipart/form-data" }],
+            "url": { "raw": "{{baseUrl}}/vendor/jobs/{{jobId}}/attachments", "host": ["{{baseUrl}}"], "path": ["vendor", "jobs", "{{jobId}}", "attachments"] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "kind", "value": "before", "type": "text" },
+                { "key": "files", "type": "file", "src": [], "description": "up to 10 files" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Notifications list",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/vendor/notifications", "host": ["{{baseUrl}}"], "path": ["vendor", "notifications"] }
+          }
+        },
+        {
+          "name": "Create support ticket",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/vendor/support", "host": ["{{baseUrl}}"], "path": ["vendor", "support"] },
+            "body": { "mode": "raw", "raw": "{\n  \"subject\": \"Cannot upload documents\",\n  \"message\": \"GST upload fails at 90%\",\n  \"category\": \"technical\",\n  \"priority\": \"normal\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Admin — Dashboard & Reports",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/dashboard", "host": ["{{baseUrl}}"], "path": ["admin", "dashboard"] }
+          }
+        },
+        {
+          "name": "Reports overview",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/reports/overview", "host": ["{{baseUrl}}"], "path": ["admin", "reports", "overview"] }
+          }
+        },
+        {
+          "name": "Report by type (JSON)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/reports/{{reportType}}", "host": ["{{baseUrl}}"], "path": ["admin", "reports", "{{reportType}}"] }
+          }
+        },
+        {
+          "name": "Report CSV (fetch as blob in apps)",
+          "request": {
+            "method": "GET",
+            "description": "Requires Authorization header — do NOT open via window.open; fetch as blob and download.",
+            "url": {
+              "raw": "{{baseUrl}}/admin/reports/{{reportType}}?format=csv",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "reports", "{{reportType}}"],
+              "query": [{ "key": "format", "value": "csv" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Admin — Customers & Staff",
+      "item": [
+        {
+          "name": "List customers",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/customers?search=&status=&page=1&limit=15",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "customers"],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "status", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Customer detail",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/customers/{{customerId}}", "host": ["{{baseUrl}}"], "path": ["admin", "customers", "{{customerId}}"] }
+          }
+        },
+        {
+          "name": "Set customer status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/customers/{{customerId}}/status", "host": ["{{baseUrl}}"], "path": ["admin", "customers", "{{customerId}}", "status"] },
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"active\"\n}" }
+          }
+        },
+        {
+          "name": "List staff",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/staff?search=&role=&page=1&limit=15",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "staff"],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "role", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create staff",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/staff", "host": ["{{baseUrl}}"], "path": ["admin", "staff"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Billing User\",\n  \"email\": \"billing@vcom.com\",\n  \"password\": \"Bill@123\",\n  \"phone\": \"9876543210\",\n  \"role_id\": 3,\n  \"user_type\": \"staff\"\n}" }
+          }
+        },
+        {
+          "name": "Update staff",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/staff/{{staffId}}", "host": ["{{baseUrl}}"], "path": ["admin", "staff", "{{staffId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Billing User\",\n  \"status\": \"active\",\n  \"password\": \"\"\n}" }
+          }
+        },
+        {
+          "name": "Delete staff",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/admin/staff/{{staffId}}", "host": ["{{baseUrl}}"], "path": ["admin", "staff", "{{staffId}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Admin — Vendors",
+      "item": [
+        {
+          "name": "List vendors",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/vendors?search=&status=&category_id=&page=1&limit=15",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "vendors"],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "status", "value": "" },
+                { "key": "category_id", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Vendor stats",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/vendors/stats", "host": ["{{baseUrl}}"], "path": ["admin", "vendors", "stats"] }
+          }
+        },
+        {
+          "name": "Vendor detail",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/vendors/{{vendorId}}", "host": ["{{baseUrl}}"], "path": ["admin", "vendors", "{{vendorId}}"] }
+          }
+        },
+        {
+          "name": "Create vendor",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/vendors", "host": ["{{baseUrl}}"], "path": ["admin", "vendors"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Vendor Contact\",\n  \"email\": \"newvendor@vcom.com\",\n  \"password\": \"Vend@123\",\n  \"phone\": \"9876543210\",\n  \"business_name\": \"New Vendor Co\",\n  \"city\": \"Pune\",\n  \"category_ids\": [1, 2]\n}"
+            }
+          }
+        },
+        {
+          "name": "Approve vendor",
+          "request": {
+            "method": "POST",
+            "url": { "raw": "{{baseUrl}}/admin/vendors/{{vendorId}}/approve", "host": ["{{baseUrl}}"], "path": ["admin", "vendors", "{{vendorId}}", "approve"] }
+          }
+        },
+        {
+          "name": "Reject vendor",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/vendors/{{vendorId}}/reject", "host": ["{{baseUrl}}"], "path": ["admin", "vendors", "{{vendorId}}", "reject"] },
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"Incomplete documents\"\n}" }
+          }
+        },
+        {
+          "name": "Set vendor status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/vendors/{{vendorId}}/status", "host": ["{{baseUrl}}"], "path": ["admin", "vendors", "{{vendorId}}", "status"] },
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"suspended\"\n}" }
+          }
+        },
+        {
+          "name": "Vendor assignments",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/vendors/{{vendorId}}/assignments", "host": ["{{baseUrl}}"], "path": ["admin", "vendors", "{{vendorId}}", "assignments"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Admin — Requests / Quotations / Jobs / SOS",
+      "item": [
+        {
+          "name": "List requests",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/requests?status=&module_id=&priority=&from_date=&to_date=&search=&page=1&limit=15",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "requests"],
+              "query": [
+                { "key": "status", "value": "" },
+                { "key": "module_id", "value": "" },
+                { "key": "priority", "value": "" },
+                { "key": "assigned_vendor_id", "value": "" },
+                { "key": "customer_id", "value": "" },
+                { "key": "from_date", "value": "" },
+                { "key": "to_date", "value": "" },
+                { "key": "search", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Request stats",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/requests/stats", "host": ["{{baseUrl}}"], "path": ["admin", "requests", "stats"] }
+          }
+        },
+        {
+          "name": "Request detail (id or ticket no)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/requests/{{requestId}}", "host": ["{{baseUrl}}"], "path": ["admin", "requests", "{{requestId}}"] }
+          }
+        },
+        {
+          "name": "Create request (on behalf of customer)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/requests", "host": ["{{baseUrl}}"], "path": ["admin", "requests"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"customer_id\": 8,\n  \"module_id\": 1,\n  \"category_id\": 1,\n  \"title\": \"Fire extinguisher servicing\",\n  \"description\": \"Annual servicing of 12 units\",\n  \"site_location\": \"Warehouse 4\",\n  \"city\": \"Bangalore\",\n  \"priority\": \"high\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Assign vendor",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/requests/{{requestId}}/assign", "host": ["{{baseUrl}}"], "path": ["admin", "requests", "{{requestId}}", "assign"] },
+            "body": { "mode": "raw", "raw": "{\n  \"vendor_id\": 1\n}" }
+          }
+        },
+        {
+          "name": "Set request status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/requests/{{requestId}}/status", "host": ["{{baseUrl}}"], "path": ["admin", "requests", "{{requestId}}", "status"] },
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"in_progress\",\n  \"note\": \"Vendor on site\"\n}" }
+          }
+        },
+        {
+          "name": "Close request",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/requests/{{requestId}}/close", "host": ["{{baseUrl}}"], "path": ["admin", "requests", "{{requestId}}", "close"] },
+            "body": { "mode": "raw", "raw": "{\n  \"note\": \"Work verified\"\n}" }
+          }
+        },
+        {
+          "name": "Escalate request",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/requests/{{requestId}}/escalate", "host": ["{{baseUrl}}"], "path": ["admin", "requests", "{{requestId}}", "escalate"] },
+            "body": { "mode": "raw", "raw": "{\n  \"note\": \"Customer escalation — SLA breach\"\n}" }
+          }
+        },
+        {
+          "name": "Delete request",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/admin/requests/{{requestId}}", "host": ["{{baseUrl}}"], "path": ["admin", "requests", "{{requestId}}"] }
+          }
+        },
+        {
+          "name": "List quotations",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/quotations?status=&request_id=&vendor_id=&search=&page=1&limit=15",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "quotations"],
+              "query": [
+                { "key": "status", "value": "" },
+                { "key": "request_id", "value": "" },
+                { "key": "vendor_id", "value": "" },
+                { "key": "search", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Quotation detail",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/quotations/{{quotationId}}", "host": ["{{baseUrl}}"], "path": ["admin", "quotations", "{{quotationId}}"] }
+          }
+        },
+        {
+          "name": "Review quotation (accept/reject)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/quotations/{{quotationId}}/review", "host": ["{{baseUrl}}"], "path": ["admin", "quotations", "{{quotationId}}", "review"] },
+            "body": { "mode": "raw", "raw": "{\n  \"decision\": \"accepted\",\n  \"note\": \"Approved by ops\"\n}" }
+          }
+        },
+        {
+          "name": "Create quotation (admin)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/quotations", "host": ["{{baseUrl}}"], "path": ["admin", "quotations"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"request_id\": 1,\n  \"vendor_id\": 1,\n  \"items\": [\n    { \"item_name\": \"Service\", \"quantity\": 1, \"unit\": \"job\", \"rate\": 5000 }\n  ],\n  \"tax_rate\": 18,\n  \"discount\": 0\n}"
+            }
+          }
+        },
+        {
+          "name": "List jobs",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/jobs?search=&page=1&limit=15",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "jobs"],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Job stats",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/jobs/stats", "host": ["{{baseUrl}}"], "path": ["admin", "jobs", "stats"] }
+          }
+        },
+        {
+          "name": "Set job stage",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/jobs/{{jobId}}/stage", "host": ["{{baseUrl}}"], "path": ["admin", "jobs", "{{jobId}}", "stage"] },
+            "body": { "mode": "raw", "raw": "{\n  \"stage\": \"completed\",\n  \"note\": \"Customer sign-off received\"\n}" }
+          }
+        },
+        {
+          "name": "List SOS tickets",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/sos?status=&search=&page=1&limit=15",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "sos"],
+              "query": [
+                { "key": "status", "value": "" },
+                { "key": "search", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "SOS stats",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/sos/stats", "host": ["{{baseUrl}}"], "path": ["admin", "sos", "stats"] }
+          }
+        },
+        {
+          "name": "Update SOS status",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/sos/{{sosId}}/status", "host": ["{{baseUrl}}"], "path": ["admin", "sos", "{{sosId}}", "status"] },
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"dispatched\",\n  \"note\": \"Team 2 en route\",\n  \"assign_to\": 1,\n  \"resolution_notes\": \"\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Admin — Services & Properties",
+      "item": [
+        {
+          "name": "List modules",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/services/modules", "host": ["{{baseUrl}}"], "path": ["admin", "services", "modules"] }
+          }
+        },
+        {
+          "name": "Create module (multipart: image)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "multipart/form-data" }],
+            "url": { "raw": "{{baseUrl}}/admin/services/modules", "host": ["{{baseUrl}}"], "path": ["admin", "services", "modules"] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "code", "value": "solar-energy", "type": "text" },
+                { "key": "name", "value": "Solar Energy", "type": "text" },
+                { "key": "description", "value": "Solar panel supply & install", "type": "text" },
+                { "key": "sort_order", "value": "7", "type": "text" },
+                { "key": "status", "value": "1", "type": "text" },
+                { "key": "image", "type": "file", "src": [] }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update module",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/services/modules/{{moduleId}}", "host": ["{{baseUrl}}"], "path": ["admin", "services", "modules", "{{moduleId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Solar Energy Solutions\",\n  \"description\": \"Updated\",\n  \"status\": 1,\n  \"sort_order\": 7\n}" }
+          }
+        },
+        {
+          "name": "Delete module",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/admin/services/modules/{{moduleId}}", "host": ["{{baseUrl}}"], "path": ["admin", "services", "modules", "{{moduleId}}"] }
+          }
+        },
+        {
+          "name": "List categories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/services/categories?module_id=",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "services", "categories"],
+              "query": [{ "key": "module_id", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Create category",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/services/categories", "host": ["{{baseUrl}}"], "path": ["admin", "services", "categories"] },
+            "body": { "mode": "raw", "raw": "{\n  \"module_id\": 1,\n  \"name\": \"CCTV Cameras\",\n  \"description\": \"IP and analog cameras\",\n  \"is_featured\": 1,\n  \"status\": 1,\n  \"sort_order\": 1\n}" }
+          }
+        },
+        {
+          "name": "Delete category",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/admin/services/categories/{{categoryId}}", "host": ["{{baseUrl}}"], "path": ["admin", "services", "categories", "{{categoryId}}"] }
+          }
+        },
+        {
+          "name": "List properties",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/properties?search=&status=&builder_id=&page=1&limit=15",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "properties"],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "status", "value": "" },
+                { "key": "builder_id", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Property stats",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/properties/stats", "host": ["{{baseUrl}}"], "path": ["admin", "properties", "stats"] }
+          }
+        },
+        {
+          "name": "Create property (multipart: media)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "multipart/form-data" }],
+            "url": { "raw": "{{baseUrl}}/admin/properties", "host": ["{{baseUrl}}"], "path": ["admin", "properties"] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "builder_id", "value": "1", "type": "text" },
+                { "key": "project_id", "value": "1", "type": "text" },
+                { "key": "area_id", "value": "1", "type": "text" },
+                { "key": "title", "value": "3 BHK Skyline Residency", "type": "text" },
+                { "key": "listing_type", "value": "sale", "type": "text" },
+                { "key": "property_type", "value": "apartment", "type": "text" },
+                { "key": "total_amount", "value": "12500000", "type": "text" },
+                { "key": "status", "value": "available", "type": "text" },
+                { "key": "media", "type": "file", "src": [], "description": "up to 16 images/videos" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "List builders",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/properties/builders", "host": ["{{baseUrl}}"], "path": ["admin", "properties", "builders"] }
+          }
+        },
+        {
+          "name": "Create builder",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/properties/builders", "host": ["{{baseUrl}}"], "path": ["admin", "properties", "builders"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"New Builder Pvt Ltd\",\n  \"description\": \"Trusted developer\",\n  \"slug\": \"new-builder\"\n}" }
+          }
+        },
+        {
+          "name": "List projects",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/properties/projects?builder_id=",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "properties", "projects"],
+              "query": [{ "key": "builder_id", "value": "" }]
+            }
+          }
+        },
+        {
+          "name": "Create project",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/properties/projects", "host": ["{{baseUrl}}"], "path": ["admin", "properties", "projects"] },
+            "body": { "mode": "raw", "raw": "{\n  \"builder_id\": 1,\n  \"name\": \"New Township\",\n  \"description\": \"Plotted development\",\n  \"slug\": \"new-township\"\n}" }
+          }
+        },
+        {
+          "name": "List areas",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/properties/areas", "host": ["{{baseUrl}}"], "path": ["admin", "properties", "areas"] }
+          }
+        },
+        {
+          "name": "Create area",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/properties/areas", "host": ["{{baseUrl}}"], "path": ["admin", "properties", "areas"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Koramangala\",\n  \"locality\": \"South Bangalore\",\n  \"city\": \"Bangalore\"\n}" }
+          }
+        },
+        {
+          "name": "List property enquiries",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/properties/enquiries/all?status=&page=1&limit=15",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "properties", "enquiries", "all"],
+              "query": [
+                { "key": "status", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update enquiry status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/properties/enquiries/{{enquiryId}}/status", "host": ["{{baseUrl}}"], "path": ["admin", "properties", "enquiries", "{{enquiryId}}", "status"] },
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"contacted\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "10. Admin — HR",
+      "item": [
+        {
+          "name": "List employees",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/hr/employees?search=&status=&department=&page=1&limit=15",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "hr", "employees"],
+              "query": [
+                { "key": "search", "value": "" },
+                { "key": "status", "value": "" },
+                { "key": "department", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create employee (creates user)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/hr/employees", "host": ["{{baseUrl}}"], "path": ["admin", "hr", "employees"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Priya Sharma\",\n  \"email\": \"priya@vcom.com\",\n  \"phone\": \"9876543210\",\n  \"password\": \"Emp@123\",\n  \"employee_code\": \"EMP-010\",\n  \"designation\": \"Sales Executive\",\n  \"department\": \"Sales\",\n  \"date_of_joining\": \"2026-01-15\",\n  \"gender\": \"female\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Update employee",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/hr/employees/{{employeeId}}", "host": ["{{baseUrl}}"], "path": ["admin", "hr", "employees", "{{employeeId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"designation\": \"Senior Sales Executive\",\n  \"department\": \"Sales\",\n  \"status\": \"active\"\n}" }
+          }
+        },
+        {
+          "name": "Attendance list",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/hr/attendance?date=&month=&employee_id=&status=&page=1&limit=15",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "hr", "attendance"],
+              "query": [
+                { "key": "date", "value": "" },
+                { "key": "month", "value": "" },
+                { "key": "employee_id", "value": "" },
+                { "key": "status", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark attendance (upsert)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/hr/attendance", "host": ["{{baseUrl}}"], "path": ["admin", "hr", "attendance"] },
+            "body": { "mode": "raw", "raw": "{\n  \"employee_id\": 1,\n  \"attendance_date\": \"2026-10-15\",\n  \"check_in\": \"09:30:00\",\n  \"check_out\": \"18:45:00\",\n  \"status\": \"present\",\n  \"notes\": \"\"\n}" }
+          }
+        },
+        {
+          "name": "Attendance summary",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/hr/attendance/summary?month=2026-10",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "hr", "attendance", "summary"],
+              "query": [{ "key": "month", "value": "2026-10" }]
+            }
+          }
+        },
+        {
+          "name": "List leaves",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/hr/leaves?status=&employee_id=&page=1&limit=15",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "hr", "leaves"],
+              "query": [
+                { "key": "status", "value": "" },
+                { "key": "employee_id", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Review leave (approve/reject)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/hr/leaves/{{leaveId}}/review", "host": ["{{baseUrl}}"], "path": ["admin", "hr", "leaves", "{{leaveId}}", "review"] },
+            "body": { "mode": "raw", "raw": "{\n  \"decision\": \"approved\",\n  \"review_note\": \"Enjoy!\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "11. Admin — Notifications / Roles / Support / Audit / Settings",
+      "item": [
+        {
+          "name": "List notification templates",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/notifications/templates", "host": ["{{baseUrl}}"], "path": ["admin", "notifications", "templates"] }
+          }
+        },
+        {
+          "name": "Update template",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/notifications/templates/{{templateId}}", "host": ["{{baseUrl}}"], "path": ["admin", "notifications", "templates", "{{templateId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"title_template\": \"Request {{ticket_no}} updated\",\n  \"body_template\": \"Status changed to {{status}}.\",\n  \"is_active\": 1\n}" }
+          }
+        },
+        {
+          "name": "Recent notifications",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/notifications/recent", "host": ["{{baseUrl}}"], "path": ["admin", "notifications", "recent"] }
+          }
+        },
+        {
+          "name": "Broadcast",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/notifications/broadcast", "host": ["{{baseUrl}}"], "path": ["admin", "notifications", "broadcast"] },
+            "body": { "mode": "raw", "raw": "{\n  \"title\": \"Diwali offer!\",\n  \"body\": \"Flat 20% off on all service packages this week.\",\n  \"user_type\": \"\"\n}" }
+          }
+        },
+        {
+          "name": "Roles + permission catalogue",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/roles", "host": ["{{baseUrl}}"], "path": ["admin", "roles"] }
+          }
+        },
+        {
+          "name": "Create role",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/roles", "host": ["{{baseUrl}}"], "path": ["admin", "roles"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Billing Manager\",\n  \"slug\": \"billing_manager\",\n  \"description\": \"Handles quotations and reports\",\n  \"permission_ids\": [1, 2, 11, 12, 23]\n}" }
+          }
+        },
+        {
+          "name": "Update role",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/roles/{{roleId}}", "host": ["{{baseUrl}}"], "path": ["admin", "roles", "{{roleId}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Billing Manager\",\n  \"description\": \"Updated description\",\n  \"permission_ids\": [1, 2, 11, 12]\n}" }
+          }
+        },
+        {
+          "name": "Delete role",
+          "request": {
+            "method": "DELETE",
+            "url": { "raw": "{{baseUrl}}/admin/roles/{{roleId}}", "host": ["{{baseUrl}}"], "path": ["admin", "roles", "{{roleId}}"] }
+          }
+        },
+        {
+          "name": "List support tickets",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/support?status=&search=&page=1&limit=15",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "support"],
+              "query": [
+                { "key": "status", "value": "" },
+                { "key": "search", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reply to support ticket",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/support/{{ticketId}}/reply", "host": ["{{baseUrl}}"], "path": ["admin", "support", "{{ticketId}}", "reply"] },
+            "body": { "mode": "raw", "raw": "{\n  \"reply\": \"We have fixed the issue from our side.\",\n  \"status\": \"in_progress\"\n}" }
+          }
+        },
+        {
+          "name": "Set support status",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/support/{{ticketId}}/status", "host": ["{{baseUrl}}"], "path": ["admin", "support", "{{ticketId}}", "status"] },
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"resolved\"\n}" }
+          }
+        },
+        {
+          "name": "Audit log",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/audit?action=&entity=&search=&page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "audit"],
+              "query": [
+                { "key": "action", "value": "", "description": "prefix match, e.g. 'request'" },
+                { "key": "entity", "value": "" },
+                { "key": "search", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "20" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get settings",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/settings", "host": ["{{baseUrl}}"], "path": ["admin", "settings"] }
+          }
+        },
+        {
+          "name": "Update settings (bulk)",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/settings", "host": ["{{baseUrl}}"], "path": ["admin", "settings"] },
+            "body": { "mode": "raw", "raw": "{\n  \"settings\": {\n    \"app_name\": \"V_COM\",\n    \"maintenance_mode\": \"0\",\n    \"sos_enabled\": \"1\",\n    \"default_tax_rate\": \"18\"\n  }\n}" }
+          }
+        }
+      ]
+    }
+  ]
+}
