@@ -4,7 +4,7 @@ const pool = require('./config/db');
 
 const server = app.listen(env.port, () => {
   console.log(`\n  ${env.appName} API listening on http://localhost:${env.port}`);
-  console.log(`  Health: http://localhost:${env.port}/api/health\n`);
+  console.log(`  Health: http://localhost:${env.port}/api/v1/health\n`);
 });
 
 pool.query('SELECT 1')

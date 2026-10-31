@@ -5,7 +5,7 @@ const ApiError = require('../../utils/ApiError');
 const { sendSuccess } = require('../../utils/response');
 const { authMiddleware } = require('../../middlewares/auth');
 const { requirePermission } = require('../../middlewares/rbac');
-const { generalUpload, toPublicUrl } = require('../../middlewares/upload');
+const { cloudinaryUpload, cloudinaryImage, toPublicUrl } = require('../../middlewares/upload');
 const { writeAudit } = require('../../utils/audit');
 
 router.use(authMiddleware, requirePermission('services.view'));
@@ -27,12 +27,12 @@ router.get(
 router.post(
   '/modules',
   requirePermission('services.manage'),
-  generalUpload.single('image'),
+  cloudinaryUpload.single('image'),
   asyncHandler(async (req, res) => {
     const { code, name, description, icon, status = 1, sort_order = 0 } = req.body;
     const [exists] = await pool.query('SELECT id FROM service_modules WHERE code = ?', [code]);
     if (exists.length) throw ApiError.conflict('Module code already exists');
-    const image = req.file ? `general/${req.file.filename}` : null;
+    const image = await cloudinaryImage(req, res);
     const [result] = await pool.query(
       `INSERT INTO service_modules (code, name, description, icon, image, status, sort_order)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -46,12 +46,12 @@ router.post(
 router.put(
   '/modules/:id',
   requirePermission('services.manage'),
-  generalUpload.single('image'),
+  cloudinaryUpload.single('image'),
   asyncHandler(async (req, res) => {
     const { name, description, icon, status, sort_order } = req.body;
     const [rows] = await pool.query('SELECT * FROM service_modules WHERE id = ?', [req.params.id]);
     if (!rows.length) throw ApiError.notFound('Module not found');
-    const image = req.file ? `general/${req.file.filename}` : rows[0].image;
+    const image = (await cloudinaryImage(req, res)) ?? rows[0].image;
     await pool.query(
       `UPDATE service_modules SET name = COALESCE(?, name), description = COALESCE(?, description),
               icon = COALESCE(?, icon), image = ?, status = COALESCE(?, status), sort_order = COALESCE(?, sort_order)
@@ -98,16 +98,21 @@ router.get(
 router.post(
   '/categories',
   requirePermission('services.manage'),
-  generalUpload.single('image'),
+  cloudinaryUpload.single('image'),
   asyncHandler(async (req, res) => {
-    const { module_id, name, description, is_featured = 0, status = 1, sort_order = 0 } = req.body;
+    const { module_id, name, description, price, is_featured = 0, status = 1, sort_order = 0 } = req.body;
     const [[mod]] = await pool.query('SELECT id FROM service_modules WHERE id = ?', [module_id]);
     if (!mod) throw ApiError.badRequest('Module does not exist');
-    const image = req.file ? `general/${req.file.filename}` : null;
+    let priceValue = null;
+    if (price !== undefined && price !== null && price !== '') {
+      priceValue = Number(price);
+      if (Number.isNaN(priceValue) || priceValue < 0) throw ApiError.badRequest('Price must be a non-negative number');
+    }
+    const image = await cloudinaryImage(req, res);
     const [result] = await pool.query(
-      `INSERT INTO service_categories (module_id, name, description, image, is_featured, status, sort_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [module_id, name, description || null, image, is_featured, status, sort_order]
+      `INSERT INTO service_categories (module_id, name, description, image, price, is_featured, status, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [module_id, name, description || null, image, priceValue, is_featured, status, sort_order]
     );
     await writeAudit({ actor: req.user, action: 'category.create', entity: 'service_categories', entityId: result.insertId, req });
     sendSuccess(res, { id: result.insertId }, 'Category created', 201);
@@ -117,18 +122,26 @@ router.post(
 router.put(
   '/categories/:id',
   requirePermission('services.manage'),
-  generalUpload.single('image'),
+  cloudinaryUpload.single('image'),
   asyncHandler(async (req, res) => {
-    const { name, description, is_featured, status, sort_order } = req.body;
+    const { name, description, price, is_featured, status, sort_order } = req.body;
     const [rows] = await pool.query('SELECT * FROM service_categories WHERE id = ?', [req.params.id]);
     if (!rows.length) throw ApiError.notFound('Category not found');
-    const image = req.file ? `general/${req.file.filename}` : rows[0].image;
+    let priceValue = rows[0].price;
+    if (price !== undefined) {
+      if (price === null || price === '') priceValue = null;
+      else {
+        priceValue = Number(price);
+        if (Number.isNaN(priceValue) || priceValue < 0) throw ApiError.badRequest('Price must be a non-negative number');
+      }
+    }
+    const image = (await cloudinaryImage(req, res)) ?? rows[0].image;
     await pool.query(
       `UPDATE service_categories SET name = COALESCE(?, name), description = COALESCE(?, description),
-              image = ?, is_featured = COALESCE(?, is_featured), status = COALESCE(?, status),
+              image = ?, price = ?, is_featured = COALESCE(?, is_featured), status = COALESCE(?, status),
               sort_order = COALESCE(?, sort_order)
         WHERE id = ?`,
-      [name || null, description ?? null, image, is_featured ?? null, status ?? null, sort_order ?? null, req.params.id]
+      [name || null, description ?? null, image, priceValue, is_featured ?? null, status ?? null, sort_order ?? null, req.params.id]
     );
     await writeAudit({ actor: req.user, action: 'category.update', entity: 'service_categories', entityId: req.params.id, req });
     sendSuccess(res, null, 'Category updated');

@@ -27,6 +27,12 @@ const env = {
     maxVideoSizeMb: parseInt(process.env.MAX_VIDEO_SIZE_MB || '50', 10),
   },
   publicFileBaseUrl: process.env.PUBLIC_FILE_BASE_URL || 'http://localhost:5000/uploads',
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
+    apiKey: process.env.CLOUDINARY_API_KEY || '',
+    apiSecret: process.env.CLOUDINARY_API_SECRET || '',
+    folder: process.env.CLOUDINARY_FOLDER || 'v-com',
+  },
 };
 
 module.exports = env;

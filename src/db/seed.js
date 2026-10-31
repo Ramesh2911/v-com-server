@@ -3,21 +3,47 @@ const bcrypt = require('bcryptjs');
 const pool = require('../config/db');
 
 const MODULES = [
-  { code: 'scrap-waste', name: 'Scrap & Waste', icon: 'recycle', description: 'Scrap collection, waste management and disposal services.' },
-  { code: 'cctv-automation', name: 'CCTV & Automation', icon: 'cctv', description: 'CCTV cameras, surveillance and home/office automation solutions.' },
-  { code: 'fire-safety', name: 'Fire & Safety', icon: 'flame', description: 'Fire extinguishers, alarms, safety audits and equipment maintenance.' },
-  { code: 'fabrication-welding', name: 'Fabrication & Welding', icon: 'hammer', description: 'Custom fabrication, welding, gates, grills and structural work.' },
-  { code: 'website-graphic', name: 'Website & Graphic', icon: 'palette', description: 'Website development, UI design, logos and graphic design services.' },
-  { code: 'printing-promotions-gifting', name: 'Printing, Promotions & Gifting', icon: 'gift', description: 'Printing, branding, promotional items and corporate gifting.' },
+  { code: 'special-service', name: 'Special Service', icon: 'sparkles', description: 'Full-service, specialist offerings for homes, offices and businesses.' },
+  { code: 'quick-service', name: 'Quick Service', icon: 'wrench', description: 'Fast, on-demand repair and maintenance jobs with transparent pricing.' },
+  { code: 'general-assistance', name: 'General Assistance', icon: 'megaphone', description: 'Everyday help — emergencies, staffing, events, bookings and more.' },
 ];
 
 const CATEGORIES = {
-  'scrap-waste': ['Household Scrap Pickup', 'E-Waste Recycling', 'Industrial Waste', 'Metal Scrap', 'Paper & Cardboard'],
-  'cctv-automation': ['CCTV Installation', 'Camera AMC', 'Access Control', 'Smart Home Automation', 'Biometric Systems'],
-  'fire-safety': ['Fire Extinguisher Sales', 'Alarm Systems', 'Safety Audit', 'Hydrant & Sprinkler', 'Emergency Lighting'],
-  'fabrication-welding': ['Custom Gates', 'Grills & Railing', 'Structural Welding', 'MS/SS Fabrication', 'Repair Works'],
-  'website-graphic': ['Business Website', 'E-commerce Website', 'Logo Design', 'UI/UX Design', 'Social Media Creatives'],
-  'printing-promotions-gifting': ['Flex & Banner Printing', 'Business Cards', 'Corporate Gifting', 'T-Shirt Printing', 'Merchandise'],
+  'special-service': [
+    'Fabrication and Welding',
+    'CCTV and Automation',
+    'Packers and Movers',
+    'Website and Graphic Designing',
+    'Pest Control and Deep Cleaning',
+    'Interior and Office Inventory',
+    'Electrical and Plumbing',
+    'Construction, Renovation and Documentation',
+    'Accounting and Statutory',
+    'Fire and Safety',
+    'Housekeeping and Security',
+    'Event and Corporate Arrangements',
+    'Computer and Hardware',
+    'HVAC',
+    'Gardening and Landscaping',
+    'Water & Sewage Treatment',
+    'Special Care & Health Care',
+  ],
+  'quick-service': [
+    'Electrical Work',
+    'Plumbing Work',
+    'Carpentry Work',
+    'Air Conditioning Work',
+    'Building Maintenance Work',
+    'Repair Work (Any Category)',
+  ],
+  'general-assistance': [
+    'SOS/Emergency',
+    'HR and Recruitment',
+    'Events and Exhibitions',
+    'Bookings and Admissions',
+    'Travel and Insurance Schemes',
+    'Scrap and Waste Management',
+  ],
 };
 
 const PERMISSIONS = [
@@ -228,7 +254,7 @@ async function seed() {
     const [[opsRole]] = await conn.query(`SELECT id FROM roles WHERE slug = 'operations_manager'`);
     const [[hrRole]] = await conn.query(`SELECT id FROM roles WHERE slug = 'hr_manager'`);
     const [[sosRole]] = await conn.query(`SELECT id FROM roles WHERE slug = 'sos_coordinator'`);
-    const [[cctvRole]] = await conn.query(`SELECT id FROM roles WHERE slug = 'cctv_automation_manager'`);
+    const [[specialRole]] = await conn.query(`SELECT id FROM roles WHERE slug = 'special_service_manager'`);
 
     const hash = (pw) => bcrypt.hashSync(pw, 10);
     const users = [
@@ -236,7 +262,7 @@ async function seed() {
       { name: 'Ravi Operations', email: 'ops@vcom.com', phone: '9000000002', pw: 'Ops@123', type: 'staff', role: opsRole.id },
       { name: 'Priya HR', email: 'hr@vcom.com', phone: '9000000003', pw: 'Hr@12345', type: 'staff', role: hrRole.id },
       { name: 'SOS Control', email: 'sos@vcom.com', phone: '9000000004', pw: 'Sos@1234', type: 'staff', role: sosRole.id },
-      { name: 'CCTV Manager', email: 'cctv@vcom.com', phone: '9000000005', pw: 'Cctv@1234', type: 'staff', role: cctvRole.id },
+      { name: 'CCTV Manager', email: 'cctv@vcom.com', phone: '9000000005', pw: 'Cctv@1234', type: 'staff', role: specialRole ? specialRole.id : opsRole.id },
       { name: 'Amit Sharma', email: 'customer@vcom.com', phone: '9876500001', pw: 'Customer@123', type: 'customer', role: null },
       { name: 'Neha Verma', email: 'customer2@vcom.com', phone: '9876500002', pw: 'Customer@123', type: 'customer', role: null },
       { name: 'SecureTech Solutions', email: 'vendor@vcom.com', phone: '9876500003', pw: 'Vendor@123', type: 'customer', role: null },
@@ -259,11 +285,11 @@ async function seed() {
     // ---- vendors ----
     const [[cctvCat]] = await conn.query(
       `SELECT c.id FROM service_categories c JOIN service_modules m ON m.id = c.module_id
-        WHERE m.code = 'cctv-automation' LIMIT 1`
+        WHERE m.code = 'special-service' AND c.name = 'CCTV and Automation' LIMIT 1`
     );
     const [[scrapCat]] = await conn.query(
       `SELECT c.id FROM service_categories c JOIN service_modules m ON m.id = c.module_id
-        WHERE m.code = 'scrap-waste' LIMIT 1`
+        WHERE m.code = 'general-assistance' AND c.name = 'Scrap and Waste Management' LIMIT 1`
     );
     const vendors = [
       {
@@ -396,7 +422,7 @@ async function seed() {
     console.log('  Operations    ops@vcom.com / Ops@123');
     console.log('  HR Manager    hr@vcom.com / Hr@12345');
     console.log('  SOS Coord     sos@vcom.com / Sos@1234');
-    console.log('  CCTV Manager  cctv@vcom.com / Cctv@1234');
+    console.log('  Special Service Manager  cctv@vcom.com / Cctv@1234');
     console.log('  Customer      customer@vcom.com / Customer@123');
     console.log('  Vendor        vendor@vcom.com / Vendor@123');
     console.log('  Employee      employee@vcom.com / Employee@123');

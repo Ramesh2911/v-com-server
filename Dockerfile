@@ -6,5 +6,5 @@ COPY . .
 ENV NODE_ENV=production
 EXPOSE 5000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s \
-  CMD wget -qO- http://localhost:5000/api/health || exit 1
+  CMD wget -qO- http://localhost:5000/api/v1/health || exit 1
 CMD ["node", "src/server.js"]

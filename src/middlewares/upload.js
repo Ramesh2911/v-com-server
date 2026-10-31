@@ -1,6 +1,7 @@
 const path = require('path');
 const fs = require('fs');
 const multer = require('multer');
+const cloudinary = require('cloudinary').v2;
 const env = require('../config');
 const ApiError = require('../utils/ApiError');
 
@@ -47,14 +48,67 @@ const jobUpload = makeUploader('jobs', 10);
 const propertyUpload = makeUploader('properties', 16);
 const generalUpload = makeUploader('general', 5);
 
+// ---- Cloudinary (service category / service images) ----
+const cloudinaryConfigured = Boolean(env.cloudinary.cloudName && env.cloudinary.apiKey && env.cloudinary.apiSecret);
+
+if (cloudinaryConfigured) {
+  cloudinary.config({
+    cloud_name: env.cloudinary.cloudName,
+    api_key: env.cloudinary.apiKey,
+    api_secret: env.cloudinary.apiSecret,
+    secure: true,
+  });
+}
+
+const imageFileFilter = (req, file, cb) => {
+  if (/^image\//.test(file.mimetype)) return cb(null, true);
+  cb(ApiError.badRequest(`Only images are allowed: ${file.mimetype}`));
+};
+
+// Memory storage: buffer theke Cloudinary e upload, req.file.path = secure_url
+const cloudinaryMemory = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: imageFileFilter,
+  limits: { fileSize: env.upload.maxImageSizeMb * 1024 * 1024, files: 1 },
+});
+
+const uploadBufferToCloudinary = (file) =>
+  new Promise((resolve, reject) => {
+    const folder = env.cloudinary.folder || 'v-com';
+    const stream = cloudinary.uploader.upload_stream(
+      { folder, resource_type: 'image' },
+      (error, result) => (error ? reject(error) : resolve(result))
+    );
+    stream.end(file.buffer);
+  });
+
+// Usage: await cloudinaryImage(req, res) after cloudinaryMemory.single('image')
+// Falls back to local disk path when Cloudinary keys are not configured.
+const cloudinaryImage = async (req, res) => {
+  if (!req.file) return null;
+  if (!cloudinaryConfigured) return `general/${req.file.filename || `${Date.now()}`}`;
+  try {
+    const result = await uploadBufferToCloudinary(req.file);
+    req.file.path = result.secure_url;
+    return result.secure_url;
+  } catch (err) {
+    throw ApiError.internal(`Cloudinary upload failed: ${err.message}`);
+  }
+};
+
+const cloudinaryUpload = cloudinaryConfigured ? cloudinaryMemory : generalUpload;
+
 const classifyFileType = (mimetype) => {
   if (/^image\//.test(mimetype)) return 'image';
   if (/^video\//.test(mimetype)) return 'video';
   return 'document';
 };
 
-const toPublicUrl = (relativePath) =>
-  relativePath ? `${env.publicFileBaseUrl}/${relativePath.replace(/\\/g, '/')}` : null;
+const toPublicUrl = (value) => {
+  if (!value) return null;
+  if (/^https?:\/\//i.test(value)) return value; // Cloudinary / absolute URLs pass through
+  return `${env.publicFileBaseUrl}/${value.replace(/\\/g, '/')}`;
+};
 
 module.exports = {
   UPLOAD_ROOT,
@@ -62,6 +116,8 @@ module.exports = {
   jobUpload,
   propertyUpload,
   generalUpload,
+  cloudinaryUpload,
+  cloudinaryImage,
   classifyFileType,
   toPublicUrl,
 };
