@@ -47,7 +47,16 @@ app.get('/api/v1', (req, res) =>
       docs: 'server/docs/API.md',
       collections: {
         public: ['/api/v1/services', '/api/v1/properties'],
-        auth: ['/api/v1/auth/login', '/api/v1/auth/refresh', '/api/v1/auth/logout', '/api/v1/auth/forgot-password', '/api/v1/auth/reset-password'],
+        auth: [
+          '/api/v1/auth/otp/send',
+          '/api/v1/auth/otp/verify',
+          '/api/v1/auth/login (email+password or {verifyToken})',
+          '/api/v1/auth/register (email+password or {verifyToken,client,role})',
+          '/api/v1/auth/refresh',
+          '/api/v1/auth/logout',
+          '/api/v1/auth/forgot-password',
+          '/api/v1/auth/reset-password',
+        ],
         me: '/api/v1/me',
         customer: '/api/v1/customer/*',
         vendor: '/api/v1/vendor/*',

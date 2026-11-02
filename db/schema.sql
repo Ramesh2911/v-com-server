@@ -10,7 +10,7 @@ DROP TABLE IF EXISTS audit_logs, settings, support_tickets, leave_requests, atte
   job_attachments, job_status_history, jobs, quotation_items, quotations,
   request_status_history, request_assignments, request_attachments, requests,
   service_categories, service_modules, vendor_service_categories, vendors,
-  password_resets, refresh_tokens, role_permissions, permissions, roles, users;
+  password_resets, refresh_tokens, otp_codes, role_permissions, permissions, roles, users;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- ========================= AUTH / RBAC =========================
@@ -58,6 +58,7 @@ CREATE TABLE users (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uk_users_email (email),
+  UNIQUE KEY uk_users_phone (phone),
   KEY idx_users_type (user_type),
   CONSTRAINT fk_users_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -83,6 +84,19 @@ CREATE TABLE password_resets (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uk_reset_token (token),
   CONSTRAINT fk_reset_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE otp_codes (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  phone VARCHAR(20) NOT NULL,
+  code VARCHAR(10) NOT NULL,
+  purpose VARCHAR(30) NOT NULL DEFAULT 'login',
+  attempts TINYINT UNSIGNED NOT NULL DEFAULT 0,
+  expires_at DATETIME NOT NULL,
+  consumed_at DATETIME NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_otp_phone (phone, created_at),
+  KEY idx_otp_expires (expires_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ========================= SERVICES =========================

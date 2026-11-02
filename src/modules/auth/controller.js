@@ -1,4 +1,5 @@
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
 const pool = require('../../config/db');
 const env = require('../../config');
@@ -7,6 +8,7 @@ const asyncHandler = require('../../utils/asyncHandler');
 const { sendSuccess } = require('../../utils/response');
 const { signAccessToken, signRefreshToken, verifyRefreshToken, loadUserPermissions } = require('../../middlewares/auth');
 const { writeAudit } = require('../../utils/audit');
+const otp = require('./otp.service');
 
 const publicUser = (u) => ({
   id: u.id,
@@ -170,4 +172,98 @@ exports.changePassword = asyncHandler(async (req, res) => {
   }
   await pool.query('UPDATE users SET password_hash = ? WHERE id = ?', [bcrypt.hashSync(newPassword, 10), req.user.id]);
   sendSuccess(res, null, 'Password changed');
+});
+
+/* ============ App phone + OTP auth ============ */
+
+exports.otpSend = asyncHandler(async (req, res) => {
+  const phone = otp.normalizePhone(req.body.phone);
+  otp.assertValidPhone(phone);
+  const code = await otp.createOtp(phone);
+  const data = {
+    phone,
+    expiresIn: env.sms.otpTtlMinutes * 60,
+  };
+  if (env.nodeEnv !== 'production') data.devOtp = code;
+  sendSuccess(res, data, 'OTP sent successfully');
+});
+
+exports.otpVerify = asyncHandler(async (req, res) => {
+  const phone = otp.normalizePhone(req.body.phone);
+  otp.assertValidPhone(phone);
+  await otp.verifyOtp(phone, req.body.code);
+  const [[user]] = await pool.query('SELECT id FROM users WHERE phone = ?', [phone]);
+  const isNewUser = !user;
+  const verifyToken = otp.signVerifyToken(phone);
+  sendSuccess(
+    res,
+    { verifyToken, isNewUser, phone },
+    isNewUser ? 'Phone verified — complete your registration' : 'Phone verified'
+  );
+});
+
+exports.appLogin = asyncHandler(async (req, res) => {
+  const { verifyToken, client } = req.body;
+  const { phone } = otp.readVerifyToken(verifyToken);
+
+  const [rows] = await pool.query(
+    `SELECT u.*, r.name AS role_name, r.slug AS role_slug
+       FROM users u LEFT JOIN roles r ON r.id = u.role_id
+      WHERE u.phone = ?`,
+    [phone]
+  );
+  const user = rows[0];
+  if (!user) throw ApiError.badRequest('No account found for this phone. Please register first.');
+  if (user.status !== 'active') throw ApiError.forbidden('Your account is inactive. Please contact support.');
+
+  otp.assertClientRole(client, user.role_slug || (user.user_type === 'customer' ? 'customer' : null));
+
+  await pool.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]);
+  const data = await buildAuthResponse(user);
+  await writeAudit({ actor: user, action: 'auth.otp_login', entity: 'users', entityId: user.id, req });
+  sendSuccess(res, data, 'Login successful');
+});
+
+exports.appRegister = asyncHandler(async (req, res) => {
+  const { verifyToken, client, role } = req.body;
+  const { phone } = otp.readVerifyToken(verifyToken);
+
+  const [[existsPhone]] = await pool.query('SELECT id FROM users WHERE phone = ?', [phone]);
+  if (existsPhone) throw ApiError.conflict('An account already exists for this phone. Please login.');
+
+  const name = String(req.body.name || '').trim();
+  const email = String(req.body.email || '').trim().toLowerCase();
+  if (!name) throw ApiError.badRequest('Name is required');
+
+  const roleSlug = client === 'customer' ? 'customer' : role || 'provider_owner';
+  const userType = roleSlug === 'technician' ? 'employee' : 'customer';
+
+  const [[roleRow]] = await pool.query('SELECT id FROM roles WHERE slug = ? AND status = 1', [roleSlug]);
+  if (!roleRow) throw ApiError.badRequest('Invalid role');
+
+  const [emailRows] = await pool.query('SELECT id FROM users WHERE email = ?', [email]);
+  if (emailRows.length) throw ApiError.conflict('This email is already linked to another account');
+
+  const passwordHash = bcrypt.hashSync(crypto.randomBytes(32).toString('hex'), 10);
+  let result;
+  try {
+    [result] = await pool.query(
+      `INSERT INTO users (name, email, phone, password_hash, user_type, role_id, status)
+       VALUES (?, ?, ?, ?, ?, ?, 'active')`,
+      [name, email, phone, passwordHash, userType, roleRow.id]
+    );
+  } catch (err) {
+    if (err.code === 'ER_DUP_ENTRY') throw ApiError.conflict('An account already exists for this phone');
+    throw err;
+  }
+
+  const [[user]] = await pool.query(
+    `SELECT u.*, r.name AS role_name, r.slug AS role_slug FROM users u
+      LEFT JOIN roles r ON r.id = u.role_id WHERE u.id = ?`,
+    [result.insertId]
+  );
+  await notifyWelcome(user.id);
+  const data = await buildAuthResponse(user);
+  await writeAudit({ actor: user, action: 'auth.otp_register', entity: 'users', entityId: user.id, req });
+  sendSuccess(res, data, 'Registration successful', 201);
 });

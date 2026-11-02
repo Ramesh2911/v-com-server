@@ -12,12 +12,24 @@ REST API for the V_COM Business Management Platform. Consumed by:
 
 | Item | Value |
 |---|---|
-| Base URL (dev) | `http://localhost:5000/api` |
+| Base URL (dev) | `http://localhost:8000/api/v1` |
+| Base URL (prod) | `https://v-com-server.onrender.com/api/v1` |
 | Content type | `application/json` (except uploads: `multipart/form-data`) |
 | Auth | `Authorization: Bearer <accessToken>` |
 | Access token TTL | 15 minutes |
 | Refresh token TTL | 7 days |
+| OTP verify token TTL | 5 minutes |
 | Timestamps | MySQL `DATETIME` / ISO-ish `YYYY-MM-DD HH:MM:SS` (UTC server time) |
+
+**Common request headers:**
+
+| Header | When | Value |
+|---|---|---|
+| `Content-Type` | always (JSON bodies) | `application/json` |
+| `Authorization` | auth required | `Bearer <accessToken>` |
+| `Content-Type` | uploads | `multipart/form-data` (set boundary automatically) |
+
+> All paths below are prefixed with the base URL, e.g. `/auth/otp/send` → `POST /api/v1/auth/otp/send`.
 
 ### 1.1 Response envelope
 
@@ -77,40 +89,164 @@ Full permission list: see §9.
 
 ---
 
-## 2. Auth (`/api/auth`, `/api/me`)
+## 2. Auth (`/api/v1/auth`, `/api/v1/me`)
+
+### 2.1 App phone + OTP flow (mobile apps)
+
+```
+┌──────────────┐   ┌───────────────┐   ┌─────────────────────────┐
+│ 1. otp/send  │──▶│ 2. otp/verify │──▶│ 3a. register (new user) │
+│  {phone}     │   │ {phone, code} │   │ 3b. login  (existing)   │
+└──────────────┘   └───────────────┘   └─────────────────────────┘
+                     → verifyToken        → accessToken + refreshToken (JWT)
+```
+
+**Step 1 — send OTP**
+
+```
+POST /api/v1/auth/otp/send
+Headers: Content-Type: application/json
+```
+```json
+{ "phone": "9876543210" }
+```
+→ **200**
+```json
+{
+  "success": true,
+  "message": "OTP sent successfully",
+  "data": { "phone": "9876543210", "expiresIn": 300, "devOtp": "123456" }
+}
+```
+- Phone: 10-digit Indian mobile (`+91`/`0` prefix auto-stripped), must start 6–9.
+- `devOtp` returned **only in non-production** (mock SMS). Test OTP = `123456`.
+- Rate limits: **3/min per IP**, **1/min per phone**, **5/day per phone** → `429`.
+
+**Step 2 — verify OTP**
+
+```
+POST /api/v1/auth/otp/verify
+Headers: Content-Type: application/json
+```
+```json
+{ "phone": "9876543210", "code": "123456" }
+```
+→ **200**
+```json
+{
+  "success": true,
+  "message": "Phone verified — complete your registration",
+  "data": { "verifyToken": "eyJhbGciOi...", "isNewUser": true, "phone": "9876543210" }
+}
+```
+- OTP: 6 digits, TTL **5 min**, max **5 wrong attempts** then burnt (429), single-use.
+- Errors: `400` incorrect/expired/already-used · `429` too many attempts.
+- `verifyToken` (JWT, 5 min) proves OTP success — exchange it in step 3 (retry allowed within 5 min).
+
+**Step 3a — register (new user only)**
+
+```
+POST /api/v1/auth/register
+Headers: Content-Type: application/json
+```
+```json
+{
+  "verifyToken": "eyJhbGciOi...",
+  "name": "Rahul Das",
+  "email": "rahul@example.com",
+  "client": "customer",
+  "role": "provider_owner"
+}
+```
+| Field | Required | Notes |
+|---|---|---|
+| `verifyToken` | ✓ | from step 2 |
+| `name` | ✓ | min 1 char |
+| `email` | ✓ | unique |
+| `client` | ✓ | `"customer"` \| `"vendor"` |
+| `role` | vendor only | `"provider_owner"` (default) \| `"technician"` — ignored when `client=customer` |
+
+→ **201** (same payload as 3b below)
+Errors: `409` phone already registered / email linked to another account · `401` invalid/expired verifyToken · `400` invalid role/client.
+
+**Step 3b — login (existing user only)**
+
+```
+POST /api/v1/auth/login
+Headers: Content-Type: application/json
+```
+```json
+{ "verifyToken": "eyJhbGciOi...", "client": "customer" }
+```
+- `client` optional but recommended — enforces app↔role match.
+- Errors: `400` no account for this phone (→ register first) · `403` account belongs to a different app · `401` invalid verifyToken.
+
+**Role mapping:**
+
+| `client` | `role` sent | Resulting `role_slug` | `user_type` | App |
+|---|---|---|---|---|
+| `customer` | — (forced) | `customer` | `customer` | Customer app |
+| `vendor` | omitted → `provider_owner` | `provider_owner` | `customer` | Vendor app (owner) |
+| `vendor` | `technician` | `technician` | `employee` | Vendor app (technician) |
+
+> Super admin cannot self-register; an existing super admin can OTP-login with their phone.
+
+**Step 4 — token refresh / logout**
+
+```
+POST /api/v1/auth/refresh        Headers: Content-Type: application/json
+Body: { "refreshToken": "eyJ..." }
+→ 200 { accessToken, refreshToken }   (old refresh token revoked — chained rotation)
+
+POST /api/v1/auth/logout          Headers: Authorization: Bearer <accessToken>
+Body: { "refreshToken": "eyJ..." }   (optional — revokes all user sessions if omitted)
+→ 200
+```
+
+**Test numbers (dev):**
+
+| Phone | Flow | Expected |
+|---|---|---|
+| `9876543210` | new → register | customer account |
+| `9876500001` | existing → login | customer (seed) |
+| `9876500003` | existing → login `client:vendor` | `provider_owner` + vendor payload |
+| `9000000001` | existing → login | super admin |
+
+### 2.2 Email + password (admin web panel)
 
 | Method | Path | Body | Notes |
 |---|---|---|---|
 | POST | `/auth/register` | `name, email, password, phone?` | Creates **customer**. Rate-limited 20/h. Returns login payload + 201. |
 | POST | `/auth/login` | `email, password` | Returns `{ user, accessToken, refreshToken }`. `user` includes `permissions[]` and `user_type`. |
-| POST | `/auth/refresh` | `refreshToken` | Returns new `{ accessToken, refreshToken }`. Old refresh token revoked. |
-| POST | `/auth/logout` | `refreshToken?` | Revokes refresh token. Requires access token. |
 | POST | `/auth/forgot-password` | `email` | Always 200 (no user enumeration). Token logged/emailed if configured. |
 | POST | `/auth/reset-password` | `token, password` | |
 | POST | `/auth/change-password` | `currentPassword, newPassword` | Auth required. `newPassword` min 6. |
 | GET | `/me` | — | Auth. Returns profile + `permissions[]` + `vendor` + `employee` objects. |
 | PUT | `/me` | `name?, phone?, avatar?` | Auth. Partial update. |
 
-**Login response (`data`):**
+**Login/register response (`data`):**
 
 ```json
 {
   "user": {
-    "id": 1, "name": "...", "email": "...", "user_type": "staff|customer|vendor|employee",
-    "role_name": "...", "role_slug": "...", "permissions": ["dashboard.view", ...]
+    "id": 1, "name": "...", "email": "...", "phone": "...",
+    "user_type": "staff|customer|employee",
+    "role_name": "...", "role_slug": "super_admin|customer|provider_owner|technician|...",
+    "permissions": ["dashboard.view", ...]
   },
+  "vendor": { "id": 3, "business_name": "...", "status": "approved" } | null,
   "accessToken": "jwt...",
   "refreshToken": "jwt..."
 }
 ```
 
-> Mobile apps: after login, route by `user_type`. Customers use `/customer/*`, vendors use `/vendor/*`.
+> Mobile apps: after login, route by `role_slug` — `customer` → `/customer/*`; `provider_owner`/`technician` → `/vendor/*`.
 
 ---
 
 ## 3. Public endpoints (no auth)
 
-### 3.1 Services (`/api/services`)
+### 3.1 Services (`/api/v1/services`)
 
 | Method | Path | Query | Returns |
 |---|---|---|---|
@@ -121,7 +257,7 @@ Full permission list: see §9.
 
 Module: `{ id, code, name, description, icon, image, status, sort_order, category_count }` (image is a full URL).
 
-### 3.2 Properties (`/api/properties`)
+### 3.2 Properties (`/api/v1/properties`)
 
 | Method | Path | Query | Notes |
 |---|---|---|---|
@@ -134,7 +270,7 @@ Property media URLs: returned as absolute URLs. Listing includes `{ property_cod
 
 ---
 
-## 4. Customer app (`/api/customer/*`) — auth required, `user_type = customer`
+## 4. Customer app (`/api/v1/customer/*`) — auth required, `role_slug = customer`
 
 ### 4.1 Requests
 
@@ -196,7 +332,7 @@ SOS statuses: `open → acknowledged → dispatched → resolved`.
 
 ---
 
-## 5. Vendor app (`/api/vendor/*`) — auth required, `user_type = vendor`
+## 5. Vendor app (`/api/v1/vendor/*`) — auth required, `role_slug = provider_owner | technician`
 
 > New vendor accounts start as `status = pending` until approved by admin.
 
@@ -251,7 +387,7 @@ Mirror customer endpoints at `/vendor/notifications` and `/vendor/support` (same
 
 ---
 
-## 6. Admin API (`/api/admin/*`) — auth + permission required
+## 6. Admin API (`/api/v1/admin/*`) — auth + permission required
 
 All routes below need `Authorization: Bearer …` **and** the listed permission.
 
@@ -383,7 +519,7 @@ All routes below need `Authorization: Bearer …` **and** the listed permission.
 ## 7. File uploads
 
 - Transport: `multipart/form-data`; field names listed per endpoint (`attachments`, `files`, `media`, `image`, `logo`).
-- Public URL: `http://localhost:5000/uploads/<folder>/<filename>` (served statically; `folder` = `general | requests | properties | jobs | avatars`).
+- Public URL: `http://localhost:8000/uploads/<folder>/<filename>` (prod: `https://v-com-server.onrender.com/uploads/...`; `folder` = `general | requests | properties | jobs | avatars`). Cloudinary-hosted service images return full `https://res.cloudinary.com/...` URLs directly.
 - Max sizes: images/PDF/docs **10 MB**, videos **50 MB** (`MAX_VIDEO_SIZE_MB`).
 - Allowed: images (`jpg,jpeg,png,webp,gif`), video (`mp4,mov,avi,mkv`), docs (`pdf,doc,docx,xls,xlsx`).
 - Client-side helper: media path `general/x.png` → `${BASE_URL}/uploads/general/x.png`.
@@ -392,18 +528,20 @@ All routes below need `Authorization: Bearer …` **and** the listed permission.
 
 ## 8. Demo accounts (seeded)
 
-| Role | Email | Password |
-|---|---|---|
-| Super Admin | `admin@vcom.com` | `Admin@123` |
-| Operations | `ops@vcom.com` | `Ops@123` |
-| HR | `hr@vcom.com` | `Hr@12345` |
-| SOS | `sos@vcom.com` | `Sos@1234` |
-| CCTV | `cctv@vcom.com` | `Cctv@1234` |
-| Customer | `customer@vcom.com` | `Customer@123` |
-| Vendor | `vendor@vcom.com` | `Vendor@123` |
-| Employee | `employee@vcom.com` | `Employee@123` |
+| Role | Email | Phone (OTP login) | Password |
+|---|---|---|---|
+| Super Admin | `admin@vcom.com` | `9000000001` | `Admin@123` |
+| Operations | `ops@vcom.com` | `9000000002` | `Ops@123` |
+| HR | `hr@vcom.com` | `9000000003` | `Hr@12345` |
+| SOS | `sos@vcom.com` | `9000000004` | `Sos@1234` |
+| CCTV / Special Service | `cctv@vcom.com` | `9000000005` | `Cctv@1234` |
+| Customer | `customer@vcom.com` | `9876500001` | `Customer@123` |
+| Vendor (Provider Owner) | `vendor@vcom.com` | `9876500003` | `Vendor@123` |
+| Employee | `employee@vcom.com` | `9876500005` | `Employee@123` |
 
-Service modules (seeded): `scrap-waste`, `cctv-automation`, `fire-safety`, `fabrication-welding`, `website-graphic`, `printing-promotions-gifting`.
+App OTP login works with any phone above (mock OTP `123456`). New app users: any valid 10-digit phone → register flow (§2.1).
+
+Service catalog (seeded): **3 categories** — Special Service, Quick Service, General Assistance — with **29 services** (price + image per service; Quick Service carries pricing).
 
 ---
 

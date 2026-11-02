@@ -124,6 +124,27 @@ const ROLES = [
     description: 'Handles emergency SOS tickets',
     permissions: ['dashboard.view', 'sos.view', 'sos.manage', 'module.sos.access', 'requests.view'],
   },
+  {
+    name: 'Customer',
+    slug: 'customer',
+    is_system: 1,
+    description: 'App customer — books services, no admin access',
+    permissions: [],
+  },
+  {
+    name: 'Provider Owner',
+    slug: 'provider_owner',
+    is_system: 1,
+    description: 'Vendor app business owner — manages own requests, quotations and jobs',
+    permissions: [],
+  },
+  {
+    name: 'Technician',
+    slug: 'technician',
+    is_system: 1,
+    description: 'Vendor app field technician — assigned jobs only',
+    permissions: [],
+  },
   ...MODULES.map((m) => ({
     name: `${m.name} Manager`,
     slug: `${m.code.replace(/-/g, '_')}_manager`,
@@ -255,6 +276,8 @@ async function seed() {
     const [[hrRole]] = await conn.query(`SELECT id FROM roles WHERE slug = 'hr_manager'`);
     const [[sosRole]] = await conn.query(`SELECT id FROM roles WHERE slug = 'sos_coordinator'`);
     const [[specialRole]] = await conn.query(`SELECT id FROM roles WHERE slug = 'special_service_manager'`);
+    const [[customerRole]] = await conn.query(`SELECT id FROM roles WHERE slug = 'customer'`);
+    const [[ownerRole]] = await conn.query(`SELECT id FROM roles WHERE slug = 'provider_owner'`);
 
     const hash = (pw) => bcrypt.hashSync(pw, 10);
     const users = [
@@ -263,10 +286,10 @@ async function seed() {
       { name: 'Priya HR', email: 'hr@vcom.com', phone: '9000000003', pw: 'Hr@12345', type: 'staff', role: hrRole.id },
       { name: 'SOS Control', email: 'sos@vcom.com', phone: '9000000004', pw: 'Sos@1234', type: 'staff', role: sosRole.id },
       { name: 'CCTV Manager', email: 'cctv@vcom.com', phone: '9000000005', pw: 'Cctv@1234', type: 'staff', role: specialRole ? specialRole.id : opsRole.id },
-      { name: 'Amit Sharma', email: 'customer@vcom.com', phone: '9876500001', pw: 'Customer@123', type: 'customer', role: null },
-      { name: 'Neha Verma', email: 'customer2@vcom.com', phone: '9876500002', pw: 'Customer@123', type: 'customer', role: null },
-      { name: 'SecureTech Solutions', email: 'vendor@vcom.com', phone: '9876500003', pw: 'Vendor@123', type: 'customer', role: null },
-      { name: 'QuickScrap Co', email: 'vendor2@vcom.com', phone: '9876500004', pw: 'Vendor@123', type: 'customer', role: null },
+      { name: 'Amit Sharma', email: 'customer@vcom.com', phone: '9876500001', pw: 'Customer@123', type: 'customer', role: customerRole.id },
+      { name: 'Neha Verma', email: 'customer2@vcom.com', phone: '9876500002', pw: 'Customer@123', type: 'customer', role: customerRole.id },
+      { name: 'SecureTech Solutions', email: 'vendor@vcom.com', phone: '9876500003', pw: 'Vendor@123', type: 'customer', role: ownerRole.id },
+      { name: 'QuickScrap Co', email: 'vendor2@vcom.com', phone: '9876500004', pw: 'Vendor@123', type: 'customer', role: ownerRole.id },
       { name: 'Rahul Employee', email: 'employee@vcom.com', phone: '9876500005', pw: 'Employee@123', type: 'employee', role: null },
     ];
     const userIds = {};
@@ -274,11 +297,16 @@ async function seed() {
       await conn.query(
         `INSERT INTO users (name, email, phone, password_hash, user_type, role_id, status)
          VALUES (?, ?, ?, ?, ?, ?, 'active')
-         ON DUPLICATE KEY UPDATE name = VALUES(name), phone = VALUES(phone)`,
+         ON DUPLICATE KEY UPDATE name = VALUES(name), phone = VALUES(phone), role_id = COALESCE(VALUES(role_id), role_id)`,
         [u.name, u.email, u.phone, hash(u.pw), u.type, u.role]
       );
       const [[row]] = await conn.query('SELECT id FROM users WHERE email = ?', [u.email]);
       userIds[u.email] = row.id;
+    }
+    if (customerRole) {
+      await conn.query(`UPDATE users SET role_id = ? WHERE user_type = 'customer' AND role_id IS NULL`, [
+        customerRole.id,
+      ]);
     }
     console.log(`  users: ${users.length}`);
 

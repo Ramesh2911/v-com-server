@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const env = require('../config');
 const pool = require('../config/db');
 const ApiError = require('../utils/ApiError');
@@ -17,9 +18,11 @@ const signAccessToken = (user) =>
   );
 
 const signRefreshToken = (user) =>
-  jwt.sign({ id: user.id, type: 'refresh' }, env.jwt.refreshSecret, {
-    expiresIn: env.jwt.refreshExpiresIn,
-  });
+  jwt.sign(
+    { id: user.id, type: 'refresh', jti: crypto.randomBytes(8).toString('hex') },
+    env.jwt.refreshSecret,
+    { expiresIn: env.jwt.refreshExpiresIn }
+  );
 
 const verifyAccessToken = (token) => jwt.verify(token, env.jwt.secret);
 const verifyRefreshToken = (token) => jwt.verify(token, env.jwt.refreshSecret);

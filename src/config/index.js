@@ -33,6 +33,21 @@ const env = {
     apiSecret: process.env.CLOUDINARY_API_SECRET || '',
     folder: process.env.CLOUDINARY_FOLDER || 'v-com',
   },
+  sms: {
+    provider: process.env.SMS_PROVIDER || 'mock',
+    fixedCode: process.env.OTP_FIXED_CODE || '123456',
+    otpTtlMinutes: parseInt(process.env.OTP_TTL_MINUTES || '5', 10),
+    msg91: {
+      authKey: process.env.MSG91_AUTH_KEY || '',
+      senderId: process.env.MSG91_SENDER_ID || '',
+      templateId: process.env.MSG91_TEMPLATE_ID || '',
+    },
+    twilio: {
+      accountSid: process.env.TWILIO_ACCOUNT_SID || '',
+      authToken: process.env.TWILIO_AUTH_TOKEN || '',
+      from: process.env.TWILIO_FROM || '',
+    },
+  },
 };
 
 module.exports = env;
