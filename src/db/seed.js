@@ -128,8 +128,8 @@ const ROLES = [
     name: 'Customer',
     slug: 'customer',
     is_system: 1,
-    description: 'App customer — books services, no admin access',
-    permissions: [],
+    description: 'App customer — books services, view-only catalog access',
+    permissions: ['services.view'],
   },
   {
     name: 'Provider Owner',
