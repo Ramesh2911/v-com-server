@@ -69,16 +69,21 @@ const sendSms = async (phone, code) => {
 };
 
 const assertSendRate = async (phone) => {
-  const [recent] = await pool.query(
-    `SELECT COUNT(*) AS n FROM otp_codes WHERE phone = ? AND created_at > NOW() - INTERVAL 1 MINUTE`,
-    [phone]
-  );
-  if (recent[0].n >= 1) throw ApiError.tooMany('Please wait a minute before requesting another OTP');
-  const [daily] = await pool.query(
-    `SELECT COUNT(*) AS n FROM otp_codes WHERE phone = ? AND created_at > NOW() - INTERVAL 1 DAY`,
-    [phone]
-  );
-  if (daily[0].n >= 5) throw ApiError.tooMany('Daily OTP limit reached. Try again tomorrow.');
+  const { daily, perPhoneMinute } = env.sms.limits;
+  if (perPhoneMinute > 0) {
+    const [recent] = await pool.query(
+      `SELECT COUNT(*) AS n FROM otp_codes WHERE phone = ? AND created_at > NOW() - INTERVAL 1 MINUTE`,
+      [phone]
+    );
+    if (recent[0].n >= perPhoneMinute) throw ApiError.tooMany('Please wait a minute before requesting another OTP');
+  }
+  if (daily > 0) {
+    const [dayRows] = await pool.query(
+      `SELECT COUNT(*) AS n FROM otp_codes WHERE phone = ? AND created_at > NOW() - INTERVAL 1 DAY`,
+      [phone]
+    );
+    if (dayRows[0].n >= daily) throw ApiError.tooMany('Daily OTP limit reached. Try again tomorrow.');
+  }
 };
 
 const createOtp = async (phone) => {

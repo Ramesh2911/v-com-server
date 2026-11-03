@@ -37,6 +37,27 @@ const env = {
     provider: process.env.SMS_PROVIDER || 'mock',
     fixedCode: process.env.OTP_FIXED_CODE || '123456',
     otpTtlMinutes: parseInt(process.env.OTP_TTL_MINUTES || '5', 10),
+    // rate limits — 0 = unlimited. Defaults: strict in production, lenient in dev/test.
+    limits: {
+      daily:
+        process.env.OTP_DAILY_LIMIT !== undefined && process.env.OTP_DAILY_LIMIT !== ''
+          ? parseInt(process.env.OTP_DAILY_LIMIT, 10)
+          : process.env.NODE_ENV === 'production'
+            ? 5
+            : 0,
+      perPhoneMinute:
+        process.env.OTP_PHONE_PER_MINUTE !== undefined && process.env.OTP_PHONE_PER_MINUTE !== ''
+          ? parseInt(process.env.OTP_PHONE_PER_MINUTE, 10)
+          : process.env.NODE_ENV === 'production'
+            ? 1
+            : 0,
+      sendPerMinuteIp:
+        process.env.OTP_SEND_PER_MINUTE !== undefined && process.env.OTP_SEND_PER_MINUTE !== ''
+          ? parseInt(process.env.OTP_SEND_PER_MINUTE, 10)
+          : process.env.NODE_ENV === 'production'
+            ? 3
+            : 30,
+    },
     msg91: {
       authKey: process.env.MSG91_AUTH_KEY || '',
       senderId: process.env.MSG91_SENDER_ID || '',
