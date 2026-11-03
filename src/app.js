@@ -49,9 +49,9 @@ app.get('/api/v1', (req, res) =>
         public: ['/api/v1/services', '/api/v1/properties'],
         auth: [
           '/api/v1/auth/otp/send',
-          '/api/v1/auth/otp/verify',
-          '/api/v1/auth/login (email+password or {verifyToken})',
-          '/api/v1/auth/register (email+password or {verifyToken,client,role})',
+          '/api/v1/auth/otp/verify (existing user → tokens | new user → verifyToken)',
+          '/api/v1/auth/register ({verifyToken, client, role?} — new users)',
+          '/api/v1/auth/login (email+password — admin web)',
           '/api/v1/auth/refresh',
           '/api/v1/auth/logout',
           '/api/v1/auth/forgot-password',

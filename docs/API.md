@@ -94,11 +94,21 @@ Full permission list: see §9.
 ### 2.1 App phone + OTP flow (mobile apps)
 
 ```
-┌──────────────┐   ┌───────────────┐   ┌─────────────────────────┐
-│ 1. otp/send  │──▶│ 2. otp/verify │──▶│ 3a. register (new user) │
-│  {phone}     │   │ {phone, code} │   │ 3b. login  (existing)   │
-└──────────────┘   └───────────────┘   └─────────────────────────┘
-                     → verifyToken        → accessToken + refreshToken (JWT)
+┌──────────────┐   ┌────────────────────────────┐
+│ 1. otp/send  │──▶│ 2. otp/verify              │
+│  {phone}     │   │ {phone, code, client?}     │
+└──────────────┘   └─────────────┬──────────────┘
+                       ┌─────────┴──────────┐
+              EXISTS user              NEW user
+                       │                    │
+              tokens + user           verifyToken + isNewUser:true
+              (isNewUser:false)              │
+                                   ┌─────────┴──────────┐
+                                   │ 3. register        │
+                                   │ {verifyToken,name, │
+                                   │  email,client,role?}│
+                                   └─────────┬──────────┘
+                                       tokens + user
 ```
 
 **Step 1 — send OTP**
@@ -122,16 +132,37 @@ Headers: Content-Type: application/json
 - `devOtp` returned **only in non-production** (mock SMS). Test OTP = `123456`.
 - Rate limits: **3/min per IP**, **1/min per phone**, **5/day per phone** → `429`.
 
-**Step 2 — verify OTP**
+**Step 2 — verify OTP (existing user logs in here — no separate login API)**
 
 ```
 POST /api/v1/auth/otp/verify
 Headers: Content-Type: application/json
 ```
 ```json
-{ "phone": "9876543210", "code": "123456" }
+{ "phone": "9876543210", "code": "123456", "client": "customer" }
 ```
-→ **200**
+
+-OTP: 6 digits, TTL **5 min**, max **5 wrong attempts** then burnt, single-use.
+- `client` optional but recommended — enforces app↔role match (403 on mismatch).
+
+**2a — existing user → 200 (login payload, ready to use):**
+```json
+{
+  "success": true,
+  "message": "Login successful",
+  "data": {
+    "user": { "id": 7, "name": "...", "email": "...", "phone": "9876543210",
+              "user_type": "customer", "role_slug": "customer", "permissions": ["services.view"] },
+    "vendor": null,
+    "accessToken": "jwt...",
+    "refreshToken": "jwt...",
+    "isNewUser": false
+  }
+}
+```
+→ App: `isNewUser === false` → home screen. Done.
+
+**2b — new user → 200 (register next):**
 ```json
 {
   "success": true,
@@ -139,11 +170,9 @@ Headers: Content-Type: application/json
   "data": { "verifyToken": "eyJhbGciOi...", "isNewUser": true, "phone": "9876543210" }
 }
 ```
-- OTP: 6 digits, TTL **5 min**, max **5 wrong attempts** then burnt (429), single-use.
-- Errors: `400` incorrect/expired/already-used · `429` too many attempts.
-- `verifyToken` (JWT, 5 min) proves OTP success — exchange it in step 3 (retry allowed within 5 min).
+Errors: `400` incorrect/expired/already-used · `429` too many attempts · `403` wrong-app login.
 
-**Step 3a — register (new user only)**
+**Step 3 — register (new user only)**
 
 ```
 POST /api/v1/auth/register
@@ -160,26 +189,14 @@ Headers: Content-Type: application/json
 ```
 | Field | Required | Notes |
 |---|---|---|
-| `verifyToken` | ✓ | from step 2 |
+| `verifyToken` | ✓ | from step 2b (5 min TTL, retry ok) |
 | `name` | ✓ | min 1 char |
 | `email` | ✓ | unique |
 | `client` | ✓ | `"customer"` \| `"vendor"` |
 | `role` | vendor only | `"provider_owner"` (default) \| `"technician"` — ignored when `client=customer` |
 
-→ **201** (same payload as 3b below)
+→ **201** — same login payload as 2a (incl. `isNewUser: false`).
 Errors: `409` phone already registered / email linked to another account · `401` invalid/expired verifyToken · `400` invalid role/client.
-
-**Step 3b — login (existing user only)**
-
-```
-POST /api/v1/auth/login
-Headers: Content-Type: application/json
-```
-```json
-{ "verifyToken": "eyJhbGciOi...", "client": "customer" }
-```
-- `client` optional but recommended — enforces app↔role match.
-- Errors: `400` no account for this phone (→ register first) · `403` account belongs to a different app · `401` invalid verifyToken.
 
 **Role mapping:**
 
@@ -189,9 +206,9 @@ Headers: Content-Type: application/json
 | `vendor` | omitted → `provider_owner` | `provider_owner` | `customer` | Vendor app (owner) |
 | `vendor` | `technician` | `technician` | `employee` | Vendor app (technician) |
 
-> Super admin cannot self-register; an existing super admin can OTP-login with their phone.
+> Super admin cannot self-register; an existing super admin phone OTP-login korle tokens pabe.
 
-**Step 4 — token refresh / logout**
+**Token refresh / logout**
 
 ```
 POST /api/v1/auth/refresh        Headers: Content-Type: application/json
@@ -207,10 +224,11 @@ Body: { "refreshToken": "eyJ..." }   (optional — revokes all user sessions if 
 
 | Phone | Flow | Expected |
 |---|---|---|
-| `9876543210` | new → register | customer account |
-| `9876500001` | existing → login | customer (seed) |
-| `9876500003` | existing → login `client:vendor` | `provider_owner` + vendor payload |
-| `9000000001` | existing → login | super admin |
+| `9876543210` | verify → tokens (existing after first register) | customer |
+| `9876500001` | verify → tokens | customer (seed) |
+| `9876500003` | verify `client:vendor` → tokens | `provider_owner` + vendor payload |
+| `9000000001` | verify → tokens | super admin |
+| any new 10-digit | verify → `isNewUser:true` → register | new account |
 
 ### 2.2 Email + password (admin web panel)
 
@@ -250,12 +268,38 @@ Body: { "refreshToken": "eyJ..." }   (optional — revokes all user sessions if 
 
 | Method | Path | Query | Returns |
 |---|---|---|---|
-| GET | `/services` | — | Active service modules (with category counts) |
-| GET | `/services/featured` | — | Featured categories |
-| GET | `/services/search` | `q` | Search modules + categories |
-| GET | `/services/:id` | — | Module detail with categories |
+| GET | `/services` | — | All active modules, each **nested with `categories[]`** |
+| GET | `/services/featured` | — | Featured categories (max 12) with `module_name` |
+| GET | `/services/search` | `q` | `{ modules: [], categories: [] }` matching name/description |
+| GET | `/services/:id` | — | Module detail + its active `categories[]` |
 
-Module: `{ id, code, name, description, icon, image, status, sort_order, category_count }` (image is a full URL).
+**Module:** `{ id, code, name, description, icon, image, status, sort_order, created_at, updated_at, categories: [...] }`
+
+**Category:** `{ id, module_id, name, description, image, price, is_featured, status, sort_order, module_code }`
+
+- `image`: full URL (Cloudinary `https://res.cloudinary.com/...` or `/uploads/...`), `null` if unset.
+- `price`: `string|null` (DECIMAL, Quick Service pricing), `null` = not priced.
+- Only `status = 1` rows returned (public). 3 modules / 29 categories seeded:
+  `special-service` (17), `quick-service` (6), `general-assistance` (6).
+
+Example `GET /services` (first module trimmed):
+
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1, "code": "special-service", "name": "Special Service",
+      "icon": "sparkles", "image": null, "status": 1, "sort_order": 1,
+      "categories": [
+        { "id": 1, "module_id": 1, "name": "Fabrication and Welding",
+          "image": null, "price": null, "is_featured": 1, "status": 1,
+          "module_code": "special-service" }
+      ]
+    }
+  ]
+}
+```
 
 ### 3.2 Properties (`/api/v1/properties`)
 
@@ -457,12 +501,12 @@ All routes below need `Authorization: Bearer …` **and** the listed permission.
 | Method | Path | Permission | Notes |
 |---|---|---|---|
 | GET | `/admin/services/modules` | `services.view` | with `category_count`, `request_count` |
-| POST | `/admin/services/modules` | `services.manage` | `code, name, description?, sort_order?, status?` + multipart `image` |
-| PUT | `/admin/services/modules/:id` | `services.manage` | |
+| POST | `/admin/services/modules` | `services.manage` | multipart/form-data: `code, name, description?, icon?, sort_order?, status?`, `image` (file, optional) |
+| PUT | `/admin/services/modules/:id` | `services.manage` | multipart: partial fields + `image` (omit = keep) |
 | DELETE | `/admin/services/modules/:id` | `services.manage` | blocked if requests exist |
-| GET | `/admin/services/categories?module_id` | `services.view` | with `module_name` |
-| POST | `/admin/services/categories` | `services.manage` | `module_id, name, is_featured?, sort_order?, status?` + `image` |
-| PUT | `/admin/services/categories/:id` | `services.manage` | |
+| GET | `/admin/services/categories?module_id` | `services.view` | with `module_name`, `module_code`, `price`, `image` |
+| POST | `/admin/services/categories` | `services.manage` | multipart: `module_id, name, description?, price?, is_featured?, sort_order?, status?`, `image` (file) — `price` ≥ 0 or omit/null (Quick Service parent sets price) |
+| PUT | `/admin/services/categories/:id` | `services.manage` | multipart: partial + `image` (omit = keep); `price: ""` clears price |
 | DELETE | `/admin/services/categories/:id` | `services.manage` | blocked if requests exist |
 
 ### 6.6 Properties admin

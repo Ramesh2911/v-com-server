@@ -191,20 +191,6 @@ exports.otpSend = asyncHandler(async (req, res) => {
 exports.otpVerify = asyncHandler(async (req, res) => {
   const phone = otp.normalizePhone(req.body.phone);
   otp.assertValidPhone(phone);
-  await otp.verifyOtp(phone, req.body.code);
-  const [[user]] = await pool.query('SELECT id FROM users WHERE phone = ?', [phone]);
-  const isNewUser = !user;
-  const verifyToken = otp.signVerifyToken(phone);
-  sendSuccess(
-    res,
-    { verifyToken, isNewUser, phone },
-    isNewUser ? 'Phone verified — complete your registration' : 'Phone verified'
-  );
-});
-
-exports.appLogin = asyncHandler(async (req, res) => {
-  const { verifyToken, client } = req.body;
-  const { phone } = otp.readVerifyToken(verifyToken);
 
   const [rows] = await pool.query(
     `SELECT u.*, r.name AS role_name, r.slug AS role_slug
@@ -213,15 +199,26 @@ exports.appLogin = asyncHandler(async (req, res) => {
     [phone]
   );
   const user = rows[0];
-  if (!user) throw ApiError.badRequest('No account found for this phone. Please register first.');
-  if (user.status !== 'active') throw ApiError.forbidden('Your account is inactive. Please contact support.');
 
-  otp.assertClientRole(client, user.role_slug || (user.user_type === 'customer' ? 'customer' : null));
+  // app↔role mismatch check BEFORE burning the OTP
+  if (user) {
+    otp.assertClientRole(req.body.client, user.role_slug || (user.user_type === 'customer' ? 'customer' : null));
+  }
 
-  await pool.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]);
-  const data = await buildAuthResponse(user);
-  await writeAudit({ actor: user, action: 'auth.otp_login', entity: 'users', entityId: user.id, req });
-  sendSuccess(res, data, 'Login successful');
+  await otp.verifyOtp(phone, req.body.code);
+
+  // existing user → login right here (no separate login call needed)
+  if (user) {
+    if (user.status !== 'active') throw ApiError.forbidden('Your account is inactive. Please contact support.');
+    await pool.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]);
+    const data = await buildAuthResponse(user);
+    await writeAudit({ actor: user, action: 'auth.otp_login', entity: 'users', entityId: user.id, req });
+    return sendSuccess(res, { ...data, isNewUser: false }, 'Login successful');
+  }
+
+  // new user → verifyToken for registration
+  const verifyToken = otp.signVerifyToken(phone);
+  sendSuccess(res, { verifyToken, isNewUser: true, phone }, 'Phone verified — complete your registration');
 });
 
 exports.appRegister = asyncHandler(async (req, res) => {

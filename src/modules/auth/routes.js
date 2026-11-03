@@ -34,13 +34,11 @@ router.post(
 router.post(
   '/login',
   [
-    body('verifyToken').if(body('verifyToken').exists()).notEmpty().withMessage('verifyToken is required'),
-    body('client').optional().isIn(['customer', 'vendor']).withMessage('client must be "customer" or "vendor"'),
-    body('email').if(body('verifyToken').not().exists()).isEmail().withMessage('Valid email is required').normalizeEmail(),
-    body('password').if(body('verifyToken').not().exists()).notEmpty().withMessage('Password is required'),
+    body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+    body('password').notEmpty().withMessage('Password is required'),
   ],
   validate,
-  (req, res, next) => (req.body.verifyToken ? controller.appLogin(req, res, next) : controller.login(req, res, next))
+  controller.login
 );
 
 router.post(
@@ -57,6 +55,7 @@ router.post(
   [
     body('phone').notEmpty().withMessage('Phone is required'),
     body('code').isLength({ min: 4, max: 6 }).withMessage('OTP must be 4-6 digits').bail().isNumeric(),
+    body('client').optional().isIn(['customer', 'vendor']).withMessage('client must be "customer" or "vendor"'),
   ],
   validate,
   controller.otpVerify
