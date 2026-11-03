@@ -61,15 +61,53 @@ router.get(
 );
 
 router.get(
+  '/category/:id',
+  asyncHandler(async (req, res) => {
+    const raw = String(req.params.id || '').trim();
+    if (!/^\d+$/.test(raw)) {
+      throw ApiError.badRequest('Invalid category id — numeric id required (e.g. /api/v1/services/category/31)');
+    }
+    const [rows] = await pool.query(
+      `SELECT c.*, m.name AS module_name, m.code AS module_code, m.icon AS module_icon
+         FROM service_categories c JOIN service_modules m ON m.id = c.module_id
+        WHERE c.id = ? AND c.status = 1 AND m.status = 1`,
+      [Number(raw)]
+    );
+    if (!rows.length) throw ApiError.notFound('Service not found');
+    sendSuccess(res, { kind: 'category', ...mapCategory(rows[0]) });
+  })
+);
+
+router.get(
   '/:id',
   asyncHandler(async (req, res) => {
-    const [rows] = await pool.query(`SELECT * FROM service_modules WHERE id = ? AND status = 1`, [req.params.id]);
-    if (!rows.length) throw ApiError.notFound('Module not found');
-    const [cats] = await pool.query(
-      `SELECT * FROM service_categories WHERE module_id = ? AND status = 1 ORDER BY sort_order`,
-      [req.params.id]
+    const raw = String(req.params.id || '').trim();
+    if (!/^\d+$/.test(raw)) {
+      throw ApiError.badRequest(
+        'Invalid id — numeric module or category id required (e.g. /api/v1/services/7 or /api/v1/services/31)'
+      );
+    }
+    const id = Number(raw);
+
+    const [rows] = await pool.query(`SELECT * FROM service_modules WHERE id = ? AND status = 1`, [id]);
+    if (rows.length) {
+      const [cats] = await pool.query(
+        `SELECT * FROM service_categories WHERE module_id = ? AND status = 1 ORDER BY sort_order`,
+        [id]
+      );
+      return sendSuccess(res, { kind: 'module', ...mapModule(rows[0]), categories: cats.map(mapCategory) });
+    }
+
+    // fallback: category id (app sometimes passes service/category ids)
+    const [catRows] = await pool.query(
+      `SELECT c.*, m.name AS module_name, m.code AS module_code, m.icon AS module_icon
+         FROM service_categories c JOIN service_modules m ON m.id = c.module_id
+        WHERE c.id = ? AND c.status = 1 AND m.status = 1`,
+      [id]
     );
-    sendSuccess(res, { ...mapModule(rows[0]), categories: cats.map(mapCategory) });
+    if (catRows.length) return sendSuccess(res, { kind: 'category', ...mapCategory(catRows[0]) });
+
+    throw ApiError.notFound('Service not found');
   })
 );
 

@@ -271,11 +271,15 @@ Body: { "refreshToken": "eyJ..." }   (optional — revokes all user sessions if 
 | GET | `/services` | — | All active modules, each **nested with `categories[]`** |
 | GET | `/services/featured` | — | Featured categories (max 12) with `module_name` |
 | GET | `/services/search` | `q` | `{ modules: [], categories: [] }` matching name/description |
-| GET | `/services/:id` | — | Module detail + its active `categories[]` |
+| GET | `/services/category/:id` | — | **Category/service detail** (must be numeric category id) |
+| GET | `/services/:id` | — | Numeric id: **module first**, else falls back to **category**. Response has `kind: "module" | "category"` |
 
-**Module:** `{ id, code, name, description, icon, image, status, sort_order, created_at, updated_at, categories: [...] }`
+**Module:** `{ kind: "module", id, code, name, description, icon, image, status, sort_order, created_at, updated_at, categories: [...] }`
 
-**Category:** `{ id, module_id, name, description, image, price, is_featured, status, sort_order, module_code }`
+**Category:** `{ kind: "category", id, module_id, name, description, image, price, is_featured, status, sort_order, module_name, module_code }`
+
+- **Ids are numeric only.** Non-numeric (e.g. literal `/:31`) → `400 Invalid id — numeric module or category id required`. Unknown id → `404 Service not found`.
+- **Module vs category ids differ per DB** (local: modules `1-3`; Clever/Render: modules `7-9`, categories `31-59`). Use `kind` (or `/services/category/:id`) to avoid ambiguity.
 
 - `image`: full URL (Cloudinary `https://res.cloudinary.com/...` or `/uploads/...`), `null` if unset.
 - `price`: `string|null` (DECIMAL, Quick Service pricing), `null` = not priced.
