@@ -116,7 +116,9 @@ const classifyFileType = (mimetype) => {
 
 const toPublicUrl = (value) => {
   if (!value) return null;
-  if (/^(https?:|data:|blob:)/i.test(value)) return value; // absolute / data-URIs pass through
+  if (/^[a-z][a-z0-9+.-]*:/i.test(value)) return value; // http(s):, data:, blob:, file:, content: … pass through
+  if (value.startsWith('/')) return value; // absolute site path as-is
+  if (!value.includes('.') && value.length > 64 && /^[A-Za-z0-9+/=\r\n]+$/.test(value)) return value; // raw base64 as-is (no file extension)
   return `${env.publicFileBaseUrl}/${value.replace(/\\/g, '/')}`;
 };
 

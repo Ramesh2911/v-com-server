@@ -62,9 +62,12 @@ router.put(
     );
 
     if ('avatar' in req.body) {
+      let val = avatar;
+      if (val && typeof val === 'object') val = val.uri || val.url || null; // { uri } style from mobile pickers
       let avatarValue = null;
-      if (avatar) {
-        const raw = String(avatar);
+      if (val) {
+        const raw = String(val).trim();
+        if (raw.length > 8000000) throw ApiError.badRequest('Avatar too large (max ~6MB image)');
         if (raw.startsWith('data:')) {
           // base64 photo from mobile app → upload to Cloudinary; fall back to storing raw
           try {
@@ -72,10 +75,9 @@ router.put(
           } catch {
             avatarValue = raw;
           }
-        } else if (/^(https?:\/\/|\/|general\/)/i.test(raw) && raw.length <= 512) {
-          avatarValue = raw;
         } else {
-          throw ApiError.badRequest('Invalid avatar — send a data URI, URL, or upload path');
+          // URL, file://, content://, path, raw base64 — store as-is (MEDIUMTEXT)
+          avatarValue = raw;
         }
       }
       await pool.query('UPDATE users SET avatar = ? WHERE id = ?', [avatarValue, req.user.id]);

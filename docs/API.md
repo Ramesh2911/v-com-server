@@ -240,7 +240,7 @@ Body: { "refreshToken": "eyJ..." }   (optional — revokes all user sessions if 
 | POST | `/auth/reset-password` | `token, password` | |
 | POST | `/auth/change-password` | `currentPassword, newPassword` | Auth required. `newPassword` min 6. |
 | GET | `/me` | — | Auth. Returns profile + `permissions[]` + `vendor` + `employee` objects. |
-| PUT | `/me` | `name?, email?, phone?, avatar?` | Auth. Partial update → **returns full updated profile** (same shape as GET) + `message: "Profile updated"`. Duplicate email/phone (other user) → `409 Email/Phone already in use`. `avatar`: `""` clears; **base64 data URI** auto-uploaded to Cloudinary (stored as URL; falls back to raw if upload unavailable); URL/path ≤512 chars stored as-is; other → `400`. JSON body limit 10 MB. |
+| PUT | `/me` | `name?, email?, phone?, avatar?` | Auth. Partial update → **returns full updated profile** (same shape as GET) + `message: "Profile updated"`. Duplicate email/phone (other user) → `409 Email/Phone already in use`. `avatar`: `""` clears; **base64 data URI** auto-uploaded to Cloudinary (stored as URL; falls back to raw if upload unavailable); any other string accepted as-is (https URL, `file://`, `content://`, relative path, raw base64, or `{ uri }` object — mobile picker friendly, stored in MEDIUMTEXT); max ~6 MB. JSON body limit 10 MB. |
 
 **Login/register response (`data`):**
 
