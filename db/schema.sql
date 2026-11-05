@@ -4,7 +4,7 @@
 -- ============================================================
 
 SET FOREIGN_KEY_CHECKS = 0;
-DROP TABLE IF EXISTS audit_logs, settings, support_tickets, leave_requests, attendance, employees,
+DROP TABLE IF EXISTS addresses, audit_logs, settings, support_tickets, leave_requests, attendance, employees,
   property_enquiries, property_media, properties, areas, projects, builders,
   notification_templates, notifications, sos_status_history, sos_tickets,
   job_attachments, job_status_history, jobs, quotation_items, quotations,
@@ -61,6 +61,27 @@ CREATE TABLE users (
   UNIQUE KEY uk_users_phone (phone),
   KEY idx_users_type (user_type),
   CONSTRAINT fk_users_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE addresses (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NOT NULL,
+  label VARCHAR(30) NULL,
+  line1 VARCHAR(255) NOT NULL,
+  line2 VARCHAR(255) NULL,
+  landmark VARCHAR(100) NULL,
+  city VARCHAR(100) NOT NULL,
+  state VARCHAR(100) NULL,
+  pincode VARCHAR(10) NULL,
+  phone VARCHAR(20) NULL,
+  latitude DECIMAL(10,7) NULL,
+  longitude DECIMAL(10,7) NULL,
+  is_default TINYINT(1) NOT NULL DEFAULT 0,
+  status TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_addresses_user (user_id),
+  CONSTRAINT fk_addresses_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE refresh_tokens (

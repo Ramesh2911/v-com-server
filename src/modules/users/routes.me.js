@@ -2,6 +2,7 @@ const router = require('express').Router();
 const { body } = require('express-validator');
 const pool = require('../../config/db');
 const asyncHandler = require('../../utils/asyncHandler');
+const ApiError = require('../../utils/ApiError');
 const { sendSuccess } = require('../../utils/response');
 const { authMiddleware } = require('../../middlewares/auth');
 const validate = require('../../middlewares/validate');
@@ -35,16 +36,26 @@ router.put(
   '/',
   [
     body('name').optional().trim().notEmpty(),
+    body('email').optional().isEmail().withMessage('Valid email is required').normalizeEmail(),
     body('phone').optional({ nullable: true }).isLength({ min: 8, max: 20 }),
   ],
   validate,
   asyncHandler(async (req, res) => {
-    const { name, phone, avatar } = req.body;
-    await pool.query('UPDATE users SET name = COALESCE(?, name), phone = COALESCE(?, phone) WHERE id = ?', [
-      name || null,
-      phone || null,
-      req.user.id,
-    ]);
+    const { name, phone, email, avatar } = req.body;
+
+    if (email) {
+      const [dupe] = await pool.query('SELECT id FROM users WHERE email = ? AND id <> ?', [email, req.user.id]);
+      if (dupe.length) throw ApiError.conflict('Email already in use');
+    }
+    if (phone) {
+      const [dupe] = await pool.query('SELECT id FROM users WHERE phone = ? AND id <> ?', [phone, req.user.id]);
+      if (dupe.length) throw ApiError.conflict('Phone already in use');
+    }
+
+    await pool.query(
+      'UPDATE users SET name = COALESCE(?, name), email = COALESCE(?, email), phone = COALESCE(?, phone) WHERE id = ?',
+      [name || null, email || null, phone || null, req.user.id]
+    );
     if (avatar) await pool.query('UPDATE users SET avatar = ? WHERE id = ?', [avatar, req.user.id]);
     sendSuccess(res, null, 'Profile updated');
   })

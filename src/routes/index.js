@@ -14,6 +14,7 @@ router.use('/customer/sos', require('../modules/sos/routes.customer'));
 router.use('/customer/hr', require('../modules/hr/routes.customer'));
 router.use('/customer/notifications', require('../modules/notifications/routes.customer'));
 router.use('/customer/support', require('../modules/support/routes.customer'));
+router.use('/customer/addresses', require('../modules/addresses/routes.customer'));
 
 // Vendor app
 router.use('/vendor', require('../modules/vendors/routes.vendor'));

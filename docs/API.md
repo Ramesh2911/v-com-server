@@ -240,7 +240,7 @@ Body: { "refreshToken": "eyJ..." }   (optional — revokes all user sessions if 
 | POST | `/auth/reset-password` | `token, password` | |
 | POST | `/auth/change-password` | `currentPassword, newPassword` | Auth required. `newPassword` min 6. |
 | GET | `/me` | — | Auth. Returns profile + `permissions[]` + `vendor` + `employee` objects. |
-| PUT | `/me` | `name?, phone?, avatar?` | Auth. Partial update. |
+| PUT | `/me` | `name?, email?, phone?, avatar?` | Auth. Partial update. Duplicate email/phone (other user) → `409 Email/Phone already in use`. |
 
 **Login/register response (`data`):**
 
@@ -377,6 +377,32 @@ SOS statuses: `open → acknowledged → dispatched → resolved`.
 | POST | `/customer/support` | `subject, message, category?, priority? (low\|normal\|high\|urgent)` → `VCOM-SUP-*` |
 | GET | `/customer/support` | → own tickets |
 | GET | `/customer/support/:id` | → ticket incl. staff `reply` |
+
+### 4.7 Addresses (`/api/v1/customer/addresses`)
+
+Own address book with a **single default** address. Any authenticated user (not only customer role).
+
+| Method | Path | Body |
+|---|---|---|
+| GET | `/customer/addresses` | → own addresses, **default first**, then newest |
+| POST | `/customer/addresses` | `line1*, city*, label?, line2?, landmark?, state?, pincode?, phone?, latitude?, longitude?, is_default?` → `201` |
+| PUT | `/customer/addresses/:id` | any of the same fields (partial). `is_default: true` sets default |
+| PATCH | `/customer/addresses/:id/default` | — → make this the default (clears others) |
+| DELETE | `/customer/addresses/:id` | — → hard delete; if it was default, oldest remaining is auto-promoted |
+
+Rules:
+- **First address is auto-default.** Max **10** per user → `409 Address limit reached`.
+- Non-owner id → `404 Address not found`. Non-numeric id → `400`.
+- `label` max 30 chars; `pincode` 3-10 digits; `latitude` −90..90; `longitude` −180..180. Blank `""` → stored as `null`.
+- Response address shape: `{ id, user_id, label, line1, line2, landmark, city, state, pincode, phone, latitude, longitude, is_default, status, created_at, updated_at }` (`latitude/longitude` numbers, `is_default` boolean).
+
+```json
+POST /api/v1/customer/addresses
+{ "label": "Home", "line1": "House 12, Road 3", "city": "Dhaka", "state": "Dhaka",
+  "pincode": "1207", "latitude": 23.8103, "longitude": 90.4125 }
+→ 201 { "success": true, "message": "Address created",
+        "data": { "id": 41, "is_default": true, ... } }
+```
 
 ---
 
