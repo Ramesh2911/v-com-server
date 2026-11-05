@@ -212,13 +212,20 @@ Errors: `409` phone already registered / email linked to another account · `401
 
 ```
 POST /api/v1/auth/refresh        Headers: Content-Type: application/json
-Body: { "refreshToken": "eyJ..." }
-→ 200 { accessToken, refreshToken }   (old refresh token revoked — chained rotation)
+Body: { "refreshToken": "eyJ..." }   (alias accepted: { "refresh_token": "..." })
+→ 200 { accessToken, refreshToken }   (rotation — store BOTH, old refresh token revoked)
 
 POST /api/v1/auth/logout          Headers: Authorization: Bearer <accessToken>
 Body: { "refreshToken": "eyJ..." }   (optional — revokes all user sessions if omitted)
 → 200
 ```
+
+Refresh rules (for apps):
+- **Rotation + 60s grace:** each refresh returns a new pair; a token rotated ≤60 s ago is still accepted (multi-tab / concurrent-refresh race safe). Older revoked tokens → `401 Refresh token revoked or expired`.
+- `401` from refresh (invalid / expired / revoked beyond grace) → **session dead: clear tokens and re-login**. Never infinite-retry.
+- Network error / `5xx` / `429` on refresh → **transient: keep tokens and retry later** (do not log the user out).
+- Refresh token lifetime: **7 days** (`JWT_REFRESH_EXPIRES_IN`). Access token: **15 min** (`JWT_EXPIRES_IN`).
+- Recommended client flow: on any API `401` → POST `/auth/refresh` with stored refresh token → retry original request with new access token; sync rotated tokens across tabs (storage events).
 
 **Test numbers (dev):**
 

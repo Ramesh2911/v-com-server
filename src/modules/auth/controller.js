@@ -93,7 +93,7 @@ exports.login = asyncHandler(async (req, res) => {
 });
 
 exports.refresh = asyncHandler(async (req, res) => {
-  const { refreshToken } = req.body;
+  const refreshToken = req.body.refreshToken || req.body.refresh_token;
   if (!refreshToken) throw ApiError.badRequest('refreshToken is required');
 
   let decoded;
@@ -103,10 +103,23 @@ exports.refresh = asyncHandler(async (req, res) => {
     throw ApiError.unauthorized('Invalid or expired refresh token');
   }
 
-  const [rows] = await pool.query(
+  // Active token
+  let [rows] = await pool.query(
     `SELECT * FROM refresh_tokens WHERE token = ? AND revoked_at IS NULL AND expires_at > NOW()`,
     [refreshToken]
   );
+  // Grace window: a token rotated in the last 60s (multi-tab / concurrent refresh race)
+  // is still accepted so legitimate clients are never logged out by rotation.
+  let grace = false;
+  if (!rows.length) {
+    [rows] = await pool.query(
+      `SELECT * FROM refresh_tokens
+        WHERE token = ? AND expires_at > NOW()
+          AND revoked_at IS NOT NULL AND revoked_at >= NOW() - INTERVAL 60 SECOND`,
+      [refreshToken]
+    );
+    if (rows.length) grace = true;
+  }
   if (!rows.length) throw ApiError.unauthorized('Refresh token revoked or expired');
 
   const [userRows] = await pool.query(
@@ -117,7 +130,9 @@ exports.refresh = asyncHandler(async (req, res) => {
   const user = userRows[0];
   if (!user || user.status !== 'active') throw ApiError.unauthorized('Account inactive');
 
-  await pool.query('UPDATE refresh_tokens SET revoked_at = NOW() WHERE id = ?', [rows[0].id]);
+  if (!grace) {
+    await pool.query('UPDATE refresh_tokens SET revoked_at = NOW() WHERE id = ?', [rows[0].id]);
+  }
   const data = await buildAuthResponse(user);
   sendSuccess(res, data, 'Token refreshed');
 });
