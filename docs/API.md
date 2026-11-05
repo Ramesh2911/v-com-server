@@ -271,12 +271,31 @@ Body: { "refreshToken": "eyJ..." }   (optional — revokes all user sessions if 
 | GET | `/services` | — | All active modules, each **nested with `categories[]`** |
 | GET | `/services/featured` | — | Featured categories (max 12) with `module_name` |
 | GET | `/services/search` | `q` | `{ modules: [], categories: [] }` matching name/description |
-| GET | `/services/category/:id` | — | **Category/service detail** (must be numeric category id) |
-| GET | `/services/:id` | — | Numeric id: **module first**, else falls back to **category**. Response has `kind: "module" | "category"` |
+| GET | `/services/category/:id` | — | **Category/service detail** (must be numeric category id) + review block |
+| GET | `/services/:id` | — | Numeric id: **module first**, else falls back to **category**. Response has `kind: "module" | "category"` + review block |
+| GET | `/services/:id/reviews` | `page, limit` | Paginated **public reviews** for the service (module or category id) |
 
-**Module:** `{ kind: "module", id, code, name, description, icon, image, status, sort_order, created_at, updated_at, categories: [...] }`
+**Module:** `{ kind: "module", id, code, name, description, icon, image, status, sort_order, created_at, updated_at, categories: [...], review_summary, reviews }`
 
-**Category:** `{ kind: "category", id, module_id, name, description, image, price, is_featured, status, sort_order, module_name, module_code }`
+**Category:** `{ kind: "category", id, module_id, name, description, image, price, is_featured, status, sort_order, module_name, module_code, review_summary, reviews }`
+
+**Review block** (on `/services/:id` and `/services/category/:id`) — **service rating only, technician reviews are never public**:
+
+```json
+"review_summary": {
+  "service_avg": 4.5,
+  "service_count": 12,
+  "distribution": { "1": 0, "2": 1, "3": 0, "4": 2, "5": 9 }
+},
+"reviews": [
+  { "id": 7, "service_rating": 5, "service_comment": "Great work",
+    "created_at": "2026-11-05T12:00:00.000Z",
+    "customer_name": "Ramesh K.", "customer_avatar": null }
+]
+```
+
+- `reviews` = latest **10** visible reviews (module: matches `module_id`; category: matches `category_id`). Paginated list: `GET /services/:id/reviews` → `{ items, pagination }` same item shape.
+- `customer_name` is **masked** (`First L.`); `customer_avatar` full URL or `null`. Only `status = visible` reviews are returned.
 
 - **Ids are numeric only.** Non-numeric (e.g. literal `/:31`) → `400 Invalid id — numeric module or category id required`. Unknown id → `404 Service not found`.
 - **Module vs category ids differ per DB** (local: modules `1-3`; Clever/Render: modules `7-9`, categories `31-59`). Use `kind` (or `/services/category/:id`) to avoid ambiguity.
@@ -411,6 +430,32 @@ POST /api/v1/customer/addresses
   "pincode": "1207", "latitude": 23.8103, "longitude": 90.4125 }
 → 201 { "success": true, "message": "Address created",
         "data": { "id": 41, "is_default": true, ... } }
+```
+
+### 4.8 Reviews (`/api/v1/customer/reviews`)
+
+Customer reviews a **completed/closed request** — service rating **and** technician (vendor) rating in one submit. **Auto-published** (`status = visible`); admin can hide later. One review per request.
+
+| Method | Path | Body |
+|---|---|---|
+| POST | `/customer/reviews` | `request_id*, service_rating* (1-5), service_comment? (≤2000), technician_rating* (1-5, required if request has an assigned vendor), technician_comment? (≤2000)` → `201` |
+| PUT | `/customer/reviews/:id` | any of `service_rating, service_comment, technician_rating, technician_comment` (partial; owner only) |
+| GET | `/customer/reviews/request/:requestId` | → own review for that request, or `null` |
+
+Rules:
+- Eligibility: request must be **owned by caller** (`404` otherwise) and status `completed` or `closed` (`400` otherwise). Duplicate → `409 You have already reviewed this request`.
+- **Customer responses never include `technician_rating` / `technician_comment`** (shape: `{ id, request_id, service_rating, service_comment, status, created_at, updated_at }`). Technician data feeds `vendors.rating` and admin moderation only.
+- Submitting/updating/hiding/deleting a review **recomputes `vendors.rating`** (AVG of visible `technician_rating`, `0` when none).
+- `GET /customer/requests/:id` response includes `review: null | { id, service_rating, service_comment, status, created_at, updated_at }` — app uses it to toggle the "Rate service" button.
+
+```json
+POST /api/v1/customer/reviews
+{ "request_id": 42, "service_rating": 5, "service_comment": "Excellent job",
+  "technician_rating": 4, "technician_comment": "Polite and on time" }
+→ 201 { "success": true, "message": "Review submitted",
+        "data": { "id": 7, "request_id": 42, "service_rating": 5,
+                  "service_comment": "Excellent job", "status": "visible",
+                  "created_at": "..." } }
 ```
 
 ---
@@ -614,6 +659,18 @@ Rules: `discount_value` > 0, percent ≤ 100; `starts_at` ≤ `ends_at`; date-on
 | GET | `/admin/settings` | `settings.manage` | all rows: `setting_key, setting_value, setting_group, label` |
 | PUT | `/admin/settings` | `settings.manage` | `{ settings: { "key1": "value1", ... } }` |
 
+### 6.10 Reviews moderation
+
+Permissions: `reviews.view` (reads) / `reviews.manage` (writes). Web panel: **Service Reviews** page (Operations section). Reviews are auto-published on submit — this API hides/deletes inappropriate ones.
+
+| Method | Path | Permission | Notes |
+|---|---|---|---|
+| GET | `/admin/reviews?status&rating&module_id&category_id&vendor_id&search&page&limit` | `reviews.view` | Paginated; items include **full review** (service + technician fields), masked `customer_name`, `customer_email`, `ticket_no`, `request_title`, `module_name`, `category_name`, `vendor_name` |
+| PATCH | `/admin/reviews/:id` | `reviews.manage` | `{ status: "visible" \| "hidden" }` — hidden reviews disappear from public endpoints and `vendors.rating` recalculates |
+| DELETE | `/admin/reviews/:id` | `reviews.manage` | Hard delete + vendor rating recompute + audit (`review.delete`) |
+
+Audit actions: `review.hide`, `review.show`, `review.delete`. Grants: **Super Admin** (all) + **Operations Manager** by default; add to other roles via Roles & Permissions.
+
 ---
 
 ## 7. File uploads
@@ -657,6 +714,7 @@ jobs.view                 jobs.manage
 sos.view                  sos.manage
 properties.view           properties.manage      properties.enquiries
 services.view             services.manage
+reviews.view              reviews.manage
 hr.view                   hr.manage
 notifications.manage      reports.view           reports.export
 roles.manage              staff.manage           support.manage

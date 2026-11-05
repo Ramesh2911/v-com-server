@@ -17,6 +17,7 @@ router.use('/customer/hr', require('../modules/hr/routes.customer'));
 router.use('/customer/notifications', require('../modules/notifications/routes.customer'));
 router.use('/customer/support', require('../modules/support/routes.customer'));
 router.use('/customer/addresses', require('../modules/addresses/routes.customer'));
+router.use('/customer/reviews', require('../modules/reviews/routes.customer'));
 
 // Vendor app
 router.use('/vendor', require('../modules/vendors/routes.vendor'));
@@ -37,6 +38,7 @@ router.use('/admin/sos', require('../modules/sos/routes.admin'));
 router.use('/admin/services', require('../modules/services/routes.admin'));
 router.use('/admin/offers', require('../modules/offers/routes.admin').offers);
 router.use('/admin/coupons', require('../modules/offers/routes.admin').coupons);
+router.use('/admin/reviews', require('../modules/reviews/routes.admin'));
 router.use('/admin/properties', require('../modules/properties/routes.admin'));
 router.use('/admin/hr', require('../modules/hr/routes.admin'));
 router.use('/admin/notifications', require('../modules/notifications/routes.admin'));

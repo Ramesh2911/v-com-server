@@ -4,7 +4,7 @@
 -- ============================================================
 
 SET FOREIGN_KEY_CHECKS = 0;
-DROP TABLE IF EXISTS coupons, offers, addresses, audit_logs, settings, support_tickets, leave_requests, attendance, employees,
+DROP TABLE IF EXISTS service_reviews, coupons, offers, addresses, audit_logs, settings, support_tickets, leave_requests, attendance, employees,
   property_enquiries, property_media, properties, areas, projects, builders,
   notification_templates, notifications, sos_status_history, sos_tickets,
   job_attachments, job_status_history, jobs, quotation_items, quotations,
@@ -303,6 +303,34 @@ CREATE TABLE request_status_history (
   KEY idx_rsh_request (request_id),
   CONSTRAINT fk_rsh_request FOREIGN KEY (request_id) REFERENCES requests(id) ON DELETE CASCADE,
   CONSTRAINT fk_rsh_user FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ========================= SERVICE REVIEWS =========================
+
+CREATE TABLE service_reviews (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  request_id INT UNSIGNED NOT NULL,
+  customer_id INT UNSIGNED NOT NULL,
+  module_id INT UNSIGNED NOT NULL,
+  category_id INT UNSIGNED NULL,
+  vendor_id INT UNSIGNED NULL,
+  service_rating TINYINT UNSIGNED NOT NULL,
+  service_comment TEXT NULL,
+  technician_rating TINYINT UNSIGNED NULL,
+  technician_comment TEXT NULL,
+  status ENUM('visible','hidden') NOT NULL DEFAULT 'visible',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_reviews_request (request_id),
+  KEY idx_reviews_module (module_id),
+  KEY idx_reviews_category (category_id),
+  KEY idx_reviews_vendor (vendor_id),
+  KEY idx_reviews_status (status),
+  CONSTRAINT fk_rev_request FOREIGN KEY (request_id) REFERENCES requests(id) ON DELETE CASCADE,
+  CONSTRAINT fk_rev_customer FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_rev_module FOREIGN KEY (module_id) REFERENCES service_modules(id),
+  CONSTRAINT fk_rev_category FOREIGN KEY (category_id) REFERENCES service_categories(id) ON DELETE SET NULL,
+  CONSTRAINT fk_rev_vendor FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ========================= QUOTATIONS =========================

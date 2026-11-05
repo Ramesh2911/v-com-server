@@ -128,7 +128,12 @@ router.get(
       [req.params.id]
     );
     const [reqRow] = await withAttachments(rows);
-    sendSuccess(res, { ...reqRow, history, quotations });
+    const [reviews] = await pool.query(
+      `SELECT id, service_rating, service_comment, status, created_at, updated_at
+         FROM service_reviews WHERE request_id = ? AND customer_id = ?`,
+      [req.params.id, req.user.id]
+    );
+    sendSuccess(res, { ...reqRow, history, quotations, review: reviews[0] || null });
   })
 );
 
