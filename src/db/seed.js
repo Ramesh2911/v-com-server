@@ -67,6 +67,8 @@ const PERMISSIONS = [
   ['properties.enquiries', 'properties', 'Manage property enquiries'],
   ['services.view', 'services', 'View services & content'],
   ['services.manage', 'services', 'Manage services & content'],
+  ['offers.view', 'offers', 'View offers & coupons'],
+  ['offers.manage', 'offers', 'Manage offers & coupons'],
   ['hr.view', 'hr', 'View HR data'],
   ['hr.manage', 'hr', 'Manage HR (attendance, leaves)'],
   ['notifications.manage', 'notifications', 'Manage notification templates'],

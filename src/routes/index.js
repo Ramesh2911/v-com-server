@@ -5,6 +5,8 @@ router.use('/me', require('../modules/users/routes.me'));
 
 // Shared / customer-facing
 router.use('/services', require('../modules/services/routes.public'));
+router.use('/offers', require('../modules/offers/routes.public').offers);
+router.use('/coupons', require('../modules/offers/routes.public').coupons);
 router.use('/properties', require('../modules/properties/routes.public'));
 
 // Customer app
@@ -33,6 +35,8 @@ router.use('/admin/quotations', require('../modules/quotations/routes.admin'));
 router.use('/admin/jobs', require('../modules/jobs/routes.admin'));
 router.use('/admin/sos', require('../modules/sos/routes.admin'));
 router.use('/admin/services', require('../modules/services/routes.admin'));
+router.use('/admin/offers', require('../modules/offers/routes.admin').offers);
+router.use('/admin/coupons', require('../modules/offers/routes.admin').coupons);
 router.use('/admin/properties', require('../modules/properties/routes.admin'));
 router.use('/admin/hr', require('../modules/hr/routes.admin'));
 router.use('/admin/notifications', require('../modules/notifications/routes.admin'));

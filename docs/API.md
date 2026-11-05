@@ -316,6 +316,15 @@ Example `GET /services` (first module trimmed):
 
 Property media URLs: returned as absolute URLs. Listing includes `{ property_code, title, listing_type, total_amount, status, ... }`.
 
+### 3.3 Offers & coupons (public)
+
+| Method | Path | Body / Query | Returns |
+|---|---|---|---|
+| GET | `/offers` | — | **Active-now** offers: status=1, within `starts_at`/`ends_at` window, service active. Each: `{ id, title, description, discount_type, discount_value, starts_at, ends_at, image, category_id, category_name, category_image, category_price, module_id, module_name, module_code }` |
+| POST | `/coupons/validate` | `{ code*, amount? }` | `{ code, title, discount_type, discount_value, max_discount, min_amount, applies_to, category_id, computed_discount }` — `computed_discount` present only when `amount` given (percent capped by `max_discount`, flat capped by `amount`) |
+
+Errors: unknown/inactive/expired/future/usage-exhausted → `404` with clear message; `amount` < `min_amount` → `400`. Code matched case-insensitively (stored uppercase).
+
 ---
 
 ## 4. Customer app (`/api/v1/customer/*`) — auth required, `role_slug = customer`
@@ -539,7 +548,24 @@ All routes below need `Authorization: Bearer …` **and** the listed permission.
 | PUT | `/admin/services/categories/:id` | `services.manage` | multipart: partial + `image` (omit = keep); `price: ""` clears price |
 | DELETE | `/admin/services/categories/:id` | `services.manage` | blocked if requests exist |
 
-### 6.6 Properties admin
+### 6.6 Offers & coupons
+
+Permissions: `offers.view` (reads) / `offers.manage` (writes). Web panel: **Offers & Coupons** page.
+
+| Method | Path | Permission | Notes |
+|---|---|---|---|
+| GET | `/admin/offers?status&category_id&module_id` | `offers.view` | with `category_name`, `module_name`, `module_id`, `image` (full URL) |
+| POST | `/admin/offers` | `offers.manage` | multipart: `category_id*, title*, description?, discount_type? (percent\|flat), discount_value*, starts_at?, ends_at?, status?`, `image` (file, optional banner) |
+| PUT | `/admin/offers/:id` | `offers.manage` | multipart: partial; `starts_at: ""` / `ends_at: ""` clears (always-on) |
+| DELETE | `/admin/offers/:id` | `offers.manage` | |
+| GET | `/admin/coupons?status&search` | `offers.view` | `search` matches code/title; includes `used_count`, `category_name` |
+| POST | `/admin/coupons` | `offers.manage` | `code* (3–30, A-Z0-9_- , stored UPPERCASE), title?, discount_type?, discount_value*, max_discount?, min_amount?, usage_limit?, per_user_limit?, applies_to? (all\|category), category_id? (required if category), starts_at?, ends_at?, status?` → dup code `409` |
+| PUT | `/admin/coupons/:id` | `offers.manage` | partial; `usage_limit` ≥ 1 and ≥ `used_count` |
+| DELETE | `/admin/coupons/:id` | `offers.manage` | |
+
+Rules: `discount_value` > 0, percent ≤ 100; `starts_at` ≤ `ends_at`; date-only values → start 00:00, end 23:59. Offer delete cascades with category.
+
+### 6.7 Properties admin
 
 | Method | Path | Permission |
 |---|---|---|
@@ -556,7 +582,7 @@ All routes below need `Authorization: Bearer …` **and** the listed permission.
 | GET | `/admin/properties/enquiries/all?status&page&limit` | `properties.enquiries` |
 | PATCH | `/admin/properties/enquiries/:id/status` | `properties.enquiries` — `{ status }` |
 
-### 6.7 HR admin
+### 6.8 HR admin
 
 | Method | Path | Permission | Notes |
 |---|---|---|---|
@@ -569,7 +595,7 @@ All routes below need `Authorization: Bearer …` **and** the listed permission.
 | GET | `/admin/hr/leaves?status&employee_id&page&limit` | `hr.view` | |
 | POST | `/admin/hr/leaves/:id/review` | `hr.manage` | `{ decision: approved\|rejected, review_note? }` — approval auto-marks attendance |
 
-### 6.8 Notifications, roles, support, audit, settings
+### 6.9 Notifications, roles, support, audit, settings
 
 | Method | Path | Permission | Notes |
 |---|---|---|---|
