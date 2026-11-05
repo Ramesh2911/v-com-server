@@ -52,7 +52,7 @@ CREATE TABLE users (
   password_hash VARCHAR(255) NOT NULL,
   user_type ENUM('customer','staff','employee') NOT NULL DEFAULT 'customer',
   role_id INT UNSIGNED NULL,
-  avatar VARCHAR(255) NULL,
+  avatar MEDIUMTEXT NULL,
   status ENUM('active','inactive','blocked') NOT NULL DEFAULT 'active',
   last_login_at DATETIME NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,

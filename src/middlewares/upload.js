@@ -82,6 +82,16 @@ const uploadBufferToCloudinary = (file) =>
     stream.end(file.buffer);
   });
 
+// base64 data-URI upload (profile avatar etc.) — returns secure_url or null when Cloudinary not configured
+const uploadDataUri = async (dataUri) => {
+  if (!cloudinaryConfigured) return null;
+  const result = await cloudinary.uploader.upload(dataUri, {
+    folder: env.cloudinary.folder || 'v-com',
+    resource_type: 'image',
+  });
+  return result.secure_url;
+};
+
 // Usage: await cloudinaryImage(req, res) after cloudinaryMemory.single('image')
 // Falls back to local disk path when Cloudinary keys are not configured.
 const cloudinaryImage = async (req, res) => {
@@ -106,7 +116,7 @@ const classifyFileType = (mimetype) => {
 
 const toPublicUrl = (value) => {
   if (!value) return null;
-  if (/^https?:\/\//i.test(value)) return value; // Cloudinary / absolute URLs pass through
+  if (/^(https?:|data:|blob:)/i.test(value)) return value; // absolute / data-URIs pass through
   return `${env.publicFileBaseUrl}/${value.replace(/\\/g, '/')}`;
 };
 
@@ -118,6 +128,7 @@ module.exports = {
   generalUpload,
   cloudinaryUpload,
   cloudinaryImage,
+  uploadDataUri,
   classifyFileType,
   toPublicUrl,
 };
