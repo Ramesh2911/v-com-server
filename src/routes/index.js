@@ -21,6 +21,7 @@ router.use('/customer/reviews', require('../modules/reviews/routes.customer'));
 
 // Vendor app
 router.use('/vendor', require('../modules/vendors/routes.vendor'));
+router.use('/vendor', require('../modules/vendors/routes.vendor.tech'));
 router.use('/vendor', require('../modules/requests/routes.vendor'));
 router.use('/vendor', require('../modules/quotations/routes.vendor'));
 router.use('/vendor', require('../modules/jobs/routes.vendor'));

@@ -236,46 +236,102 @@ exports.otpVerify = asyncHandler(async (req, res) => {
   sendSuccess(res, { verifyToken, isNewUser: true, phone }, 'Phone verified — complete your registration');
 });
 
+const parseCategoryIds = (value) => {
+  let ids = value;
+  if (typeof ids === 'string') {
+    try { ids = JSON.parse(ids); } catch (_) { ids = ids.split(','); }
+  }
+  if (!Array.isArray(ids)) return [];
+  return [...new Set(ids.map((i) => Number(i)).filter((i) => Number.isInteger(i) && i > 0))];
+};
+const trimOrNull = (v) => (v == null || String(v).trim() === '' ? null : String(v).trim());
+
 exports.appRegister = asyncHandler(async (req, res) => {
   const { verifyToken, client, role } = req.body;
   const { phone } = otp.readVerifyToken(verifyToken);
 
-  const [[existsPhone]] = await pool.query('SELECT id FROM users WHERE phone = ?', [phone]);
-  if (existsPhone) throw ApiError.conflict('An account already exists for this phone. Please login.');
-
   const name = String(req.body.name || '').trim();
-  const email = String(req.body.email || '').trim().toLowerCase();
   if (!name) throw ApiError.badRequest('Name is required');
+  const email = String(req.body.email || '').trim().toLowerCase();
 
   const roleSlug = client === 'customer' ? 'customer' : role || 'provider_owner';
-  const userType = roleSlug === 'technician' ? 'employee' : 'customer';
+  if (roleSlug === 'technician') {
+    throw ApiError.badRequest('Technician accounts are created by the service provider, not via self-registration');
+  }
+  const isVendorReg = client === 'vendor' && roleSlug === 'provider_owner';
+
+  // vendor registration: basic details + multi-service selection → pending vendor
+  let businessName = null;
+  let categoryIds = [];
+  if (isVendorReg) {
+    businessName = String(req.body.business_name || '').trim();
+    if (!businessName) throw ApiError.badRequest('Business name is required');
+    categoryIds = parseCategoryIds(req.body.category_ids);
+    if (!categoryIds.length) throw ApiError.badRequest('Select at least one service category');
+    const [catRows] = await pool.query('SELECT id FROM service_categories WHERE status = 1 AND id IN (?)', [categoryIds]);
+    if (catRows.length !== categoryIds.length) throw ApiError.badRequest('One or more service categories are invalid');
+  } else if (!email) {
+    throw ApiError.badRequest('Email is required');
+  }
+
+  const [[existsPhone]] = await pool.query('SELECT id FROM users WHERE phone = ?', [phone]);
+  if (existsPhone) throw ApiError.conflict('An account already exists for this phone. Please login.');
 
   const [[roleRow]] = await pool.query('SELECT id FROM roles WHERE slug = ? AND status = 1', [roleSlug]);
   if (!roleRow) throw ApiError.badRequest('Invalid role');
 
-  const [emailRows] = await pool.query('SELECT id FROM users WHERE email = ?', [email]);
-  if (emailRows.length) throw ApiError.conflict('This email is already linked to another account');
+  if (email) {
+    const [emailRows] = await pool.query('SELECT id FROM users WHERE email = ?', [email]);
+    if (emailRows.length) throw ApiError.conflict('This email is already linked to another account');
+  }
 
   const passwordHash = bcrypt.hashSync(crypto.randomBytes(32).toString('hex'), 10);
-  let result;
+  const conn = await pool.getConnection();
+  let userId;
   try {
-    [result] = await pool.query(
+    await conn.beginTransaction();
+    const [result] = await conn.query(
       `INSERT INTO users (name, email, phone, password_hash, user_type, role_id, status)
-       VALUES (?, ?, ?, ?, ?, ?, 'active')`,
-      [name, email, phone, passwordHash, userType, roleRow.id]
+       VALUES (?, ?, ?, ?, 'customer', ?, 'active')`,
+      [name, email || null, phone, passwordHash, roleRow.id]
     );
+    userId = result.insertId;
+    if (isVendorReg) {
+      const [vres] = await conn.query(
+        `INSERT INTO vendors (user_id, business_name, contact_person, city, state, pincode, address, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`,
+        [userId, businessName, trimOrNull(req.body.contact_person), trimOrNull(req.body.city),
+         trimOrNull(req.body.state), trimOrNull(req.body.pincode), trimOrNull(req.body.address)]
+      );
+      for (const cid of categoryIds) {
+        await conn.query('INSERT IGNORE INTO vendor_service_categories (vendor_id, category_id) VALUES (?, ?)', [
+          vres.insertId, cid,
+        ]);
+      }
+    }
+    await conn.commit();
   } catch (err) {
+    try { await conn.rollback(); } catch (_) { /* ignore */ }
+    conn.release();
     if (err.code === 'ER_DUP_ENTRY') throw ApiError.conflict('An account already exists for this phone');
     throw err;
   }
+  conn.release();
 
   const [[user]] = await pool.query(
     `SELECT u.*, r.name AS role_name, r.slug AS role_slug FROM users u
       LEFT JOIN roles r ON r.id = u.role_id WHERE u.id = ?`,
-    [result.insertId]
+    [userId]
   );
   await notifyWelcome(user.id);
   const data = await buildAuthResponse(user);
-  await writeAudit({ actor: user, action: 'auth.otp_register', entity: 'users', entityId: user.id, req });
+  await writeAudit({
+    actor: user,
+    action: 'auth.otp_register',
+    entity: 'users',
+    entityId: user.id,
+    details: isVendorReg ? { vendor_registration: true, categories: categoryIds.length } : undefined,
+    req,
+  });
   sendSuccess(res, data, 'Registration successful', 201);
 });

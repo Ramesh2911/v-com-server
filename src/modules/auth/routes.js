@@ -15,12 +15,21 @@ const otpSendLimiter = rateLimit({
 });
 const otpVerifyLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30, standardHeaders: true, legacyHeaders: false });
 
+// vendor phone-OTP registration (provider_owner) — email optional, business details + services required
+const isVendorOtp = (value, { req }) =>
+  !!req.body.verifyToken && req.body.client === 'vendor' && (req.body.role || 'provider_owner') === 'provider_owner';
+
 router.post(
   '/register',
   registerLimiter,
   [
     body('name').trim().notEmpty().withMessage('Name is required'),
-    body('email').isEmail().withMessage('Valid email is required').normalizeEmail(),
+    body('email')
+      .if((value, { req }) => !(req.body.verifyToken && req.body.client === 'vendor'))
+      .isEmail().withMessage('Valid email is required').normalizeEmail(),
+    body('email')
+      .if((value, { req }) => !!req.body.verifyToken && req.body.client === 'vendor' && String(value || '').trim() !== '')
+      .isEmail().withMessage('Valid email is required').normalizeEmail(),
     body('phone').optional({ nullable: true }).isLength({ min: 8, max: 20 }),
     body('verifyToken').if(body('verifyToken').exists()).notEmpty().withMessage('verifyToken is required'),
     body('client')
@@ -28,6 +37,23 @@ router.post(
       .isIn(['customer', 'vendor'])
       .withMessage('client must be "customer" or "vendor"'),
     body('role').optional().isIn(['provider_owner', 'technician']).withMessage('Invalid role'),
+    body('business_name').if(isVendorOtp).trim().notEmpty().withMessage('Business name is required'),
+    body('contact_person').if(isVendorOtp).optional({ nullable: true }).trim().isLength({ max: 100 }),
+    body('city').if(isVendorOtp).optional({ nullable: true }).trim().isLength({ max: 100 }),
+    body('state').if(isVendorOtp).optional({ nullable: true }).trim().isLength({ max: 100 }),
+    body('pincode').if(isVendorOtp).optional({ nullable: true }).trim().isLength({ max: 10 }),
+    body('address').if(isVendorOtp).optional({ nullable: true }).trim().isLength({ max: 255 }),
+    body('category_ids')
+      .if(isVendorOtp)
+      .custom((value) => {
+        let ids = value;
+        if (typeof ids === 'string') {
+          try { ids = JSON.parse(ids); } catch (_) { ids = ids.split(','); }
+        }
+        if (!Array.isArray(ids) || !ids.length) throw new Error('Select at least one service category');
+        if (ids.some((i) => !Number.isInteger(Number(i)) || Number(i) < 1)) throw new Error('Invalid category_ids');
+        return true;
+      }),
     body('password')
       .if(body('verifyToken').not().exists())
       .isLength({ min: 6 })
