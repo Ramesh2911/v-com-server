@@ -197,6 +197,25 @@ router.get(
   })
 );
 
+router.get(
+  '/:id/technicians',
+  asyncHandler(async (req, res) => {
+    const [rows] = await pool.query(
+      `SELECT t.*,
+              (SELECT a.status FROM technician_attendance a
+                WHERE a.technician_id = t.id AND a.attendance_date = CURDATE()) AS today_status,
+              (SELECT COUNT(*) FROM technician_attendance a
+                WHERE a.technician_id = t.id AND a.attendance_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
+                  AND a.status = 'present') AS present_30d
+         FROM technicians t
+        WHERE t.vendor_id = ?
+        ORDER BY (t.status = 'active') DESC, t.name`,
+      [req.params.id]
+    );
+    sendSuccess(res, rows);
+  })
+);
+
 async function attachCategories(vendorId, categoryIds) {
   let ids = categoryIds;
   if (typeof ids === 'string') {

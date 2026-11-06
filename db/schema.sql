@@ -9,7 +9,7 @@ DROP TABLE IF EXISTS service_reviews, coupons, offers, addresses, audit_logs, se
   notification_templates, notifications, sos_status_history, sos_tickets,
   job_attachments, job_status_history, jobs, quotation_items, quotations,
   request_status_history, request_assignments, request_attachments, requests,
-  service_categories, service_modules, vendor_service_categories, vendors,
+  service_categories, service_modules, vendor_service_categories, technicians, technician_attendance, vendors,
   password_resets, refresh_tokens, otp_codes, role_permissions, permissions, roles, users;
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -47,7 +47,7 @@ CREATE TABLE role_permissions (
 CREATE TABLE users (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
-  email VARCHAR(150) NOT NULL,
+  email VARCHAR(150) NULL,
   phone VARCHAR(20) NULL,
   password_hash VARCHAR(255) NOT NULL,
   user_type ENUM('customer','staff','employee') NOT NULL DEFAULT 'customer',
@@ -230,6 +230,35 @@ CREATE TABLE vendor_service_categories (
   UNIQUE KEY uk_vsc (vendor_id, category_id),
   CONSTRAINT fk_vsc_vendor FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE,
   CONSTRAINT fk_vsc_category FOREIGN KEY (category_id) REFERENCES service_categories(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE technicians (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  vendor_id INT UNSIGNED NOT NULL,
+  name VARCHAR(100) NOT NULL,
+  phone VARCHAR(15) NULL,
+  skill VARCHAR(120) NULL,
+  address VARCHAR(255) NULL,
+  id_proof VARCHAR(120) NULL,
+  notes VARCHAR(255) NULL,
+  status ENUM('active','inactive') NOT NULL DEFAULT 'active',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_technicians_vendor (vendor_id),
+  CONSTRAINT fk_technicians_vendor FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE technician_attendance (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  technician_id INT UNSIGNED NOT NULL,
+  attendance_date DATE NOT NULL,
+  status ENUM('present','absent','half_day','late') NOT NULL DEFAULT 'present',
+  notes VARCHAR(255) NULL,
+  marked_by INT UNSIGNED NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_tech_att (technician_id, attendance_date),
+  CONSTRAINT fk_tech_att_technician FOREIGN KEY (technician_id) REFERENCES technicians(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ========================= REQUESTS / ENQUIRIES =========================

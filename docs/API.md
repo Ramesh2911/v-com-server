@@ -178,33 +178,51 @@ Errors: `400` incorrect/expired/already-used · `429` too many attempts · `403`
 POST /api/v1/auth/register
 Headers: Content-Type: application/json
 ```
+Customer example:
 ```json
 {
   "verifyToken": "eyJhbGciOi...",
   "name": "Rahul Das",
   "email": "rahul@example.com",
-  "client": "customer",
-  "role": "provider_owner"
+  "client": "customer"
+}
+```
+Vendor (service provider owner) example — **creates a `pending` vendor**:
+```json
+{
+  "verifyToken": "eyJhbGciOi...",
+  "name": "Rahul Das",
+  "client": "vendor",
+  "business_name": "Rahul Home Services",
+  "contact_person": "Rahul Das",
+  "city": "Dhaka",
+  "state": "DH",
+  "pincode": "1200",
+  "address": "House 12, Road 5",
+  "category_ids": [1, 5, 18]
 }
 ```
 | Field | Required | Notes |
 |---|---|---|
 | `verifyToken` | ✓ | from step 2b (5 min TTL, retry ok) |
 | `name` | ✓ | min 1 char |
-| `email` | ✓ | unique |
+| `email` | vendor: optional · else ✓ | unique; must be valid if sent. Vendor phone-OTP users can skip it |
 | `client` | ✓ | `"customer"` \| `"vendor"` |
-| `role` | vendor only | `"provider_owner"` (default) \| `"technician"` — ignored when `client=customer` |
+| `role` | vendor only | `"provider_owner"` (default). `"technician"` → **400** (technicians are added by the owner, not self-registered) |
+| `business_name` | vendor ✓ | vendor's business name |
+| `contact_person`, `city`, `state`, `pincode`, `address` | vendor optional | basic details, saved on the new vendor row |
+| `category_ids` | vendor ✓ | array (or JSON/CSV string) of ≥1 **active** service category ids — the multi-service selection. Invalid id → 400 |
 
-→ **201** — same login payload as 2a (incl. `isNewUser: false`).
-Errors: `409` phone already registered / email linked to another account · `401` invalid/expired verifyToken · `400` invalid role/client.
+→ **201** — same login payload as 2a (incl. `isNewUser: false`). For `client=vendor` the payload's `vendor` object is present with `status: "pending"` — show a "pending approval" screen until admin approves.
+Errors: `409` phone already registered / email linked to another account · `401` invalid/expired verifyToken · `400` invalid role/client / missing business details / bad categories.
 
 **Role mapping:**
 
 | `client` | `role` sent | Resulting `role_slug` | `user_type` | App |
 |---|---|---|---|---|
 | `customer` | — (forced) | `customer` | `customer` | Customer app |
-| `vendor` | omitted → `provider_owner` | `provider_owner` | `customer` | Vendor app (owner) |
-| `vendor` | `technician` | `technician` | `employee` | Vendor app (technician) |
+| `vendor` | omitted → `provider_owner` | `provider_owner` | `customer` | Vendor app (owner) — also creates the pending `vendors` row + `vendor_service_categories` |
+| `vendor` | `technician` | — | — | **400** — technicians are created by the owner via `POST /vendor/technicians` |
 
 > Super admin cannot self-register; an existing super admin phone OTP-login korle tokens pabe.
 
@@ -469,17 +487,17 @@ POST /api/v1/customer/reviews
 
 ## 5. Vendor app (`/api/v1/vendor/*`) — auth required, `role_slug = provider_owner | technician`
 
-> New vendor accounts start as `status = pending` until approved by admin.
+> New vendor accounts start as `status = pending` until approved by admin (created by `POST /auth/register` with `client: vendor`). Pending owners can use **profile / service-categories / technicians / attendance**; request & job routes require `status = approved`.
 
 ### 5.1 Profile
 
 | Method | Path | Body |
 |---|---|---|
-| GET | `/vendor/profile` | → vendor record |
-| PUT | `/vendor/profile` | `business_name?, contact_person?, city?, state?, pincode?, coverage_areas?, address?, gst_number?` |
-| POST | `/vendor/complete-profile` | Same fields — validates profile completion |
+| GET | `/vendor/profile` | → vendor record + `categories[]` + `stats` |
+| PUT | `/vendor/profile` | `business_name?, contact_person?, city?, state?, pincode?, coverage_areas?, address?, gst_number?` (+ multipart `logo`) |
+| POST | `/vendor/complete-profile` | notify-only stub (profile fields go through `PUT /vendor/profile`) |
 | GET | `/vendor/summary` | → stats: requests/jobs/quotations counts + earnings |
-| GET | `/vendor/available-categories` | → service categories not yet selected |
+| GET | `/vendor/available-categories` | → all active service categories |
 | PUT | `/vendor/service-categories` | `category_ids: [ids]` |
 
 ### 5.2 Requests
@@ -520,6 +538,22 @@ Stages: `pending → accepted → scheduled → in_progress → awaiting_approva
 
 Mirror customer endpoints at `/vendor/notifications` and `/vendor/support` (same bodies).
 
+### 5.6 Technicians & attendance (owner-managed)
+
+Technicians are **standalone rows owned by the vendor** — no login account, no self-registration. All routes scoped to the caller's vendor (other vendors' technicians → `404`). Available while `status = pending` too.
+
+| Method | Path | Body / Query |
+|---|---|---|
+| POST | `/vendor/technicians` | `name*, phone?, skill?, address?, id_proof?, notes?, status? ('active'\|'inactive')` → 201 `{ id }` |
+| GET | `/vendor/technicians` | `status?, search?` → rows + `today_status` (or null) + `present_30d` |
+| PUT | `/vendor/technicians/:id` | same fields as create (`name*`) |
+| DELETE | `/vendor/technicians/:id` | hard delete — attendance rows cascade |
+| POST | `/vendor/technician-attendance` | **single:** `{ technician_id*, attendance_date*, status?='present', notes? }` · **bulk:** `{ attendance_date*, entries: [{ technician_id, status?, notes? }] }` (≤200). Upsert — same day re-mark updates. Future date → 400 |
+| GET | `/vendor/technician-attendance` | `date?` (default today) \| `month? (YYYY-MM)` \| `technician_id? \| status?` → paginated `{ items, pagination }` |
+| GET | `/vendor/technician-attendance/summary` | `month?` → per-technician `present/absent/half_days/late` counts |
+
+Attendance `status`: `present` \| `absent` \| `half_day` \| `late`. Dates `YYYY-MM-DD`, **not in the future**. Audit actions: `technician.create/update/delete`, `technician.attendance`.
+
 ---
 
 ## 6. Admin API (`/api/v1/admin/*`) — auth + permission required
@@ -559,6 +593,7 @@ All routes below need `Authorization: Bearer …` **and** the listed permission.
 | POST | `/admin/vendors/:id/reject` | `vendors.approve` | `{ reason }` |
 | PATCH | `/admin/vendors/:id/status` | `vendors.manage` | `{ status }` |
 | GET | `/admin/vendors/:id/assignments` | `vendors.view` | requests/jobs history |
+| GET | `/admin/vendors/:id/technicians` | `vendors.view` | read-only: technicians + `today_status` + `present_30d` |
 
 ### 6.4 Requests & quotations & jobs & SOS
 
