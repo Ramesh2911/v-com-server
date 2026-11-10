@@ -5,6 +5,7 @@ const controller = require('./controller');
 const env = require('../../config');
 const validate = require('../../middlewares/validate');
 const { authMiddleware } = require('../../middlewares/auth');
+const { kycUpload } = require('../../middlewares/upload');
 
 const registerLimiter = rateLimit({ windowMs: 60 * 60 * 1000, max: 20 });
 const otpSendLimiter = rateLimit({
@@ -22,6 +23,8 @@ const isVendorOtp = (value, { req }) =>
 router.post(
   '/register',
   registerLimiter,
+  // vendor signup sends multipart (fields + photo/aadhar/pan images); JSON requests pass through untouched
+  kycUpload.any(),
   [
     body('name').trim().notEmpty().withMessage('Name is required'),
     body('email')
@@ -42,7 +45,8 @@ router.post(
     body('city').if(isVendorOtp).optional({ nullable: true }).trim().isLength({ max: 100 }),
     body('state').if(isVendorOtp).optional({ nullable: true }).trim().isLength({ max: 100 }),
     body('pincode').if(isVendorOtp).optional({ nullable: true }).trim().isLength({ max: 10 }),
-    body('address').if(isVendorOtp).optional({ nullable: true }).trim().isLength({ max: 255 }),
+    body('address').if(isVendorOtp).trim().notEmpty().withMessage('Address is required').isLength({ max: 255 }),
+    body('gst_no').if(isVendorOtp).optional({ nullable: true }).trim().isLength({ max: 30 }),
     body('category_ids')
       .if(isVendorOtp)
       .custom((value) => {

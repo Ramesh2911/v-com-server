@@ -176,9 +176,10 @@ Errors: `400` incorrect/expired/already-used · `429` too many attempts · `403`
 
 ```
 POST /api/v1/auth/register
-Headers: Content-Type: application/json
+Content-Type: application/json            (customer flow)
+Content-Type: multipart/form-data         (vendor flow — fields + KYC images)
 ```
-Customer example:
+Customer example (JSON):
 ```json
 {
   "verifyToken": "eyJhbGciOi...",
@@ -187,44 +188,42 @@ Customer example:
   "client": "customer"
 }
 ```
-Vendor (service provider owner) example — **creates a `pending` vendor**:
-```json
-{
-  "verifyToken": "eyJhbGciOi...",
-  "name": "Rahul Das",
-  "client": "vendor",
-  "business_name": "Rahul Home Services",
-  "contact_person": "Rahul Das",
-  "city": "Dhaka",
-  "state": "DH",
-  "pincode": "1200",
-  "address": "House 12, Road 5",
-  "category_ids": [1, 5, 18]
-}
+Vendor (service provider owner) example — **multipart**, creates a `pending` vendor with KYC documents:
+```
+Fields (all strings):
+  verifyToken*, name*, client="vendor", business_name*, address*,
+  contact_person?, city?, state?, pincode?, gst_no?,
+  email?, category_ids*   (JSON string e.g. "[1,5,18]" or CSV)
+Files (all required, images only, ≤10MB each):
+  photo*, aadhar_front*, aadhar_back*, pan_front*, pan_back*
 ```
 | Field | Required | Notes |
 |---|---|---|
 | `verifyToken` | ✓ | from step 2b (5 min TTL, retry ok) |
 | `name` | ✓ | min 1 char |
-| `email` | vendor: optional · else ✓ | unique; must be valid if sent. Vendor phone-OTP users can skip it |
+| `email` | vendor: optional · else ✓ | unique; must be valid if sent |
 | `client` | ✓ | `"customer"` \| `"vendor"` |
-| `role` | vendor only | `"provider_owner"` (default). `"technician"` → **400** (technicians are added by the owner, not self-registered) |
-| `business_name` | vendor ✓ | vendor's business name |
-| `contact_person`, `city`, `state`, `pincode`, `address` | vendor optional | basic details, saved on the new vendor row |
-| `category_ids` | vendor ✓ | array (or JSON/CSV string) of ≥1 **active** service category ids — the multi-service selection. Invalid id → 400 |
+| `role` | vendor only | `"provider_owner"` (default). `"technician"` → **400** |
+| `business_name` | vendor ✓ | |
+| `address` | vendor ✓ | max 255 chars |
+| `contact_person`, `city`, `state`, `pincode` | vendor optional | |
+| `gst_no` | vendor optional | max 30 chars |
+| `category_ids` | vendor ✓ | ≥1 active service category ids (JSON array string or CSV) |
+| `photo, aadhar_front, aadhar_back, pan_front, pan_back` | vendor ✓ (files) | multipart files — **images only** (png/jpg/…), each ≤ `MAX_UPLOAD_SIZE_MB` (default 10). Uploaded to Cloudinary; stored URLs on the vendor row |
 
-→ **201** — same login payload as 2a (incl. `isNewUser: false`). For `client=vendor` the payload's `vendor` object is present with `status: "pending"` — show a "pending approval" screen until admin approves.
-Errors: `409` phone already registered / email linked to another account · `401` invalid/expired verifyToken · `400` invalid role/client / missing business details / bad categories.
+→ **201** — same login payload as 2a. `vendor` object includes `status: "pending"` + `photo` URL. Files upload **before** any DB write — upload/tx failure leaves nothing behind (retry with same verifyToken).
+Errors: `400` missing business/address/category/files (`"PAN back image is required"`), non-image file, invalid category · `409` phone/email conflict · `401` invalid verifyToken.
 
 **Role mapping:**
 
 | `client` | `role` sent | Resulting `role_slug` | `user_type` | App |
 |---|---|---|---|---|
 | `customer` | — (forced) | `customer` | `customer` | Customer app |
-| `vendor` | omitted → `provider_owner` | `provider_owner` | `customer` | Vendor app (owner) — also creates the pending `vendors` row + `vendor_service_categories` |
+| `vendor` | omitted → `provider_owner` | `provider_owner` | `customer` | Vendor app (owner) — creates pending `vendors` row + `vendor_service_categories` + saves KYC |
 | `vendor` | `technician` | — | — | **400** — technicians are created by the owner via `POST /vendor/technicians` |
 
 > Super admin cannot self-register; an existing super admin phone OTP-login korle tokens pabe.
+> **403 "This account does not belong to this app"** on `otp/verify` = that phone already belongs to another role (e.g. a customer account). Use a fresh number for vendor signup.
 
 **Token refresh / logout**
 
@@ -493,7 +492,7 @@ POST /api/v1/customer/reviews
 
 | Method | Path | Body |
 |---|---|---|
-| GET | `/vendor/profile` | → vendor record + `categories[]` + `stats` |
+| GET | `/vendor/profile` | → vendor record (incl. `photo`, `aadhar_*`, `pan_*` URLs) + `categories[]` + `stats` |
 | PUT | `/vendor/profile` | `business_name?, contact_person?, city?, state?, pincode?, coverage_areas?, address?, gst_number?` (+ multipart `logo`) |
 | POST | `/vendor/complete-profile` | notify-only stub (profile fields go through `PUT /vendor/profile`) |
 | GET | `/vendor/summary` | → stats: requests/jobs/quotations counts + earnings |

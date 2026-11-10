@@ -14,8 +14,10 @@ const { notify } = require('../../utils/notify');
 router.use(authMiddleware, requirePermission('vendors.view'));
 
 const vendorListSql = `
-  SELECT v.id, v.business_name, v.contact_person, v.city, v.coverage_areas, v.status, v.rating,
-         v.total_jobs, v.created_at, v.approved_at, v.rejection_reason,
+  SELECT v.id, v.business_name, v.contact_person, v.city, v.state, v.pincode, v.address,
+         v.coverage_areas, v.gst_number, v.logo, v.photo,
+         v.aadhar_front, v.aadhar_back, v.pan_front, v.pan_back,
+         v.status, v.rating, v.total_jobs, v.created_at, v.approved_at, v.rejection_reason,
          u.id AS user_id, u.name, u.email, u.phone, u.status AS user_status,
          (SELECT GROUP_CONCAT(c.name ORDER BY c.name SEPARATOR ', ')
             FROM vendor_service_categories vsc JOIN service_categories c ON c.id = vsc.category_id
@@ -79,6 +81,11 @@ router.get(
     sendSuccess(res, {
       ...rows[0],
       logo: toPublicUrl(rows[0].logo),
+      photo: toPublicUrl(rows[0].photo),
+      aadhar_front: toPublicUrl(rows[0].aadhar_front),
+      aadhar_back: toPublicUrl(rows[0].aadhar_back),
+      pan_front: toPublicUrl(rows[0].pan_front),
+      pan_back: toPublicUrl(rows[0].pan_back),
       category_ids: cats.map((c) => c.category_id),
       recent_jobs: jobs,
     });

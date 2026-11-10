@@ -108,6 +108,42 @@ const cloudinaryImage = async (req, res) => {
 
 const cloudinaryUpload = cloudinaryConfigured ? cloudinaryMemory : generalUpload;
 
+// ---- Vendor KYC registration uploads (photo + aadhar/pan, images only, ≤5 files) ----
+const kycLimits = { fileSize: env.upload.maxImageSizeMb * 1024 * 1024, files: 5 };
+const kycMemory = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: imageFileFilter,
+  limits: kycLimits,
+});
+const kycDisk = multer({
+  storage: createStorage('general'),
+  fileFilter: imageFileFilter,
+  limits: kycLimits,
+});
+const kycUpload = cloudinaryConfigured ? kycMemory : kycDisk;
+
+// Upload registered KYC files → { fieldname: url }. Memory→Cloudinary, disk→general/ path.
+const uploadKycFiles = async (files) => {
+  const out = {};
+  for (const f of files || []) {
+    if (!/^image\//.test(f.mimetype)) throw ApiError.badRequest(`Only images are allowed for ${f.fieldname}`);
+    if (f.buffer && cloudinaryConfigured) {
+      const result = await uploadBufferToCloudinary(f);
+      out[f.fieldname] = result.secure_url;
+    } else if (f.filename) {
+      out[f.fieldname] = `general/${f.filename}`;
+    } else if (f.buffer) {
+      // Cloudinary not configured — persist buffer to disk fallback
+      const dest = ensureDir(path.join(UPLOAD_ROOT, 'general'));
+      const ext = path.extname(f.originalname || '').toLowerCase().slice(0, 10) || '.jpg';
+      const filename = `${Date.now()}-${Math.round(Math.random() * 1e9)}${ext}`;
+      fs.writeFileSync(path.join(dest, filename), f.buffer);
+      out[f.fieldname] = `general/${filename}`;
+    }
+  }
+  return out;
+};
+
 const classifyFileType = (mimetype) => {
   if (/^image\//.test(mimetype)) return 'image';
   if (/^video\//.test(mimetype)) return 'video';
@@ -130,6 +166,8 @@ module.exports = {
   generalUpload,
   cloudinaryUpload,
   cloudinaryImage,
+  kycUpload,
+  uploadKycFiles,
   uploadDataUri,
   classifyFileType,
   toPublicUrl,

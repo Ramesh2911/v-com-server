@@ -8,6 +8,7 @@ const asyncHandler = require('../../utils/asyncHandler');
 const { sendSuccess } = require('../../utils/response');
 const { signAccessToken, signRefreshToken, verifyRefreshToken, loadUserPermissions } = require('../../middlewares/auth');
 const { writeAudit } = require('../../utils/audit');
+const { uploadKycFiles } = require('../../middlewares/upload');
 const otp = require('./otp.service');
 
 const publicUser = (u) => ({
@@ -26,7 +27,7 @@ const publicUser = (u) => ({
 const buildAuthResponse = async (user) => {
   const permissions = await loadUserPermissions(user.id);
   const [vendorRows] = await pool.query(
-    `SELECT id, business_name, status, coverage_areas FROM vendors WHERE user_id = ?`,
+    `SELECT id, business_name, status, coverage_areas, photo FROM vendors WHERE user_id = ?`,
     [user.id]
   );
   const accessToken = signAccessToken(user);
@@ -263,6 +264,13 @@ exports.appRegister = asyncHandler(async (req, res) => {
   // vendor registration: basic details + multi-service selection → pending vendor
   let businessName = null;
   let categoryIds = [];
+  const KYC_FIELDS = [
+    ['photo', 'Photo'],
+    ['aadhar_front', 'Aadhar front image'],
+    ['aadhar_back', 'Aadhar back image'],
+    ['pan_front', 'PAN front image'],
+    ['pan_back', 'PAN back image'],
+  ];
   if (isVendorReg) {
     businessName = String(req.body.business_name || '').trim();
     if (!businessName) throw ApiError.badRequest('Business name is required');
@@ -270,6 +278,12 @@ exports.appRegister = asyncHandler(async (req, res) => {
     if (!categoryIds.length) throw ApiError.badRequest('Select at least one service category');
     const [catRows] = await pool.query('SELECT id FROM service_categories WHERE status = 1 AND id IN (?)', [categoryIds]);
     if (catRows.length !== categoryIds.length) throw ApiError.badRequest('One or more service categories are invalid');
+    // KYC: photo + aadhar + pan — all required images
+    for (const [field, label] of KYC_FIELDS) {
+      const file = (req.files || []).find((f) => f.fieldname === field);
+      if (!file) throw ApiError.badRequest(`${label} is required`);
+      if (!/^image\//.test(file.mimetype)) throw ApiError.badRequest(`${label} must be an image`);
+    }
   } else if (!email) {
     throw ApiError.badRequest('Email is required');
   }
@@ -286,6 +300,9 @@ exports.appRegister = asyncHandler(async (req, res) => {
   }
 
   const passwordHash = bcrypt.hashSync(crypto.randomBytes(32).toString('hex'), 10);
+  // upload KYC images before opening the transaction — upload failure = nothing created (retry with same verifyToken)
+  let docs = {};
+  if (isVendorReg) docs = await uploadKycFiles(req.files);
   const conn = await pool.getConnection();
   let userId;
   try {
@@ -298,10 +315,13 @@ exports.appRegister = asyncHandler(async (req, res) => {
     userId = result.insertId;
     if (isVendorReg) {
       const [vres] = await conn.query(
-        `INSERT INTO vendors (user_id, business_name, contact_person, city, state, pincode, address, status)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')`,
+        `INSERT INTO vendors (user_id, business_name, contact_person, city, state, pincode, address,
+                gst_number, photo, aadhar_front, aadhar_back, pan_front, pan_back, status)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'pending')`,
         [userId, businessName, trimOrNull(req.body.contact_person), trimOrNull(req.body.city),
-         trimOrNull(req.body.state), trimOrNull(req.body.pincode), trimOrNull(req.body.address)]
+         trimOrNull(req.body.state), trimOrNull(req.body.pincode), trimOrNull(req.body.address),
+         trimOrNull(req.body.gst_no), docs.photo || null, docs.aadhar_front || null,
+         docs.aadhar_back || null, docs.pan_front || null, docs.pan_back || null]
       );
       for (const cid of categoryIds) {
         await conn.query('INSERT IGNORE INTO vendor_service_categories (vendor_id, category_id) VALUES (?, ?)', [

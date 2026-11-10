@@ -39,7 +39,17 @@ router.get(
          (SELECT COUNT(*) FROM requests WHERE assigned_vendor_id = ? AND status = 'pending_review') AS pending_requests`,
       [rows[0].id, rows[0].id, rows[0].id]
     );
-    sendSuccess(res, { ...rows[0], logo: toPublicUrl(rows[0].logo), categories: cats, stats });
+    sendSuccess(res, {
+      ...rows[0],
+      logo: toPublicUrl(rows[0].logo),
+      photo: toPublicUrl(rows[0].photo),
+      aadhar_front: toPublicUrl(rows[0].aadhar_front),
+      aadhar_back: toPublicUrl(rows[0].aadhar_back),
+      pan_front: toPublicUrl(rows[0].pan_front),
+      pan_back: toPublicUrl(rows[0].pan_back),
+      categories: cats,
+      stats,
+    });
   })
 );
 
