@@ -27,7 +27,7 @@ const publicUser = (u) => ({
 const buildAuthResponse = async (user) => {
   const permissions = await loadUserPermissions(user.id);
   const [vendorRows] = await pool.query(
-    `SELECT id, business_name, status, coverage_areas, photo FROM vendors WHERE user_id = ?`,
+    `SELECT id, business_name, status, coverage_areas, photo, rejection_reason FROM vendors WHERE user_id = ?`,
     [user.id]
   );
   const accessToken = signAccessToken(user);
@@ -232,9 +232,9 @@ exports.otpVerify = asyncHandler(async (req, res) => {
     return sendSuccess(res, { ...data, isNewUser: false }, 'Login successful');
   }
 
-  // new user → verifyToken for registration
+  // new user → verifyToken for registration (vendor: null = no vendors row yet)
   const verifyToken = otp.signVerifyToken(phone);
-  sendSuccess(res, { verifyToken, isNewUser: true, phone }, 'Phone verified — complete your registration');
+  sendSuccess(res, { verifyToken, isNewUser: true, phone, vendor: null }, 'Phone verified — complete your registration');
 });
 
 const parseCategoryIds = (value) => {

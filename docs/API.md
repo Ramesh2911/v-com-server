@@ -162,14 +162,21 @@ Headers: Content-Type: application/json
 ```
 → App: `isNewUser === false` → home screen. Done.
 
+> **`client: "vendor"` login response** — `vendor` carries the **vendors table status** for screen routing:
+> `{ id, business_name, status, coverage_areas, photo, rejection_reason }`
+> - `vendor === null` → no provider account yet (fresh customer phone on the vendor app)
+> - `status: "pending"` → waiting-for-approval screen · `"approved"` → home ·
+>   `"rejected"` → rejected screen (show `rejection_reason`) · `"suspended"` → suspended screen
+
 **2b — new user → 200 (register next):**
 ```json
 {
   "success": true,
   "message": "Phone verified — complete your registration",
-  "data": { "verifyToken": "eyJhbGciOi...", "isNewUser": true, "phone": "9876543210" }
+  "data": { "verifyToken": "eyJhbGciOi...", "isNewUser": true, "phone": "9876543210", "vendor": null }
 }
 ```
+`vendor: null` — no vendors row exists yet (it is created by `POST /auth/register` for `client: "vendor"`).
 Errors: `400` incorrect/expired/already-used · `429` too many attempts · `403` wrong-app login.
 
 **Step 3 — register (new user only)**
