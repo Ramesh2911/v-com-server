@@ -108,8 +108,9 @@ const cloudinaryImage = async (req, res) => {
 
 const cloudinaryUpload = cloudinaryConfigured ? cloudinaryMemory : generalUpload;
 
-// ---- Vendor KYC registration uploads (photo + aadhar/pan, images only, ≤5 files) ----
-const kycLimits = { fileSize: env.upload.maxImageSizeMb * 1024 * 1024, files: 5 };
+// ---- Vendor KYC registration uploads (photo + aadhar/pan, images only) ----
+// 6 = 5 KYC docs + optional logo (profile PUT re-upload flow)
+const kycLimits = { fileSize: env.upload.maxImageSizeMb * 1024 * 1024, files: 6 };
 const kycMemory = multer({
   storage: multer.memoryStorage(),
   fileFilter: imageFileFilter,

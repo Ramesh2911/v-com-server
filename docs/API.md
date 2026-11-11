@@ -499,12 +499,30 @@ POST /api/v1/customer/reviews
 
 | Method | Path | Body |
 |---|---|---|
-| GET | `/vendor/profile` | → vendor record (incl. `photo`, `aadhar_*`, `pan_*` URLs) + `categories[]` + `stats` |
-| PUT | `/vendor/profile` | `business_name?, contact_person?, city?, state?, pincode?, coverage_areas?, address?, gst_number?` (+ multipart `logo`) |
+| GET | `/vendor/profile` | → full profile (shape below) |
+| PUT | `/vendor/profile` | `business_name?, contact_person?, city?, state?, pincode? (6 digits), coverage_areas? (array or CSV string), address?, gst_number? (alias: gst_no), name? (owner name)` — multipart optional: `logo` + any of `photo, aadhar_front, aadhar_back, pan_front, pan_back` re-upload → **returns the updated profile** |
 | POST | `/vendor/complete-profile` | notify-only stub (profile fields go through `PUT /vendor/profile`) |
 | GET | `/vendor/summary` | → stats: requests/jobs/quotations counts + earnings |
 | GET | `/vendor/available-categories` | → all active service categories |
 | PUT | `/vendor/service-categories` | `category_ids: [ids]` |
+
+**GET/PUT `/vendor/profile` → `data`:**
+```json
+{ "id": 1, "user_id": 8, "business_name": "...", "contact_person": "...",
+  "status": "approved", "rejection_reason": null,
+  "coverage_areas": ["Bangalore", "Mysore"], "rating": 4.91, "total_jobs": 0,
+  "kyc_complete": true,
+  "logo": null, "photo": "https://...", "aadhar_front": "...", "aadhar_back": "...",
+  "pan_front": "...", "pan_back": "...",
+  "address": "...", "city": "...", "state": "...", "pincode": "...", "gst_number": "...",
+  "owner_name": "...", "email": "...", "phone": "...", "avatar": null, "user_status": "active",
+  "categories": [{ "id": 2, "name": "...", "module_name": "...", "module_code": "..." }],
+  "stats": { "completed_jobs": 0, "active_jobs": 0, "pending_requests": 0 } }
+```
+- `coverage_areas` is always an **array** (stored CSV/JSON text is parsed); PUT accepts array or CSV.
+- `kyc_complete` = all 5 KYC docs (photo + aadhar + pan) uploaded.
+- **KYC re-upload:** a `rejected` vendor PUTs multipart doc(s) → docs replaced, `status` → `pending`, `rejection_reason` cleared, vendor notified. JSON PUT without files never changes status.
+- Errors: `400` bad pincode / unknown file field / non-image file · `403` no provider account for this user.
 
 ### 5.2 Requests
 
