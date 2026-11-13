@@ -495,12 +495,14 @@ POST /api/v1/customer/reviews
 
 > New vendor accounts start as `status = pending` until approved by admin (created by `POST /auth/register` with `client: vendor`). Pending owners can use **profile / service-categories / technicians / attendance**; request & job routes require `status = approved`.
 
-### 5.1 Profile
+### 5.1 Profile, status & services
 
 | Method | Path | Body |
 |---|---|---|
-| GET | `/vendor/profile` | → full profile (shape below) |
-| PUT | `/vendor/profile` | `business_name?, contact_person?, city?, state?, pincode? (6 digits), coverage_areas? (array or CSV string), address?, gst_number? (alias: gst_no), name? (owner name)` — multipart optional: `logo` + any of `photo, aadhar_front, aadhar_back, pan_front, pan_back` re-upload → **returns the updated profile** |
+| GET | `/vendor/profile` | → full profile (shape below), message `Vendor profile retrieved` |
+| PUT | `/vendor/profile` | `business_name?, contact_person?, city?, state?, pincode? (6 digits), coverage_areas? (array or CSV string), address?, gst_number? (alias: gst_no), name? (owner name), email? (unique-checked)` — multipart optional: `logo` + any of `photo, aadhar_front, aadhar_back, pan_front, pan_back` re-upload → **returns the updated profile** |
+| PUT | `/vendor/status/toggle` | `{ is_online: boolean }` → `{ is_online }` (vendor app online/offline switch) |
+| GET | `/vendor/services` | → vendor's offered categories: `{ id, name, module_name, module_code, is_active, base_price }[]` |
 | POST | `/vendor/complete-profile` | notify-only stub (profile fields go through `PUT /vendor/profile`) |
 | GET | `/vendor/summary` | → stats: requests/jobs/quotations counts + earnings |
 | GET | `/vendor/available-categories` | → all active service categories |
@@ -509,20 +511,22 @@ POST /api/v1/customer/reviews
 **GET/PUT `/vendor/profile` → `data`:**
 ```json
 { "id": 1, "user_id": 8, "business_name": "...", "contact_person": "...",
-  "status": "approved", "rejection_reason": null,
+  "status": "approved", "rejection_reason": null, "is_online": true,
   "coverage_areas": ["Bangalore", "Mysore"], "rating": 4.91, "total_jobs": 0,
-  "kyc_complete": true,
+  "total_ratings": 64, "kyc_complete": true,
   "logo": null, "photo": "https://...", "aadhar_front": "...", "aadhar_back": "...",
   "pan_front": "...", "pan_back": "...",
-  "address": "...", "city": "...", "state": "...", "pincode": "...", "gst_number": "...",
+  "address": "...", "city": "...", "state": "...", "pincode": "...",
+  "gst_number": "...", "gst_no": "...",
   "owner_name": "...", "email": "...", "phone": "...", "avatar": null, "user_status": "active",
   "categories": [{ "id": 2, "name": "...", "module_name": "...", "module_code": "..." }],
   "stats": { "completed_jobs": 0, "active_jobs": 0, "pending_requests": 0 } }
 ```
+- `gst_no` is an alias of `gst_number` (same value). `total_ratings` = visible service reviews count.
 - `coverage_areas` is always an **array** (stored CSV/JSON text is parsed); PUT accepts array or CSV.
 - `kyc_complete` = all 5 KYC docs (photo + aadhar + pan) uploaded.
 - **KYC re-upload:** a `rejected` vendor PUTs multipart doc(s) → docs replaced, `status` → `pending`, `rejection_reason` cleared, vendor notified. JSON PUT without files never changes status.
-- Errors: `400` bad pincode / unknown file field / non-image file · `403` no provider account for this user.
+- Errors: `400` bad pincode / invalid email / unknown file field / non-image file · `409` email taken · `403` no provider account for this user.
 
 ### 5.2 Requests
 
@@ -560,7 +564,8 @@ Stages: `pending → accepted → scheduled → in_progress → awaiting_approva
 
 ### 5.5 Notifications & Support
 
-Mirror customer endpoints at `/vendor/notifications` and `/vendor/support` (same bodies).
+- `GET /vendor/notifications` → `{ items: [{ id, title, body, created_at, read_at, data, ... }], unread, avatar }` (map `read_at !== null` → `is_read` client-side).
+- `POST /vendor/support/messages` → `{ message* }` (**subject optional** — defaults to first line of message) → 201 `{ id, ticket_no }`. Also mounted at `POST /vendor/support`.
 
 ### 5.6 Technicians & attendance (owner-managed)
 
@@ -568,15 +573,41 @@ Technicians are **standalone rows owned by the vendor** — no login account, no
 
 | Method | Path | Body / Query |
 |---|---|---|
-| POST | `/vendor/technicians` | `name*, phone?, skill?, address?, id_proof?, notes?, status? ('active'\|'inactive')` → 201 `{ id }` |
-| GET | `/vendor/technicians` | `status?, search?` → rows + `today_status` (or null) + `present_30d` |
-| PUT | `/vendor/technicians/:id` | same fields as create (`name*`) |
-| DELETE | `/vendor/technicians/:id` | hard delete — attendance rows cascade |
+| POST | `/vendor/technicians` | **multipart (spec mode — when files / `aadhaar_number` / `service_ids` present):** `name*, phone* (10 digit), email?, aadhaar_number* (12 digits), service_ids* (JSON array, e.g. `"[31,45]"`), files: profile_photo*, aadhar_front*, aadhar_back*` → 201 `{ id, name, phone, status }`. **Legacy JSON mode** (no files/aadhaar/service_ids): `name*, phone?, skill?, address?, id_proof?, notes?, status?` → 201 `{ id, name, phone, status }` |
+| GET | `/vendor/technicians` | `status? (all\|active\|on_duty\|offline\|inactive), search?` → spec rows: `{ id, name, phone, email, photo, is_online, rating (null), completed_jobs, active_job_id (job_no\|null), services: [names], today_status, present_30d, ... }`. `on_duty` = attendance today present · `offline` = `is_online=0` |
+| PUT | `/vendor/technicians/:id` | `name*, phone?, email?, aadhaar_number?, is_online?, service_ids?, skill?, ...` — multipart optional (`profile_photo`/`aadhar_front`/`aadhar_back`) |
+| DELETE | `/vendor/technicians/:id` | hard delete — attendance + services cascade |
 | POST | `/vendor/technician-attendance` | **single:** `{ technician_id*, attendance_date*, status?='present', notes? }` · **bulk:** `{ attendance_date*, entries: [{ technician_id, status?, notes? }] }` (≤200). Upsert — same day re-mark updates. Future date → 400 |
 | GET | `/vendor/technician-attendance` | `date?` (default today) \| `month? (YYYY-MM)` \| `technician_id? \| status?` → paginated `{ items, pagination }` |
 | GET | `/vendor/technician-attendance/summary` | `month?` → per-technician `present/absent/half_days/late` counts |
 
-Attendance `status`: `present` \| `absent` \| `half_day` \| `late`. Dates `YYYY-MM-DD`, **not in the future**. Audit actions: `technician.create/update/delete`, `technician.attendance`.
+Attendance `status`: `present` \| `absent` \| `half_day` \| `late`. Dates `YYYY-MM-DD`, **not in the future**. `rating` is `null` (technician-level reviews not in schema yet). Audit actions: `technician.create/update/delete`, `technician.attendance`.
+
+### 5.7 Bookings (vendor app adapter)
+
+Presentation layer over requests + jobs — existing `/vendor/requests` & `/vendor/jobs` untouched. `:id` accepts numeric request id, `ticket_no` (`VCOM-REQ-*`) or `job_no` (`VCOM-JOB-*`), `#` prefix allowed. Requires approved vendor.
+
+| Method | Path | Body / Query |
+|---|---|---|
+| GET | `/vendor/bookings` | `status? (all\|pending\|accepted\|in_progress\|completed\|cancelled), page?, limit?, search?` → `{ total, page, limit, bookings: [...] }` |
+| GET | `/vendor/bookings/:id` | detail with `payment_summary` + `timeline` |
+| PUT | `/vendor/bookings/:id/action` | `{ action: "accept"\|"reject", reason? }` → `{ id, status: "accepted"\|"rejected" }` (wraps request assignment flow) |
+| POST | `/vendor/bookings/:id/assign` | `{ technician_id* }` → `{ booking_id, technician_id, technician_name, status: "assigned" }` (link persists across request/job stages) |
+
+**List item:** `{ id (ticket_no), request_id, service, category_id, category_name, customer_name, customer_phone, address, scheduled_time, display_time, amount (number), payment_status (null), status, is_urgent, job_no, technician: {id,name,phone,photo}|null }`
+**Status map:** `pending_review→pending` · `assigned/quoted/approved→accepted` · `scheduled/in_progress→in_progress` · `completed/closed→completed` · `cancelled→cancelled`.
+**Detail:** `{ id, service, category, customer, phone, address, time, amount ("₹650"), status ("Pending" title-case), technician (name|"Unassigned"), Photo, payment_summary: { base_fee, visiting_charges, platform_fee_taxes, total_payable, payment_mode: null }, timeline: [4 steps] }`.
+> `payment_status` / `payment_mode` are `null` — payments module not in platform yet. `reject` unassigns the booking (falls out of vendor scope → detail 404).
+
+### 5.8 Dashboard
+
+| Method | Path | Query |
+|---|---|---|
+| GET | `/vendor/dashboard` | — (profile-style access: pending vendors get zeroed stats) |
+
+Returns exactly the app home-screen shape: `{ is_online, stats: { today_earnings, total_earnings, active_bookings, technicians, vendor_rating }, revenue_chart: { title, total_earned, subtitle, growth_badge, selected_day, chart: [{ day, amount, ratio, is_highest }] ×7 }, incoming_requests: [{ id, service, category, customer, phone, address, time, amount, status: "Pending", technician: "Unassigned" }] }`.
+- `revenue_chart` = current week Mon→Sun (jobs completed amounts); `ratio` = amount / week max.
+- `incoming_requests` = assigned requests awaiting vendor accept (max 10). Earnings = `jobs.amount` where `stage = completed`.
 
 ---
 

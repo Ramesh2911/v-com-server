@@ -6,6 +6,7 @@ const { sendSuccess, sendPaginated } = require('../../utils/response');
 const { authMiddleware } = require('../../middlewares/auth');
 const { getPagination } = require('../../utils/pagination');
 const { writeAudit } = require('../../utils/audit');
+const { kycUpload, uploadKycFiles } = require('../../middlewares/upload');
 
 router.use(authMiddleware);
 
@@ -34,38 +35,111 @@ const assertFutureDate = (date) => {
 };
 
 // ======================= TECHNICIANS =======================
+const parseServiceIds = async (raw) => {
+  let ids = raw;
+  if (typeof ids === 'string') {
+    try { ids = JSON.parse(ids); } catch (_) { ids = ids.split(','); }
+  }
+  if (!Array.isArray(ids) || !ids.length) throw ApiError.badRequest('service_ids must be a non-empty array');
+  ids = ids.map((x) => Number(x)).filter((x) => Number.isInteger(x) && x > 0);
+  if (!ids.length) throw ApiError.badRequest('service_ids must contain valid category ids');
+  const [rows] = await pool.query('SELECT id FROM service_categories WHERE id IN (?)', [ids]);
+  if (rows.length !== ids.length) throw ApiError.badRequest('One or more service_ids are invalid');
+  return ids;
+};
+
+const TECH_FILES = [
+  ['profile_photo', 'Profile photo'],
+  ['aadhar_front', 'Aadhaar front'],
+  ['aadhar_back', 'Aadhaar back'],
+];
+
+const saveTechnicianServices = async (technicianId, ids) => {
+  await pool.query('DELETE FROM technician_services WHERE technician_id = ?', [technicianId]);
+  for (const cid of ids) {
+    await pool.query('INSERT IGNORE INTO technician_services (technician_id, category_id) VALUES (?, ?)', [
+      technicianId, cid,
+    ]);
+  }
+};
+
+const validEmail = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
 router.post(
   '/technicians',
   requireVendor,
+  kycUpload.any(),
   asyncHandler(async (req, res) => {
     const vendorId = req.user.vendor.id;
-    const name = String(req.body.name || '').trim();
+    const body = req.body || {};
+    const files = req.files || [];
+    const name = String(body.name || '').trim();
     if (!name) throw ApiError.badRequest('Technician name is required');
-    const phone = trimOrNull(req.body.phone);
+    const phone = trimOrNull(body.phone);
     if (phone && !/^[6-9]\d{9}$|^\+?\d{8,15}$/.test(phone)) throw ApiError.badRequest('Invalid phone number');
-    const [result] = await pool.query(
-      `INSERT INTO technicians (vendor_id, name, phone, skill, address, id_proof, notes, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
-        vendorId,
-        name,
-        phone,
-        trimOrNull(req.body.skill),
-        trimOrNull(req.body.address),
-        trimOrNull(req.body.id_proof),
-        trimOrNull(req.body.notes),
-        req.body.status === 'inactive' ? 'inactive' : 'active',
-      ]
-    );
+
+    // spec mode: multipart files OR aadhaar_number/service_ids present → strict app contract
+    const specMode = files.length > 0 || body.aadhaar_number !== undefined || body.service_ids !== undefined;
+    let email = null;
+    let aadhaar = null;
+    let photo = null;
+    let aadharFront = null;
+    let aadharBack = null;
+    let serviceIds = [];
+
+    if (specMode) {
+      if (!phone) throw ApiError.badRequest('phone is required');
+      aadhaar = trimOrNull(body.aadhaar_number);
+      if (!aadhaar || !/^\d{12}$/.test(aadhaar)) throw ApiError.badRequest('aadhaar_number must be 12 digits');
+      if (body.email && String(body.email).trim()) {
+        email = String(body.email).trim().toLowerCase();
+        if (!validEmail(email)) throw ApiError.badRequest('Invalid email address');
+      }
+      serviceIds = await parseServiceIds(body.service_ids);
+      for (const [field, label] of TECH_FILES) {
+        if (!files.find((f) => f.fieldname === field)) throw ApiError.badRequest(`${label} is required`);
+      }
+      const docs = await uploadKycFiles(files);
+      photo = docs.profile_photo || null;
+      aadharFront = docs.aadhar_front || null;
+      aadharBack = docs.aadhar_back || null;
+    }
+
+    const conn = await pool.getConnection();
+    let techId;
+    try {
+      await conn.beginTransaction();
+      const [result] = await conn.query(
+        `INSERT INTO technicians (vendor_id, name, phone, email, aadhaar_number, photo, skill, address, id_proof, notes, status, is_online)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          vendorId, name, phone, email, aadhaar, photo,
+          trimOrNull(body.skill), trimOrNull(body.address), trimOrNull(body.id_proof), trimOrNull(body.notes),
+          body.status === 'inactive' ? 'inactive' : 'active',
+          typeof body.is_online === 'boolean' ? (body.is_online ? 1 : 0) : 1,
+        ]
+      );
+      techId = result.insertId;
+      for (const cid of serviceIds) {
+        await conn.query('INSERT IGNORE INTO technician_services (technician_id, category_id) VALUES (?, ?)', [techId, cid]);
+      }
+      await conn.commit();
+    } catch (err) {
+      try { await conn.rollback(); } catch (_) { /* ignore */ }
+      conn.release();
+      throw err;
+    }
+    conn.release();
+
     await writeAudit({
       actor: req.user,
       action: 'technician.create',
       entity: 'technicians',
-      entityId: result.insertId,
+      entityId: techId,
       details: { name },
       req,
     });
-    sendSuccess(res, { id: result.insertId }, 'Technician added', 201);
+    sendSuccess(res, { id: techId, name, phone, status: 'active' }, 'Technician created successfully', 201);
   })
 );
 
@@ -76,61 +150,125 @@ router.get(
     const vendorId = req.user.vendor.id;
     let where = 'WHERE t.vendor_id = ?';
     const params = [vendorId];
-    if (req.query.status === 'active' || req.query.status === 'inactive') {
-      where += ' AND t.status = ?';
-      params.push(req.query.status);
-    }
+    const status = req.query.status || 'all';
+    if (status === 'active') where += " AND t.status = 'active'";
+    else if (status === 'inactive') where += " AND t.status = 'inactive'";
+    else if (status === 'on_duty') {
+      where += ` AND EXISTS (SELECT 1 FROM technician_attendance a
+                 WHERE a.technician_id = t.id AND a.attendance_date = CURDATE() AND a.status = 'present')`;
+    } else if (status === 'offline') where += ' AND t.is_online = 0';
+    else if (status !== 'all') throw ApiError.badRequest('status must be one of: all, active, on_duty, offline, inactive');
     if (req.query.search) {
-      where += ' AND (t.name LIKE ? OR t.phone LIKE ? OR t.skill LIKE ?)';
+      where += ' AND (t.name LIKE ? OR t.phone LIKE ? OR t.skill LIKE ? OR t.email LIKE ?)';
       const s = `%${req.query.search}%`;
-      params.push(s, s, s);
+      params.push(s, s, s, s);
     }
     const [rows] = await pool.query(
-      `SELECT t.*,
+      `SELECT t.id, t.name, t.phone, t.email, t.photo, t.is_online, t.status, t.skill, t.address,
+              t.id_proof, t.notes, t.aadhaar_number, t.created_at,
               (SELECT a.status FROM technician_attendance a
                 WHERE a.technician_id = t.id AND a.attendance_date = CURDATE()) AS today_status,
               (SELECT COUNT(*) FROM technician_attendance a
                 WHERE a.technician_id = t.id AND a.attendance_date >= DATE_SUB(CURDATE(), INTERVAL 30 DAY)
-                  AND a.status = 'present') AS present_30d
+                  AND a.status = 'present') AS present_30d,
+              (SELECT COUNT(*) FROM request_technicians rt
+                 JOIN jobs j ON j.request_id = rt.request_id
+                WHERE rt.technician_id = t.id AND j.stage = 'completed') AS completed_jobs,
+              (SELECT j.job_no FROM request_technicians rt
+                 JOIN jobs j ON j.request_id = rt.request_id
+                WHERE rt.technician_id = t.id
+                  AND j.stage IN ('accepted','scheduled','in_progress','awaiting_approval')
+                ORDER BY j.updated_at DESC LIMIT 1) AS active_job_id
          FROM technicians t ${where}
         ORDER BY (t.status = 'active') DESC, t.name`,
       params
     );
-    sendSuccess(res, rows);
+    let svcRows = [];
+    const ids = rows.map((r) => r.id);
+    if (ids.length) {
+      [svcRows] = await pool.query(
+        `SELECT ts.technician_id, c.name FROM technician_services ts
+           JOIN service_categories c ON c.id = ts.category_id
+          WHERE ts.technician_id IN (?)`,
+        [ids]
+      );
+    }
+    sendSuccess(
+      res,
+      rows.map((r) => ({
+        ...r,
+        is_online: !!r.is_online,
+        rating: null, // technician-level reviews not in schema yet
+        completed_jobs: Number(r.completed_jobs),
+        services: svcRows.filter((s) => s.technician_id === r.id).map((s) => s.name),
+      }))
+    );
   })
 );
 
 router.put(
   '/technicians/:id',
   requireVendor,
+  kycUpload.any(),
   asyncHandler(async (req, res) => {
     const vendorId = req.user.vendor.id;
-    await assertTechnician(Number(req.params.id), vendorId);
-    const name = String(req.body.name || '').trim();
+    const technicianId = Number(req.params.id);
+    await assertTechnician(technicianId, vendorId);
+    const body = req.body || {};
+    const files = req.files || [];
+    const name = String(body.name || '').trim();
     if (!name) throw ApiError.badRequest('Technician name is required');
-    const phone = trimOrNull(req.body.phone);
+    const phone = trimOrNull(body.phone);
     if (phone && !/^[6-9]\d{9}$|^\+?\d{8,15}$/.test(phone)) throw ApiError.badRequest('Invalid phone number');
+
+    let email = null;
+    if (body.email !== undefined && body.email !== null && String(body.email).trim()) {
+      email = String(body.email).trim().toLowerCase();
+      if (!validEmail(email)) throw ApiError.badRequest('Invalid email address');
+    }
+    let aadhaar = null;
+    if (body.aadhaar_number !== undefined && body.aadhaar_number !== null && String(body.aadhaar_number).trim()) {
+      aadhaar = String(body.aadhaar_number).trim();
+      if (!/^\d{12}$/.test(aadhaar)) throw ApiError.badRequest('aadhaar_number must be 12 digits');
+    }
+
+    let docs = {};
+    if (files.length) {
+      const allowed = TECH_FILES.map(([f]) => f);
+      const unknown = files.find((f) => !allowed.includes(f.fieldname));
+      if (unknown) throw ApiError.badRequest(`Unknown file field: ${unknown.fieldname}`);
+      docs = await uploadKycFiles(files);
+    }
+
+    let serviceIds = null;
+    if (body.service_ids !== undefined && body.service_ids !== null && body.service_ids !== '') {
+      serviceIds = await parseServiceIds(body.service_ids);
+    }
+
     await pool.query(
-      `UPDATE technicians SET name = ?, phone = ?, skill = ?, address = ?, id_proof = ?, notes = ?,
-              status = ?
+      `UPDATE technicians SET name = ?, phone = ?, email = COALESCE(?, email),
+              aadhaar_number = COALESCE(?, aadhaar_number),
+              photo = COALESCE(?, photo), aadhar_front = COALESCE(?, aadhar_front),
+              aadhar_back = COALESCE(?, aadhar_back),
+              skill = ?, address = COALESCE(?, address), id_proof = COALESCE(?, id_proof),
+              notes = COALESCE(?, notes), status = ?,
+              is_online = COALESCE(?, is_online)
         WHERE id = ? AND vendor_id = ?`,
       [
-        name,
-        phone,
-        trimOrNull(req.body.skill),
-        trimOrNull(req.body.address),
-        trimOrNull(req.body.id_proof),
-        trimOrNull(req.body.notes),
-        req.body.status === 'inactive' ? 'inactive' : 'active',
-        Number(req.params.id),
-        vendorId,
+        name, phone, email, aadhaar,
+        docs.profile_photo || null, docs.aadhar_front || null, docs.aadhar_back || null,
+        trimOrNull(body.skill), trimOrNull(body.address), trimOrNull(body.id_proof), trimOrNull(body.notes),
+        body.status === 'inactive' ? 'inactive' : 'active',
+        typeof body.is_online === 'boolean' ? (body.is_online ? 1 : 0) : null,
+        technicianId, vendorId,
       ]
     );
+    if (serviceIds) await saveTechnicianServices(technicianId, serviceIds);
     await writeAudit({
       actor: req.user,
       action: 'technician.update',
       entity: 'technicians',
-      entityId: Number(req.params.id),
+      entityId: technicianId,
       req,
     });
     sendSuccess(res, null, 'Technician updated');

@@ -13,12 +13,14 @@ router.post(
   '/',
   asyncHandler(async (req, res) => {
     const { subject, message, category, priority = 'normal' } = req.body;
-    if (!subject || !message) throw ApiError.badRequest('subject and message are required');
+    if (!message || !String(message).trim()) throw ApiError.badRequest('message is required');
+    // subject optional (vendor app sends message-only) → default from message
+    const finalSubject = (subject && String(subject).trim()) || String(message).trim().split('\n')[0].slice(0, 150);
     const ticketNo = await generateTicketNo(pool, 'support');
     const [result] = await pool.query(
       `INSERT INTO support_tickets (ticket_no, user_id, user_type, subject, message, category, priority)
        VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [ticketNo, req.user.id, req.user.user_type, subject, message, category || null, priority]
+      [ticketNo, req.user.id, req.user.user_type, finalSubject, message, category || null, priority]
     );
     const [staff] = await pool.query(
       `SELECT DISTINCT u.id FROM users u
@@ -27,7 +29,7 @@ router.post(
        WHERE p.code IN ('support.manage','modules.all') AND u.status = 'active'`
     );
     for (const s of staff) {
-      await notify({ userId: s.id, type: 'support', title: `Support ticket ${ticketNo}`, body: subject });
+      await notify({ userId: s.id, type: 'support', title: `Support ticket ${ticketNo}`, body: finalSubject });
     }
     sendSuccess(res, { id: result.insertId, ticket_no: ticketNo }, 'Support ticket created', 201);
   })

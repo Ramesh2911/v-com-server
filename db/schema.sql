@@ -9,7 +9,7 @@ DROP TABLE IF EXISTS service_reviews, coupons, offers, addresses, audit_logs, se
   notification_templates, notifications, sos_status_history, sos_tickets,
   job_attachments, job_status_history, jobs, quotation_items, quotations,
   request_status_history, request_assignments, request_attachments, requests,
-  service_categories, service_modules, vendor_service_categories, technicians, technician_attendance, vendors,
+  service_categories, service_modules, vendor_service_categories, technicians, technician_attendance, technician_services, request_technicians, vendors,
   password_resets, refresh_tokens, otp_codes, role_permissions, permissions, roles, users;
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -217,6 +217,7 @@ CREATE TABLE vendors (
   rating DECIMAL(3,2) NOT NULL DEFAULT 0.00,
   total_jobs INT NOT NULL DEFAULT 0,
   status ENUM('pending','approved','rejected','suspended') NOT NULL DEFAULT 'pending',
+  is_online TINYINT(1) NOT NULL DEFAULT 1,
   approved_by INT UNSIGNED NULL,
   approved_at DATETIME NULL,
   rejection_reason VARCHAR(255) NULL,
@@ -242,6 +243,12 @@ CREATE TABLE technicians (
   vendor_id INT UNSIGNED NOT NULL,
   name VARCHAR(100) NOT NULL,
   phone VARCHAR(15) NULL,
+  email VARCHAR(120) NULL,
+  aadhaar_number VARCHAR(12) NULL,
+  photo VARCHAR(512) NULL,
+  aadhar_front VARCHAR(512) NULL,
+  aadhar_back VARCHAR(512) NULL,
+  is_online TINYINT(1) NOT NULL DEFAULT 1,
   skill VARCHAR(120) NULL,
   address VARCHAR(255) NULL,
   id_proof VARCHAR(120) NULL,
@@ -251,6 +258,16 @@ CREATE TABLE technicians (
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   KEY idx_technicians_vendor (vendor_id),
   CONSTRAINT fk_technicians_vendor FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE technician_services (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  technician_id INT UNSIGNED NOT NULL,
+  category_id INT UNSIGNED NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_tech_svc (technician_id, category_id),
+  CONSTRAINT fk_ts_technician FOREIGN KEY (technician_id) REFERENCES technicians(id) ON DELETE CASCADE,
+  CONSTRAINT fk_ts_category FOREIGN KEY (category_id) REFERENCES service_categories(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE technician_attendance (
@@ -325,6 +342,19 @@ CREATE TABLE request_assignments (
   CONSTRAINT fk_asg_request FOREIGN KEY (request_id) REFERENCES requests(id) ON DELETE CASCADE,
   CONSTRAINT fk_asg_vendor FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE,
   CONSTRAINT fk_asg_by FOREIGN KEY (assigned_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE request_technicians (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  request_id INT UNSIGNED NOT NULL,
+  technician_id INT UNSIGNED NOT NULL,
+  assigned_by INT UNSIGNED NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_req_tech (request_id),
+  KEY idx_rt_technician (technician_id),
+  CONSTRAINT fk_rt_request FOREIGN KEY (request_id) REFERENCES requests(id) ON DELETE CASCADE,
+  CONSTRAINT fk_rt_technician FOREIGN KEY (technician_id) REFERENCES technicians(id) ON DELETE CASCADE,
+  CONSTRAINT fk_rt_by FOREIGN KEY (assigned_by) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE request_status_history (

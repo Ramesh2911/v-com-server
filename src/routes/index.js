@@ -22,11 +22,13 @@ router.use('/customer/reviews', require('../modules/reviews/routes.customer'));
 // Vendor app
 router.use('/vendor', require('../modules/vendors/routes.vendor'));
 router.use('/vendor', require('../modules/vendors/routes.vendor.tech'));
+router.use('/vendor', require('../modules/vendors/routes.bookings'));
 router.use('/vendor', require('../modules/requests/routes.vendor'));
 router.use('/vendor', require('../modules/quotations/routes.vendor'));
 router.use('/vendor', require('../modules/jobs/routes.vendor'));
 router.use('/vendor/notifications', require('../modules/notifications/routes.vendor'));
 router.use('/vendor/support', require('../modules/support/routes.customer'));
+router.use('/vendor/support/messages', require('../modules/support/routes.customer'));
 
 // Web admin
 router.use('/admin/dashboard', require('../modules/dashboard/routes'));
