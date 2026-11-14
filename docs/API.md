@@ -124,7 +124,7 @@ Headers: Content-Type: application/json
 ```json
 {
   "success": true,
-  "message": "OTP sent successfully",
+  "message": "OTP sent successfully to +91 9876543210",
   "data": { "phone": "9876543210", "expiresIn": 300, "devOtp": "123456" }
 }
 ```
@@ -143,7 +143,8 @@ Headers: Content-Type: application/json
 ```
 
 -OTP: 6 digits, TTL **5 min**, max **5 wrong attempts** then burnt, single-use.
-- `client` optional but recommended — enforces app↔role match (403 on mismatch).
+- `client` optional but recommended — enforces app↔role match (403 on mismatch). Values: `"customer" | "vendor" | "technician"`.
+- **`client: "technician"`** → looks up the **technicians table by phone** (not users): unregistered phone → `404` (before OTP burn); inactive tech → `403` + `data: { status }`; on success a shadow `users` row (role `technician`) is created lazily and the response carries a `technician` object instead of `vendor` (see §12).
 
 **2a — existing user → 200 (login payload, ready to use):**
 ```json
@@ -843,6 +844,69 @@ module.<code>.access      (scrap-waste, cctv-automation, fire-safety,
 
 - No WebSocket — apps poll `GET /customer/notifications` / `GET /vendor/notifications` (admin web: every 30 s).
 - In-app notifications are written server-side on domain events (see `notification_templates` event codes: `request_created`, `quotation_decision`, `sos_created`, `leave_reviewed`, `support_reply`, `vendor_status`, …).
+
+---
+
+## 12. Field Technician app (`/api/v1/technician/*`) — auth required, `role_slug = technician`
+
+Login: `POST /auth/otp/verify` with `client: "technician"` (phone must exist in `technicians`, else 404). Response carries `technician: { id, employee_code, name, vendor_id, business_name, status, is_on_duty, rating: null }` instead of `vendor`. Shadow `users` row is created lazily on first login; `users.phone` conflict with a non-technician account → 403.
+
+> **Null-by-design fields** (no data source in platform): `Score`, `rating`, `level`, `earned_commission`, `payment_mode`, `donut_share` → always `null`. `employee_code` derived `TECH-XXXX` when column is empty. Attendance `is_on_duty` ↔ `technicians.is_online`.
+
+### 12.1 Profile / duty / skills
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/technician/profile` | `{ id, name, Score: null, phone: "+91 98301 23456", email, address, photo, employee_code, vendor: { id, business_name, contact_phone }, is_on_duty, rating: null, total_jobs_completed }` |
+| PUT | `/technician/status/duty` | `{ is_on_duty: boolean }` → `{ is_on_duty }` · message "Duty status updated to On-Duty/Off-Duty" |
+| GET | `/technician/skills` | `[{ id, name, category (module), level: null, Status: "Active"/"Inactive", Photo }]` from `technician_services` |
+
+### 12.2 Attendance
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/technician/attendance?month=11&year=2026` | `month` accepts `1-12` or `YYYY-MM`. → `{ technician: { name, avatar (initials), designation, employee_code, is_verified }, today: { date, is_marked_today, status_text }, month, year, month_name, total_days_joined, summary_text, attended_days: ["YYYY-MM-DD"] }` (attended = present/late/half_day) |
+| POST | `/technician/attendance` | `{ date?: "YYYY-MM-DD" }` (default today). Marks `present`, sets `marked_by`, flips `is_online=1` ("Duty activated"). 201 → `{ date, is_marked_today, total_days_joined, status, status_text }`. Duplicate → 400 `Attendance already marked…` · future → 400 |
+
+### 12.3 Dashboard
+
+`GET /technician/dashboard` → `{ is_on_duty, today_earnings, today_completed_jobs, pending_tasks, active_job, weekly_chart }`
+- `active_job` (latest open job) or `null`: `{ id (job_no), service, category, status (sub_status), customer_name, customer_phone, address, distance ("2.4 km away"|null), customer_lat, customer_lng, scheduled_time ("Today"|"13 Nov"), amount, is_urgent, customer_otp, instructions }`
+- `pending_tasks` = open jobs + assigned requests not yet jobbed.
+- `weekly_chart` = current week Mon→Sun `[{ label, amount, jobs, ratio, is_highest }]`.
+- Distance from last `technician_locations` row vs request coordinates (haversine); no location yet → `null`.
+
+### 12.4 Jobs
+
+| Method | Path | Notes |
+|---|---|---|
+| GET | `/technician/jobs?status=assigned\|ongoing\|completed` | Direct array (no pagination). Item: `{ id (job_no), service, category, status (tab), sub_status, customer_name, customer_phone (+91), address, distance, time, amount, is_urgent }`. Tab map: `completed`←stage · `ongoing`←sub_status ∈ on_the_way/reached/started/in_progress · else `assigned` |
+| GET | `/technician/jobs/:id` | `:id` = job_no or numeric id (must be assigned to this tech, else 404). → `{ id, service, category, status (sub_status), amount, payment_mode: null, is_urgent, customer: { name, phone, address, latitude, longitude }, distance, customer_otp, notes, service_items: [{ name, qty, price }], timeline: [5 steps { title, time, is_done }] }` |
+| PUT | `/technician/jobs/:id/status` | `{ status: "on_the_way"\|"reached"\|"started" }` → `{ id, status }`. Writes `job_status_history`. |
+| POST | `/technician/jobs/:id/verify-otp` | `{ otp }` matches `jobs.customer_otp` → sets `sub_status`+`stage=in_progress`, `started_at`. → `{ id, is_otp_verified: true, status: "in_progress" }`. Wrong → 400 `Invalid OTP` |
+| POST | `/technician/jobs/:id/complete` | **multipart**: `before_photo*`, `after_photo*` (required, 1 each), `completion_notes`, `extra_parts_cost`, `payment_collected` (`"true"`/`"1"` → cash). → 201 `{ id, status: "completed", earned_commission: null, completion_time }`. Closes request + notifies customer. Attachments stored `kind=before/after` |
+
+- `customer_otp`: 4-digit code generated at **job creation** (vendor + admin routes); customer sees it in `GET /customer/requests/:id` → `job.customer_otp`.
+- Status flow: `assigned → on_the_way → reached → started → (verify-otp) in_progress → completed`.
+
+### 12.5 Location / earnings / safety / support
+
+| Method | Path | Notes |
+|---|---|---|
+| POST | `/technician/location/update` | `{ latitude*, longitude*, heading?, speed?, active_job_id? }` → "Location updated". Lat −90..90, lng −180..180 |
+| GET | `/technician/earnings?period=today\|this_week\|this_month` | `{ period, hero_card: { total_amount "₹1,850", currency: "INR", growth_percentage "+18.4%", completed_tasks "3 Jobs", average_per_job }, cash_vs_digital: { digital_wallet, cash_in_hand } (from payment_collected), analytics: { trend_chart: [{ label, amount, formatted, jobs, ratio, is_highest }] (cumulative: hourly/daily/1..N), growth_badge, active_index }, donut_share: null }`. Growth vs previous equal-length window; prev=0 → `+100.0%` / `0.0%` |
+| GET | `/technician/earnings/history?period=` | `{ period, total_jobs, total_payout, payout_history: [{ id: "#VCOM-JOB-…", service, customer, date ("Today, 5:15 PM"\|"07 Nov 2026"), amount, mode: "Cash Collected"\|"Online Paid", status: "Cash Collected"\|"Received" }] }` |
+| GET | `/technician/safety-guidelines` | Static `[{ group, guidelines: [{ id, title, description }] }]` (Personal Safety, Job Site Safety) |
+| POST | `/technician/support/messages` | `{ message*, job_id? }` → 201 `{ message_id, sent_at }`. Stores `support_tickets.user_type = "technician"`, subject prefixed `[job_id]` when given. Notifies support staff |
+
+### 12.6 Errors specific to this app
+
+| Status | When |
+|---|---|
+| 401 | No/expired token |
+| 403 | Non-technician user on `/technician/*` · technician `status != active` (+ `data.status`) · phone linked to another role |
+| 404 | Phone not in `technicians` (otp/verify) · job not found / not assigned to this technician |
+| 400 | Duplicate attendance · future date · wrong/missing OTP · bad status value · missing before/after photo |
 
 ---
 

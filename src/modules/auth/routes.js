@@ -91,7 +91,7 @@ router.post(
   [
     body('phone').notEmpty().withMessage('Phone is required'),
     body('code').isLength({ min: 4, max: 6 }).withMessage('OTP must be 4-6 digits').bail().isNumeric(),
-    body('client').optional().isIn(['customer', 'vendor']).withMessage('client must be "customer" or "vendor"'),
+    body('client').optional().isIn(['customer', 'vendor', 'technician']).withMessage('client must be "customer", "vendor" or "technician"'),
   ],
   validate,
   controller.otpVerify

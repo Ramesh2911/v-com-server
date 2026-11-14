@@ -61,10 +61,11 @@ router.post(
       [request_id, vendorId]
     );
     const jobNo = await generateTicketNo(pool, 'job');
+    const customerOtp = String(Math.floor(1000 + Math.random() * 9000));
     const [result] = await pool.query(
-      `INSERT INTO jobs (job_no, request_id, quotation_id, vendor_id, stage, schedule_date, amount)
-       VALUES (?, ?, ?, ?, 'accepted', ?, ?)`,
-      [jobNo, request_id, qRow ? qRow.id : null, vendorId, schedule_date || null, amount || (qRow ? qRow.total_amount : null)]
+      `INSERT INTO jobs (job_no, request_id, quotation_id, vendor_id, stage, schedule_date, amount, customer_otp)
+       VALUES (?, ?, ?, ?, 'accepted', ?, ?, ?)`,
+      [jobNo, request_id, qRow ? qRow.id : null, vendorId, schedule_date || null, amount || (qRow ? qRow.total_amount : null), customerOtp]
     );
     await pool.query(
       `INSERT INTO job_status_history (job_id, stage, note, changed_by) VALUES (?, 'accepted', 'Job created', ?)`,

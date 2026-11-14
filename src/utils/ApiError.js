@@ -1,8 +1,9 @@
 class ApiError extends Error {
-  constructor(statusCode, message, errors = null) {
+  constructor(statusCode, message, errors = null, data = null) {
     super(message);
     this.statusCode = statusCode;
     this.errors = errors;
+    this.data = data;
     this.isOperational = true;
   }
 
@@ -14,8 +15,8 @@ class ApiError extends Error {
     return new ApiError(401, message);
   }
 
-  static forbidden(message = 'You do not have permission to perform this action') {
-    return new ApiError(403, message);
+  static forbidden(message = 'You do not have permission to perform this action', data = null) {
+    return new ApiError(403, message, null, data);
   }
 
   static notFound(message = 'Resource not found') {

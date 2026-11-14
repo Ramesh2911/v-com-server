@@ -144,12 +144,13 @@ const readVerifyToken = (token) => {
 const CLIENT_ROLES = {
   customer: ['customer'],
   vendor: ['provider_owner', 'technician'],
+  technician: ['technician'],
 };
 
 const assertClientRole = (client, roleSlug) => {
   if (!client) return;
   const allowed = CLIENT_ROLES[client];
-  if (!allowed) throw ApiError.badRequest('Invalid client. Use "customer" or "vendor".');
+  if (!allowed) throw ApiError.badRequest('Invalid client. Use "customer", "vendor" or "technician".');
   if (!allowed.includes(roleSlug)) throw ApiError.forbidden('This account does not belong to this app');
 };
 

@@ -133,7 +133,24 @@ router.get(
          FROM service_reviews WHERE request_id = ? AND customer_id = ?`,
       [req.params.id, req.user.id]
     );
-    sendSuccess(res, { ...reqRow, history, quotations, review: reviews[0] || null });
+    // job block (technician app flow) — customer shares customer_otp with the technician
+    const [jobRows] = await pool.query(
+      `SELECT job_no, stage, sub_status, customer_otp, schedule_date, amount
+         FROM jobs WHERE request_id = ? ORDER BY created_at DESC LIMIT 1`,
+      [req.params.id]
+    );
+    const j = jobRows[0] || null;
+    const job = j
+      ? {
+          id: j.job_no,
+          stage: j.stage,
+          sub_status: j.sub_status || 'assigned',
+          customer_otp: j.customer_otp || null,
+          schedule_date: j.schedule_date,
+          amount: j.amount != null ? Number(j.amount) : null,
+        }
+      : null;
+    sendSuccess(res, { ...reqRow, history, quotations, review: reviews[0] || null, job });
   })
 );
 

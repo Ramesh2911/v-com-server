@@ -9,7 +9,7 @@ DROP TABLE IF EXISTS service_reviews, coupons, offers, addresses, audit_logs, se
   notification_templates, notifications, sos_status_history, sos_tickets,
   job_attachments, job_status_history, jobs, quotation_items, quotations,
   request_status_history, request_assignments, request_attachments, requests,
-  service_categories, service_modules, vendor_service_categories, technicians, technician_attendance, technician_services, request_technicians, vendors,
+  service_categories, service_modules, vendor_service_categories, technicians, technician_attendance, technician_services, technician_locations, request_technicians, vendors,
   password_resets, refresh_tokens, otp_codes, role_permissions, permissions, roles, users;
 SET FOREIGN_KEY_CHECKS = 1;
 
@@ -50,7 +50,7 @@ CREATE TABLE users (
   email VARCHAR(150) NULL,
   phone VARCHAR(20) NULL,
   password_hash VARCHAR(255) NOT NULL,
-  user_type ENUM('customer','staff','employee') NOT NULL DEFAULT 'customer',
+  user_type ENUM('customer','staff','employee','technician') NOT NULL DEFAULT 'customer',
   role_id INT UNSIGNED NULL,
   avatar MEDIUMTEXT NULL,
   status ENUM('active','inactive','blocked') NOT NULL DEFAULT 'active',
@@ -241,6 +241,8 @@ CREATE TABLE vendor_service_categories (
 CREATE TABLE technicians (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   vendor_id INT UNSIGNED NOT NULL,
+  user_id INT UNSIGNED NULL,
+  employee_code VARCHAR(20) NULL,
   name VARCHAR(100) NOT NULL,
   phone VARCHAR(15) NULL,
   email VARCHAR(120) NULL,
@@ -256,6 +258,9 @@ CREATE TABLE technicians (
   status ENUM('active','inactive') NOT NULL DEFAULT 'active',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_tech_user (user_id),
+  UNIQUE KEY uk_tech_emp (employee_code),
+  UNIQUE KEY uk_tech_phone (phone),
   KEY idx_technicians_vendor (vendor_id),
   CONSTRAINT fk_technicians_vendor FOREIGN KEY (vendor_id) REFERENCES vendors(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -281,6 +286,19 @@ CREATE TABLE technician_attendance (
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uk_tech_att (technician_id, attendance_date),
   CONSTRAINT fk_tech_att_technician FOREIGN KEY (technician_id) REFERENCES technicians(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE technician_locations (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  technician_id INT UNSIGNED NOT NULL,
+  latitude DECIMAL(11,8) NOT NULL,
+  longitude DECIMAL(11,8) NOT NULL,
+  heading DECIMAL(6,2) NULL,
+  speed DECIMAL(8,2) NULL,
+  active_job_id VARCHAR(30) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_tl_technician (technician_id, created_at),
+  CONSTRAINT fk_tl_technician FOREIGN KEY (technician_id) REFERENCES technicians(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ========================= REQUESTS / ENQUIRIES =========================
@@ -447,11 +465,15 @@ CREATE TABLE jobs (
   quotation_id INT UNSIGNED NULL,
   vendor_id INT UNSIGNED NOT NULL,
   stage ENUM('accepted','scheduled','in_progress','awaiting_approval','completed','cancelled') NOT NULL DEFAULT 'accepted',
+  sub_status VARCHAR(20) NULL,
+  customer_otp VARCHAR(4) NULL,
   schedule_date DATE NULL,
   started_at DATETIME NULL,
   completed_at DATETIME NULL,
   completion_notes TEXT NULL,
   amount DECIMAL(14,2) NULL,
+  payment_collected TINYINT(1) NULL,
+  extra_parts_cost DECIMAL(12,2) NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uk_jobs_no (job_no),
@@ -480,7 +502,7 @@ CREATE TABLE job_attachments (
   file_path VARCHAR(255) NOT NULL,
   file_type ENUM('image','document','video') NOT NULL DEFAULT 'image',
   original_name VARCHAR(255) NULL,
-  kind ENUM('progress','completion') NOT NULL DEFAULT 'progress',
+  kind ENUM('progress','completion','before','after') NOT NULL DEFAULT 'progress',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_ja_job (job_id),
   CONSTRAINT fk_ja_job FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
@@ -722,7 +744,7 @@ CREATE TABLE support_tickets (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   ticket_no VARCHAR(30) NOT NULL,
   user_id INT UNSIGNED NOT NULL,
-  user_type ENUM('customer','vendor','staff','employee') NOT NULL DEFAULT 'customer',
+  user_type ENUM('customer','vendor','staff','employee','technician') NOT NULL DEFAULT 'customer',
   subject VARCHAR(200) NOT NULL,
   message TEXT NOT NULL,
   category VARCHAR(80) NULL,

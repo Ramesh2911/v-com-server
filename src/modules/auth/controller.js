@@ -8,7 +8,7 @@ const asyncHandler = require('../../utils/asyncHandler');
 const { sendSuccess } = require('../../utils/response');
 const { signAccessToken, signRefreshToken, verifyRefreshToken, loadUserPermissions } = require('../../middlewares/auth');
 const { writeAudit } = require('../../utils/audit');
-const { uploadKycFiles } = require('../../middlewares/upload');
+const { uploadKycFiles, toPublicUrl } = require('../../middlewares/upload');
 const otp = require('./otp.service');
 
 const publicUser = (u) => ({
@@ -201,12 +201,115 @@ exports.otpSend = asyncHandler(async (req, res) => {
     expiresIn: env.sms.otpTtlMinutes * 60,
   };
   if (env.nodeEnv !== 'production') data.devOtp = code;
-  sendSuccess(res, data, 'OTP sent successfully');
+  sendSuccess(res, data, `OTP sent successfully to +91 ${phone}`);
 });
+
+const SELECT_USER_WITH_ROLE = `
+  SELECT u.*, r.name AS role_name, r.slug AS role_slug
+    FROM users u LEFT JOIN roles r ON r.id = u.role_id
+   WHERE %s`;
+
+// technicians have no users rows of their own → lazy shadow-user creation at first login
+const ensureTechnicianUser = async (tech) => {
+  if (tech.user_id) {
+    const [rows] = await pool.query(SELECT_USER_WITH_ROLE.replace('%s', 'u.id = ?'), [tech.user_id]);
+    if (rows[0]) return rows[0];
+  }
+  const [byPhone] = await pool.query(SELECT_USER_WITH_ROLE.replace('%s', 'u.phone = ?'), [tech.phone]);
+  const existing = byPhone[0];
+  if (existing) {
+    if (existing.role_slug !== 'technician') {
+      throw ApiError.forbidden('This phone number is already linked to another account');
+    }
+    await pool.query('UPDATE technicians SET user_id = ? WHERE id = ?', [existing.id, tech.id]);
+    return existing;
+  }
+  const [[roleRow]] = await pool.query(`SELECT id FROM roles WHERE slug = 'technician' AND status = 1`);
+  if (!roleRow) throw ApiError.internal('Technician role is not configured');
+  let email = tech.email || null;
+  if (email) {
+    const [eRows] = await pool.query('SELECT id FROM users WHERE email = ?', [email]);
+    if (eRows.length) email = null;
+  }
+  const hash = bcrypt.hashSync(crypto.randomBytes(32).toString('hex'), 10);
+  const [result] = await pool.query(
+    `INSERT INTO users (name, email, phone, password_hash, user_type, role_id, status)
+     VALUES (?, ?, ?, ?, 'technician', ?, 'active')`,
+    [tech.name, email, tech.phone, hash, roleRow.id]
+  );
+  await pool.query('UPDATE technicians SET user_id = ? WHERE id = ?', [result.insertId, tech.id]);
+  const [rows] = await pool.query(SELECT_USER_WITH_ROLE.replace('%s', 'u.id = ?'), [result.insertId]);
+  return rows[0];
+};
+
+const buildTechnicianAuthResponse = async (tech, user) => {
+  const permissions = await loadUserPermissions(user.id);
+  const accessToken = signAccessToken(user);
+  const refreshToken = signRefreshToken(user);
+  await pool.query(
+    `INSERT INTO refresh_tokens (user_id, token, expires_at) VALUES (?, ?, ?)`,
+    [user.id, refreshToken, new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)]
+  );
+  return {
+    user: {
+      ...publicUser(user),
+      permissions,
+      avatar: toPublicUrl(tech.photo) || user.avatar || null,
+    },
+    technician: {
+      id: tech.id,
+      employee_code: tech.employee_code || `TECH-${String(tech.id).padStart(4, '0')}`,
+      name: tech.name,
+      vendor_id: tech.vendor_id,
+      business_name: tech.business_name,
+      status: tech.status,
+      is_on_duty: !!tech.is_online,
+      rating: null,
+    },
+    accessToken,
+    refreshToken,
+    isNewUser: false,
+  };
+};
 
 exports.otpVerify = asyncHandler(async (req, res) => {
   const phone = otp.normalizePhone(req.body.phone);
   otp.assertValidPhone(phone);
+
+  // ---- Field Technician app: phone → technicians row is the source of truth ----
+  if (req.body.client === 'technician') {
+    const [tRows] = await pool.query(
+      `SELECT t.*, v.business_name
+         FROM technicians t JOIN vendors v ON v.id = t.vendor_id
+        WHERE t.phone = ?`,
+      [phone]
+    );
+    const tech = tRows[0];
+    if (!tech) {
+      throw ApiError.notFound(
+        'This mobile number is not registered as a field technician. Please contact your Service Provider / Vendor to add you to their team.'
+      );
+    }
+    await otp.verifyOtp(phone, req.body.code);
+    if (tech.status !== 'active') {
+      throw ApiError.forbidden('Your technician account is not active. Please contact your Service Provider.', {
+        status: tech.status,
+      });
+    }
+    const user = await ensureTechnicianUser(tech);
+    if (user.status !== 'active') throw ApiError.forbidden('Your account is inactive. Please contact support.');
+    await pool.query('UPDATE users SET last_login_at = NOW() WHERE id = ?', [user.id]);
+    const data = await buildTechnicianAuthResponse(tech, user);
+    await writeAudit({
+      actor: user,
+      action: 'auth.otp_login',
+      entity: 'users',
+      entityId: user.id,
+      details: { client: 'technician', technician_id: tech.id },
+      req,
+    });
+    return sendSuccess(res, data, 'Login successful');
+  }
 
   const [rows] = await pool.query(
     `SELECT u.*, r.name AS role_name, r.slug AS role_slug

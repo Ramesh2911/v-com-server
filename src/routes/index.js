@@ -26,9 +26,12 @@ router.use('/vendor', require('../modules/vendors/routes.bookings'));
 router.use('/vendor', require('../modules/requests/routes.vendor'));
 router.use('/vendor', require('../modules/quotations/routes.vendor'));
 router.use('/vendor', require('../modules/jobs/routes.vendor'));
-router.use('/vendor/notifications', require('../modules/notifications/routes.vendor'));
-router.use('/vendor/support', require('../modules/support/routes.customer'));
-router.use('/vendor/support/messages', require('../modules/support/routes.customer'));
+  router.use('/vendor/notifications', require('../modules/notifications/routes.vendor'));
+  router.use('/vendor/support', require('../modules/support/routes.customer'));
+  router.use('/vendor/support/messages', require('../modules/support/routes.customer'));
+
+  // Field Technician app
+  router.use('/technician', require('../modules/technicians/routes'));
 
 // Web admin
 router.use('/admin/dashboard', require('../modules/dashboard/routes'));
