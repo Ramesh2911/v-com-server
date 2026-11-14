@@ -37,7 +37,7 @@ router.get(
       [...params, limit, offset]
     );
     sendPaginated(res, {
-      items: rows.map((r) => ({ ...r, details: r.details ? JSON.parse(r.details) : null })),
+      items: rows.map((r) => ({ ...r, details: typeof r.details === 'string' ? JSON.parse(r.details) : (r.details ?? null) })),
       total, page, limit,
     });
   })

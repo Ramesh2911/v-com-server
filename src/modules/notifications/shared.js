@@ -16,7 +16,7 @@ exports.listMine = asyncHandler(async (req, res) => {
   );
   const [[profile]] = await pool.query('SELECT avatar FROM users WHERE id = ?', [req.user.id]);
   sendSuccess(res, {
-    items: rows.map((r) => ({ ...r, data: r.data ? JSON.parse(r.data) : null })),
+    items: rows.map((r) => ({ ...r, data: typeof r.data === 'string' ? JSON.parse(r.data) : (r.data ?? null) })),
     unread,
     avatar: toPublicUrl(profile ? profile.avatar : null),
   });
