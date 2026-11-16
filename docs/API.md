@@ -380,16 +380,38 @@ Errors: unknown/inactive/expired/future/usage-exhausted → `404` with clear mes
 
 ## 4. Customer app (`/api/v1/customer/*`) — auth required, `role_slug = customer`
 
-### 4.1 Requests
+### 4.1 Requests / Bookings
 
 | Method | Path | Body / Query |
 |---|---|---|
-| GET | `/customer/requests` | `status?, module_id?, search?` → array (max 100) with `attachments[]` |
-| GET | `/customer/requests/:id` | → detail + `history[]` + `attachments[]` + `quotations[]` |
-| POST | `/customer/requests` | `module_id, category_id?, title, description, site_location?, city?, latitude?, longitude?, quantity?, specifications?, priority?` + multipart `attachments[]` (≤8 files) |
-| POST | `/customer/requests/:id/cancel` | — → `VCOM-REQ-*` status → `cancelled` |
+| POST | `/customer/requests` | **Booking:** `service_id*, address_id*, scheduled_date* (YYYY-MM-DD), scheduled_time* (HH:mm 24hr)` → `201` booking |
+| POST | `/customer/requests` | **Legacy:** `module_id, category_id?, title, description, site_location?, city?, latitude?, longitude?, quantity?, specifications?, priority?` + multipart `attachments[]` (≤8 files) → `{ id, ticket_no }` |
+| GET | `/customer/requests` | `status? (upcoming\|in_progress\|completed\|cancelled or raw DB value), module_id?, search?, page?, limit?` → `{ items[], pagination }` |
+| GET | `/customer/requests/:id` | → booking detail (doc shape) **+** legacy blocks `history[]`, `attachments[]`, `quotations[]`, `job`, `review` |
+| PATCH | `/customer/requests/:id/cancel` | `reason?` → `{ id, status: "cancelled", cancelled_at, refund_status }` (POST alias kept) |
 
-Ticket no: `VCOM-REQ-000123`. Statuses: `pending_review → assigned → in_progress → completed / closed / cancelled`.
+**Booking create** — `service_id` = service category id (`GET /services`), `address_id` = own address book id. Ticket no `VCOM-REQ-*`, booking ref `BK-YYYY-*` (fallback to ticket no for legacy rows).
+
+**Status mapping** (DB → app): `pending_review/assigned/quoted/approved/scheduled → upcoming`, `in_progress → in_progress`, `completed/closed → completed`, `cancelled → cancelled`.
+
+```json
+POST /api/v1/customer/requests
+{ "service_id": 5, "address_id": 12, "scheduled_date": "2026-11-20", "scheduled_time": "10:00" }
+→ 201 { "success": true, "message": "Booking created successfully",
+        "data": { "id": 101, "booking_ref": "BK-2026-101", "ticket_no": "VCOM-REQ-000101",
+                  "status": "upcoming", "scheduled_at": "2026-11-20T10:00:00.000Z",
+                  "service": { "id": 5, "name": "AC Servicing", "category": "Home Appliances" },
+                  "address": { "id": 12, "line1": "12A, Rose Valley", "city": "Kolkata" },
+                  "created_at": "..." } }
+```
+
+Errors: `400 service_id, address_id, scheduled_date and scheduled_time are required` · `404 Service not found` · `404 Address not found`.
+
+**List item:** `{ id, booking_ref, status, scheduled_at, service: { id, name, category, image_url }, address: { line1, city, state, pincode }, payment: { total_amount, paid, method } }` + `pagination: { current_page, total_pages, total_items, per_page }`.
+
+**Detail adds:** `service.base_price`, full `address` (line2/landmark/latitude/longitude), `provider: { id, name, phone, avatar, rating, total_jobs } | null`, `payment: { subtotal, visiting_fee, tax, discount, coupon_code, coupon_discount, total_amount, paid, method, payment_id }`, `timeline: [confirmed, partner_assigned, in_progress, completed]`, `review`. Payment block is a **stub** (no payment gateway yet): `paid: false`, fees `0`.
+
+**Cancel rules:** `in_progress` → `400 Cannot cancel a booking that is already in progress`; `completed/closed/cancelled` → `400 Request can no longer be cancelled`. Reason stored in status history.
 
 ### 4.2 Quotations
 
@@ -476,7 +498,7 @@ Customer reviews a **completed/closed request** — service rating **and** techn
 
 Rules:
 - Eligibility: request must be **owned by caller** (`404` otherwise) and status `completed` or `closed` (`400` otherwise). Duplicate → `409 You have already reviewed this request`.
-- **Customer responses never include `technician_rating` / `technician_comment`** (shape: `{ id, request_id, service_rating, service_comment, status, created_at, updated_at }`). Technician data feeds `vendors.rating` and admin moderation only.
+- **POST/PUT responses include `technician_rating` / `technician_comment`** (the caller's own input echoed back). `GET /customer/requests/:id` → `review` block and `GET /customer/reviews/request/:requestId` **never** include technician fields (shape: `{ id, request_id, service_rating, service_comment, status, created_at, updated_at }`).
 - Submitting/updating/hiding/deleting a review **recomputes `vendors.rating`** (AVG of visible `technician_rating`, `0` when none).
 - `GET /customer/requests/:id` response includes `review: null | { id, service_rating, service_comment, status, created_at, updated_at }` — app uses it to toggle the "Rate service" button.
 
@@ -486,9 +508,36 @@ POST /api/v1/customer/reviews
   "technician_rating": 4, "technician_comment": "Polite and on time" }
 → 201 { "success": true, "message": "Review submitted",
         "data": { "id": 7, "request_id": 42, "service_rating": 5,
-                  "service_comment": "Excellent job", "status": "visible",
+                  "service_comment": "Excellent job", "technician_rating": 4,
+                  "technician_comment": "Polite and on time", "status": "visible",
                   "created_at": "..." } }
 ```
+
+### 4.9 Job applications (`/api/v1/customer/job-applications`)
+
+HR recruitment — any authenticated user applies with a CV. Files go to **Cloudinary** (`avatar` image, `cv` raw PDF).
+
+| Method | Path | Body |
+|---|---|---|
+| POST | `/customer/job-applications` | **multipart/form-data:** `name*, email*, phone* (10 digit), address*, role?, avatar? (image ≤5MB), cv* (PDF ≤10MB)` → `201` |
+| GET | `/customer/job-applications` | → own applications: `{ items: [{ id, application_ref, role, status, submitted_at }] }` |
+| GET | `/customer/job-applications/:id` | → full own application (other user → `404 Application not found`) |
+
+`application_ref` = `JOB-YYYY-001`. Status starts at `under_review` (`submitted → under_review → shortlisted → rejected → hired` for admin flow).
+
+```json
+POST /api/v1/customer/job-applications   (multipart)
+name=Rohit Das&email=rohit@gmail.com&phone=9876543210&address=Salt Lake, Kolkata&role=HR Executive
+cv=@resume.pdf  avatar=@photo.png
+→ 201 { "success": true, "message": "Application submitted successfully",
+        "data": { "id": 42, "application_ref": "JOB-2026-042", "status": "under_review",
+                  "name": "Rohit Das", "email": "rohit@gmail.com", "phone": "9876543210",
+                  "address": "Salt Lake, Kolkata", "role": "HR Executive",
+                  "avatar_url": "https://res.cloudinary.com/...", "cv_url": "https://res.cloudinary.com/...",
+                  "submitted_at": "..." } }
+```
+
+Errors: `400 name, email, phone and address are required` · `400 cv is required` · `400 cv must be a PDF` · `400 avatar must be an image (JPEG/PNG)` · `400 File too large`.
 
 ---
 

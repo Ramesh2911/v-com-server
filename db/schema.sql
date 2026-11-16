@@ -4,7 +4,7 @@
 -- ============================================================
 
 SET FOREIGN_KEY_CHECKS = 0;
-DROP TABLE IF EXISTS service_reviews, coupons, offers, addresses, audit_logs, settings, support_tickets, leave_requests, attendance, employees,
+DROP TABLE IF EXISTS service_reviews, coupons, offers, addresses, audit_logs, settings, support_tickets, leave_requests, job_applications, attendance, employees,
   property_enquiries, property_media, properties, areas, projects, builders,
   notification_templates, notifications, sos_status_history, sos_tickets,
   job_attachments, job_status_history, jobs, quotation_items, quotations,
@@ -306,6 +306,7 @@ CREATE TABLE technician_locations (
 CREATE TABLE requests (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   ticket_no VARCHAR(30) NOT NULL,
+  booking_ref VARCHAR(30) NULL,
   customer_id INT UNSIGNED NOT NULL,
   module_id INT UNSIGNED NOT NULL,
   category_id INT UNSIGNED NULL,
@@ -313,11 +314,14 @@ CREATE TABLE requests (
   description TEXT NULL,
   site_location VARCHAR(255) NULL,
   city VARCHAR(100) NULL,
+  address_id INT UNSIGNED NULL,
   latitude DECIMAL(11,8) NULL,
   longitude DECIMAL(11,8) NULL,
   quantity VARCHAR(100) NULL,
   specifications TEXT NULL,
   priority ENUM('low','normal','high','urgent') NOT NULL DEFAULT 'normal',
+  scheduled_date DATE NULL,
+  scheduled_time VARCHAR(8) NULL,
   status ENUM('pending_review','assigned','quoted','approved','scheduled','in_progress','completed','closed','cancelled') NOT NULL DEFAULT 'pending_review',
   assigned_vendor_id INT UNSIGNED NULL,
   estimated_amount DECIMAL(14,2) NULL,
@@ -326,6 +330,7 @@ CREATE TABLE requests (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uk_requests_ticket (ticket_no),
+  KEY idx_requests_booking (booking_ref),
   KEY idx_requests_customer (customer_id),
   KEY idx_requests_module (module_id),
   KEY idx_requests_status (status),
@@ -333,7 +338,8 @@ CREATE TABLE requests (
   CONSTRAINT fk_req_customer FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE CASCADE,
   CONSTRAINT fk_req_module FOREIGN KEY (module_id) REFERENCES service_modules(id),
   CONSTRAINT fk_req_category FOREIGN KEY (category_id) REFERENCES service_categories(id) ON DELETE SET NULL,
-  CONSTRAINT fk_req_vendor FOREIGN KEY (assigned_vendor_id) REFERENCES vendors(id) ON DELETE SET NULL
+  CONSTRAINT fk_req_vendor FOREIGN KEY (assigned_vendor_id) REFERENCES vendors(id) ON DELETE SET NULL,
+  CONSTRAINT fk_req_address FOREIGN KEY (address_id) REFERENCES addresses(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE request_attachments (
@@ -736,6 +742,27 @@ CREATE TABLE leave_requests (
   KEY idx_leave_employee (employee_id),
   CONSTRAINT fk_leave_employee FOREIGN KEY (employee_id) REFERENCES employees(id) ON DELETE CASCADE,
   CONSTRAINT fk_leave_reviewer FOREIGN KEY (reviewed_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE job_applications (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED NULL,
+  application_ref VARCHAR(30) NOT NULL,
+  name VARCHAR(120) NOT NULL,
+  email VARCHAR(160) NOT NULL,
+  phone VARCHAR(20) NOT NULL,
+  address VARCHAR(255) NULL,
+  role VARCHAR(120) NULL,
+  avatar VARCHAR(512) NULL,
+  cv VARCHAR(512) NOT NULL,
+  status ENUM('submitted','under_review','shortlisted','rejected','hired') NOT NULL DEFAULT 'under_review',
+  submitted_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_job_app_ref (application_ref),
+  KEY idx_job_app_email (email),
+  KEY idx_job_app_user (user_id),
+  CONSTRAINT fk_job_app_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ========================= SUPPORT / AUDIT / SETTINGS =========================

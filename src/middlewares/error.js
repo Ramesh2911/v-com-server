@@ -25,6 +25,9 @@ const errorHandler = (err, req, res, next) => {
   } else if (err.type === 'entity.parse.failed') {
     statusCode = 400;
     message = 'Invalid JSON body';
+  } else if (err.name === 'MulterError') {
+    statusCode = 400;
+    message = err.code === 'LIMIT_FILE_SIZE' ? 'File too large' : `Upload error: ${err.message}`;
   }
 
   if (statusCode >= 500) {

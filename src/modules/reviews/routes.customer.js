@@ -56,7 +56,12 @@ router.post(
     await recomputeVendorRating(request.assigned_vendor_id);
 
     const [rows] = await pool.query('SELECT * FROM service_reviews WHERE id = ?', [result.insertId]);
-    sendSuccess(res, toCustomerView(rows[0]), 'Review submitted', 201);
+    const view = {
+      ...toCustomerView(rows[0]),
+      technician_rating: rows[0].technician_rating,
+      technician_comment: rows[0].technician_comment,
+    };
+    sendSuccess(res, view, 'Review submitted', 201);
   })
 );
 
