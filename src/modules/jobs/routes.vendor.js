@@ -60,6 +60,22 @@ router.post(
         ORDER BY created_at DESC LIMIT 1`,
       [request_id, vendorId]
     );
+    // idempotent: assignment may have auto-opened the job already — never create a duplicate
+    const [[existing]] = await pool.query(
+      `SELECT id, job_no FROM jobs WHERE request_id = ? AND vendor_id = ? ORDER BY id LIMIT 1`,
+      [request_id, vendorId]
+    );
+    if (existing) {
+      await pool.query(
+        `UPDATE jobs SET schedule_date = COALESCE(?, schedule_date),
+                amount = COALESCE(?, amount),
+                quotation_id = COALESCE(quotation_id, ?)
+          WHERE id = ?`,
+        [schedule_date || null, amount ?? (qRow ? qRow.total_amount : null), qRow ? qRow.id : null, existing.id]
+      );
+      await pool.query(`UPDATE requests SET status = 'scheduled' WHERE id = ? AND status IN ('approved','assigned','quoted')`, [request_id]);
+      return sendSuccess(res, { id: existing.id, job_no: existing.job_no }, 'Job already exists');
+    }
     const jobNo = await generateTicketNo(pool, 'job');
     const customerOtp = String(Math.floor(1000 + Math.random() * 9000));
     const [result] = await pool.query(

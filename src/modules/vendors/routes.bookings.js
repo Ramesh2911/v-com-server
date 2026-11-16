@@ -7,6 +7,7 @@ const { authMiddleware } = require('../../middlewares/auth');
 const { getPagination } = require('../../utils/pagination');
 const { writeAudit } = require('../../utils/audit');
 const { toPublicUrl } = require('../../middlewares/upload');
+const { generateTicketNo } = require('../../utils/ticketNo');
 
 router.use(authMiddleware);
 
@@ -326,6 +327,22 @@ router.post(
        ON DUPLICATE KEY UPDATE technician_id = VALUES(technician_id), assigned_by = VALUES(assigned_by)`,
       [r.id, technicianId, req.user.id]
     );
+    // Technician task list reads from `jobs` (INNER JOIN) — open a job row if the
+    // vendor hasn't created one yet, otherwise the assignment is invisible to the app.
+    const [[existingJob]] = await pool.query('SELECT id FROM jobs WHERE request_id = ? LIMIT 1', [r.id]);
+    if (!existingJob) {
+      const jobNo = await generateTicketNo(pool, 'job');
+      const customerOtp = String(Math.floor(1000 + Math.random() * 9000));
+      const [jobIns] = await pool.query(
+        `INSERT INTO jobs (job_no, request_id, vendor_id, stage, customer_otp)
+         VALUES (?, ?, ?, 'accepted', ?)`,
+        [jobNo, r.id, vendorId, customerOtp]
+      );
+      await pool.query(
+        `INSERT INTO job_status_history (job_id, stage, note, changed_by) VALUES (?, 'accepted', ?, ?)`,
+        [jobIns.insertId, `Job opened on technician assignment (${tech.name})`, req.user.id]
+      );
+    }
     await pool.query(
       `INSERT INTO request_status_history (request_id, status, note, changed_by)
        SELECT id, status, ?, ? FROM requests WHERE id = ?`,

@@ -124,6 +124,19 @@ router.post(
     if (!venRows.length) throw ApiError.badRequest('Approved vendor not found');
 
     const { generateTicketNo } = require('../../utils/ticketNo');
+    // idempotent: assignment may have auto-opened the job already — never create a duplicate
+    const [[existing]] = await pool.query(
+      `SELECT id, job_no FROM jobs WHERE request_id = ? AND vendor_id = ? ORDER BY id LIMIT 1`,
+      [request_id, vendor_id]
+    );
+    if (existing) {
+      await pool.query(
+        `UPDATE jobs SET schedule_date = COALESCE(?, schedule_date), amount = COALESCE(?, amount) WHERE id = ?`,
+        [schedule_date || null, amount || null, existing.id]
+      );
+      await writeAudit({ actor: req.user, action: 'job.create', entity: 'jobs', entityId: existing.id, details: { existing: true }, req });
+      return sendSuccess(res, { id: existing.id, job_no: existing.job_no }, 'Job already exists');
+    }
     const jobNo = await generateTicketNo(pool, 'job');
     const customerOtp = String(Math.floor(1000 + Math.random() * 9000));
     const [result] = await pool.query(

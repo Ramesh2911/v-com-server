@@ -624,7 +624,7 @@ Errors: `400 name, email, phone and address are required` · `400 cv is required
 | Method | Path | Body |
 |---|---|---|
 | GET | `/vendor/jobs` | `stage?` |
-| POST | `/vendor/jobs` | `request_id, schedule_date?, amount?` → `VCOM-JOB-*` |
+| POST | `/vendor/jobs` | `request_id, schedule_date?, amount?` → `VCOM-JOB-*` (**idempotent** — if a job already exists for the request+vendor (e.g. auto-opened on technician assign) it backfills `schedule_date`/`amount`, sets `requests.status='scheduled'` and returns the existing job with `Job already exists`) |
 | GET | `/vendor/jobs/:id` | detail |
 | POST | `/vendor/jobs/:id/status` | `stage, note?, schedule_date?, completion_notes?` |
 | POST | `/vendor/jobs/:id/attachments` | multipart `files[]` (≤10), `kind?` |
@@ -661,7 +661,7 @@ Presentation layer over requests + jobs — existing `/vendor/requests` & `/vend
 | GET | `/vendor/bookings` | `status? (all\|pending\|accepted\|in_progress\|completed\|cancelled), page?, limit?, search?` → `{ total, page, limit, bookings: [...] }` |
 | GET | `/vendor/bookings/:id` | detail with `payment_summary` + `timeline` |
 | PUT | `/vendor/bookings/:id/action` | `{ action: "accept"\|"reject", reason? }` → `{ id, status: "accepted"\|"rejected" }` (wraps request assignment flow) |
-| POST | `/vendor/bookings/:id/assign` | `{ technician_id* }` → `{ booking_id, technician_id, technician_name, status: "assigned" }` (link persists across request/job stages) |
+| POST | `/vendor/bookings/:id/assign` | `{ technician_id* }` → `{ booking_id, technician_id, technician_name, status: "assigned" }` (link persists across request/job stages; **auto-opens a `jobs` row** if none exists — technician task list reads `jobs`, so assignment without a job would be invisible) |
 
 **List item:** `{ id (ticket_no), request_id, service, category_id, category_name, customer_name, customer_phone, address, scheduled_time, display_time, amount (number), payment_status (null), status, is_urgent, job_no, technician: {id,name,phone,photo}|null }`
 **Status map:** `pending_review→pending` · `assigned/quoted/approved→accepted` · `scheduled/in_progress→in_progress` · `completed/closed→completed` · `cancelled→cancelled`.
@@ -740,7 +740,7 @@ All routes below need `Authorization: Bearer …` **and** the listed permission.
 | GET | `/admin/jobs/stats` | `jobs.view` | |
 | GET | `/admin/jobs/:id` | `jobs.view` | |
 | PATCH | `/admin/jobs/:id/stage` | `jobs.manage` | `{ stage, note? }` |
-| POST | `/admin/jobs` | `jobs.manage` | `{ request_id, vendor_id, ... }` |
+| POST | `/admin/jobs` | `jobs.manage` | `{ request_id, vendor_id, ... }` — idempotent (existing job → backfill + `Job already exists`) |
 | GET | `/admin/sos?status&search&page&limit` | `sos.view` | |
 | GET | `/admin/sos/stats` | `sos.view` | |
 | GET | `/admin/sos/:id` | `sos.view` | |
