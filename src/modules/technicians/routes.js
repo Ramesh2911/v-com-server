@@ -246,7 +246,7 @@ router.get(
     sendSuccess(res, {
       technician: {
         name: t.name,
-        avatar: initials(t.name),
+        avatar: toPublicUrl(t.photo) || initials(t.name),
         designation: t.skill || null,
         employee_code: empCode(t),
         is_verified: t.status === 'active',
