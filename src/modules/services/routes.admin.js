@@ -7,6 +7,7 @@ const { authMiddleware } = require('../../middlewares/auth');
 const { requirePermission } = require('../../middlewares/rbac');
 const { cloudinaryUpload, cloudinaryImage, toPublicUrl } = require('../../middlewares/upload');
 const { writeAudit } = require('../../utils/audit');
+const { normalizeTheme, withTheme } = require('./themes');
 
 router.use(authMiddleware, requirePermission('services.view'));
 
@@ -20,7 +21,7 @@ router.get(
               (SELECT COUNT(*) FROM requests r WHERE r.module_id = m.id) AS request_count
          FROM service_modules m ORDER BY m.sort_order, m.id`
     );
-    sendSuccess(res, rows.map((r) => ({ ...r, image: toPublicUrl(r.image) })));
+    sendSuccess(res, rows.map((r) => withTheme({ ...r, image: toPublicUrl(r.image) })));
   })
 );
 
@@ -30,13 +31,14 @@ router.post(
   cloudinaryUpload.single('image'),
   asyncHandler(async (req, res) => {
     const { code, name, description, icon, status = 1, sort_order = 0 } = req.body;
+    const theme = normalizeTheme(req.body.theme);
     const [exists] = await pool.query('SELECT id FROM service_modules WHERE code = ?', [code]);
     if (exists.length) throw ApiError.conflict('Module code already exists');
     const image = await cloudinaryImage(req, res);
     const [result] = await pool.query(
-      `INSERT INTO service_modules (code, name, description, icon, image, status, sort_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      [code, name, description || null, icon || null, image, status, sort_order]
+      `INSERT INTO service_modules (code, name, description, icon, theme, image, status, sort_order)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [code, name, description || null, icon || null, theme ?? null, image, status, sort_order]
     );
     await writeAudit({ actor: req.user, action: 'module.create', entity: 'service_modules', entityId: result.insertId, req });
     sendSuccess(res, { id: result.insertId }, 'Module created', 201);
@@ -49,14 +51,16 @@ router.put(
   cloudinaryUpload.single('image'),
   asyncHandler(async (req, res) => {
     const { name, description, icon, status, sort_order } = req.body;
+    const theme = normalizeTheme(req.body.theme);
     const [rows] = await pool.query('SELECT * FROM service_modules WHERE id = ?', [req.params.id]);
     if (!rows.length) throw ApiError.notFound('Module not found');
     const image = (await cloudinaryImage(req, res)) ?? rows[0].image;
+    const nextTheme = theme === undefined ? rows[0].theme : theme;
     await pool.query(
       `UPDATE service_modules SET name = COALESCE(?, name), description = COALESCE(?, description),
-              icon = COALESCE(?, icon), image = ?, status = COALESCE(?, status), sort_order = COALESCE(?, sort_order)
+              icon = COALESCE(?, icon), theme = ?, image = ?, status = COALESCE(?, status), sort_order = COALESCE(?, sort_order)
         WHERE id = ?`,
-      [name || null, description ?? null, icon || null, image, status ?? null, sort_order ?? null, req.params.id]
+      [name || null, description ?? null, icon || null, nextTheme, image, status ?? null, sort_order ?? null, req.params.id]
     );
     await writeAudit({ actor: req.user, action: 'module.update', entity: 'service_modules', entityId: req.params.id, req });
     sendSuccess(res, null, 'Module updated');

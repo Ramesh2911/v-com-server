@@ -6,9 +6,14 @@ const { sendSuccess, sendPaginated } = require('../../utils/response');
 const { optionalAuth } = require('../../middlewares/auth');
 const { toPublicUrl } = require('../../middlewares/upload');
 const { maskName } = require('../reviews/lib');
+const { withTheme, themeColors } = require('./themes');
 
-const mapModule = (m) => ({ ...m, image: toPublicUrl(m.image) });
-const mapCategory = (c) => ({ ...c, image: toPublicUrl(c.image) });
+const mapModule = (m) => withTheme({ ...m, image: toPublicUrl(m.image) });
+const mapCategory = (c) => ({
+  ...c,
+  image: toPublicUrl(c.image),
+  module_colors: themeColors(c.module_theme),
+});
 
 // Public review block — service rating/comment ONLY (technician reviews never leave admin side)
 async function reviewBlock(where, params) {
@@ -65,7 +70,7 @@ router.get(
       `SELECT * FROM service_modules WHERE status = 1 ORDER BY sort_order, id`
     );
     const [cats] = await pool.query(
-      `SELECT c.*, m.code AS module_code FROM service_categories c
+      `SELECT c.*, m.code AS module_code, m.theme AS module_theme FROM service_categories c
         JOIN service_modules m ON m.id = c.module_id
        WHERE c.status = 1 AND m.status = 1 ORDER BY c.sort_order, c.id`
     );
@@ -81,7 +86,7 @@ router.get(
   '/featured',
   asyncHandler(async (req, res) => {
     const [rows] = await pool.query(
-      `SELECT c.*, m.name AS module_name, m.code AS module_code
+      `SELECT c.*, m.name AS module_name, m.code AS module_code, m.theme AS module_theme
          FROM service_categories c JOIN service_modules m ON m.id = c.module_id
         WHERE c.is_featured = 1 AND c.status = 1 AND m.status = 1
         ORDER BY c.sort_order LIMIT 12`
@@ -99,7 +104,7 @@ router.get(
       [q, q]
     );
     const [cats] = await pool.query(
-      `SELECT c.*, m.name AS module_name, m.code AS module_code
+      `SELECT c.*, m.name AS module_name, m.code AS module_code, m.theme AS module_theme
          FROM service_categories c JOIN service_modules m ON m.id = c.module_id
         WHERE c.status = 1 AND m.status = 1 AND (c.name LIKE ? OR c.description LIKE ?)`,
       [q, q]
@@ -116,7 +121,7 @@ router.get(
       throw ApiError.badRequest('Invalid category id — numeric id required (e.g. /api/v1/services/category/31)');
     }
     const [rows] = await pool.query(
-      `SELECT c.*, m.name AS module_name, m.code AS module_code, m.icon AS module_icon
+      `SELECT c.*, m.name AS module_name, m.code AS module_code, m.icon AS module_icon, m.theme AS module_theme
          FROM service_categories c JOIN service_modules m ON m.id = c.module_id
         WHERE c.id = ? AND c.status = 1 AND m.status = 1`,
       [Number(raw)]
@@ -194,7 +199,7 @@ router.get(
 
     // fallback: category id (app sometimes passes service/category ids)
     const [catRows] = await pool.query(
-      `SELECT c.*, m.name AS module_name, m.code AS module_code, m.icon AS module_icon
+      `SELECT c.*, m.name AS module_name, m.code AS module_code, m.icon AS module_icon, m.theme AS module_theme
          FROM service_categories c JOIN service_modules m ON m.id = c.module_id
         WHERE c.id = ? AND c.status = 1 AND m.status = 1`,
       [id]

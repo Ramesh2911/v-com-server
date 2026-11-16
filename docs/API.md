@@ -307,9 +307,20 @@ Refresh rules (for apps):
 | GET | `/services/:id` | — | Numeric id: **module first**, else falls back to **category**. Response has `kind: "module" | "category"` + review block |
 | GET | `/services/:id/reviews` | `page, limit` | Paginated **public reviews** for the service (module or category id) |
 
-**Module:** `{ kind: "module", id, code, name, description, icon, image, status, sort_order, created_at, updated_at, categories: [...], review_summary, reviews }`
+**Module:** `{ kind: "module", id, code, name, description, icon, theme, colors, image, status, sort_order, created_at, updated_at, categories: [...], review_summary, reviews }`
 
-**Category:** `{ kind: "category", id, module_id, name, description, image, price, is_featured, status, sort_order, module_name, module_code, review_summary, reviews }`
+**Category:** `{ kind: "category", id, module_id, name, description, image, price, is_featured, status, sort_order, module_name, module_code, module_theme, module_colors, review_summary, reviews }`
+
+**Card theme presets** — admin picks `theme` per module (create/update); every GET returns resolved `colors` so the app just renders them:
+
+| `theme` | `colors` |
+|---|---|
+| `quick` | `{ "background": "#0F172A", "text": "#FFFFFF", "accent": "#FFFFFF", "on_accent": "#0F172A" }` (black bg · white theme) |
+| `special` | `{ "background": "#DBEAFE", "text": "#0F172A", "accent": "#0F172A", "on_accent": "#FFFFFF" }` (light blue bg · black theme) |
+| `professional` | `{ "background": "#FFFFFF", "text": "#1F2937", "accent": "#FFF3D6", "on_accent": "#1F2937" }` (white bg · cream theme) |
+| `null` | `colors: null` — app falls back to its default icon-based gradient |
+
+`background` = card banner bg, `text` = primary text on it, `accent` = icon-box/chip fill, `on_accent` = text on accent. Module responses carry `theme`+`colors`; category responses carry `module_theme`+`module_colors` (parent module's).
 
 **Review block** (on `/services/:id` and `/services/category/:id`) — **service rating only, technician reviews are never public**:
 
@@ -739,9 +750,9 @@ All routes below need `Authorization: Bearer …` **and** the listed permission.
 
 | Method | Path | Permission | Notes |
 |---|---|---|---|
-| GET | `/admin/services/modules` | `services.view` | with `category_count`, `request_count` |
-| POST | `/admin/services/modules` | `services.manage` | multipart/form-data: `code, name, description?, icon?, sort_order?, status?`, `image` (file, optional) |
-| PUT | `/admin/services/modules/:id` | `services.manage` | multipart: partial fields + `image` (omit = keep) |
+| GET | `/admin/services/modules` | `services.view` | with `category_count`, `request_count`, `theme`, `colors` |
+| POST | `/admin/services/modules` | `services.manage` | multipart/form-data: `code, name, description?, icon?, theme? (quick\|special\|professional\|""), sort_order?, status?`, `image` (file, optional) |
+| PUT | `/admin/services/modules/:id` | `services.manage` | multipart: partial fields + `image` (omit = keep); `theme: ""` clears to Auto (omit = keep existing); invalid theme → `400` |
 | DELETE | `/admin/services/modules/:id` | `services.manage` | blocked if requests exist |
 | GET | `/admin/services/categories?module_id` | `services.view` | with `module_name`, `module_code`, `price`, `image` |
 | POST | `/admin/services/categories` | `services.manage` | multipart: `module_id, name, description?, price?, is_featured?, sort_order?, status?`, `image` (file) — `price` ≥ 0 or omit/null (Quick Service parent sets price) |

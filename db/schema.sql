@@ -128,6 +128,7 @@ CREATE TABLE service_modules (
   name VARCHAR(120) NOT NULL,
   description TEXT NULL,
   icon VARCHAR(60) NULL,
+  theme VARCHAR(20) NULL,
   image VARCHAR(512) NULL,
   status TINYINT(1) NOT NULL DEFAULT 1,
   sort_order INT NOT NULL DEFAULT 0,
