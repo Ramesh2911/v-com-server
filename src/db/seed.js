@@ -69,6 +69,8 @@ const PERMISSIONS = [
   ['services.manage', 'services', 'Manage services & content'],
   ['offers.view', 'offers', 'View offers & coupons'],
   ['offers.manage', 'offers', 'Manage offers & coupons'],
+  ['banners.view', 'banners', 'View banners'],
+  ['banners.manage', 'banners', 'Manage banners'],
   ['reviews.view', 'reviews', 'View service reviews'],
   ['reviews.manage', 'reviews', 'Moderate service reviews'],
   ['hr.view', 'hr', 'View HR data'],

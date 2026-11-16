@@ -4,7 +4,7 @@
 -- ============================================================
 
 SET FOREIGN_KEY_CHECKS = 0;
-DROP TABLE IF EXISTS service_reviews, coupons, offers, addresses, audit_logs, settings, support_tickets, leave_requests, job_applications, attendance, employees,
+DROP TABLE IF EXISTS service_reviews, coupons, offers, banners, addresses, audit_logs, settings, support_tickets, leave_requests, job_applications, attendance, employees,
   property_enquiries, property_media, properties, areas, projects, builders,
   notification_templates, notifications, sos_status_history, sos_tickets,
   job_attachments, job_status_history, jobs, quotation_items, quotations,
@@ -170,6 +170,21 @@ CREATE TABLE offers (
   KEY idx_offers_category (category_id),
   KEY idx_offers_status (status),
   CONSTRAINT fk_offers_category FOREIGN KEY (category_id) REFERENCES service_categories(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE banners (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(150) NOT NULL,
+  subtitle VARCHAR(255) NULL,
+  image VARCHAR(512) NOT NULL,
+  slot INT NOT NULL DEFAULT 1,
+  starts_at DATETIME NULL,
+  ends_at DATETIME NULL,
+  status TINYINT(1) NOT NULL DEFAULT 1,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_banners_slot (slot),
+  KEY idx_banners_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE coupons (

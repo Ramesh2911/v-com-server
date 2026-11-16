@@ -376,6 +376,14 @@ Property media URLs: returned as absolute URLs. Listing includes `{ property_cod
 
 Errors: unknown/inactive/expired/future/usage-exhausted → `404` with clear message; `amount` < `min_amount` → `400`. Code matched case-insensitively (stored uppercase).
 
+### 3.4 Banners (public — home carousel)
+
+| Method | Path | Body / Query | Returns |
+|---|---|---|---|
+| GET | `/banners` | — | **Active** banners ordered by `slot` ASC: `{ id, title, subtitle, image, slot }[]` (plain array). Active = `status=1` AND within `starts_at`/`ends_at` window (NULL = open-ended). `image` is a full URL. |
+
+No auth required. App home tab renders the list top-to-bottom by `slot` (1 = first position).
+
 ---
 
 ## 4. Customer app (`/api/v1/customer/*`) — auth required, `role_slug = customer`
@@ -757,6 +765,19 @@ Permissions: `offers.view` (reads) / `offers.manage` (writes). Web panel: **Offe
 
 Rules: `discount_value` > 0, percent ≤ 100; `starts_at` ≤ `ends_at`; date-only values → start 00:00, end 23:59. Offer delete cascades with category.
 
+### 6.6a Banners
+
+Permissions: `banners.view` (reads) / `banners.manage` (writes). Web panel: **Banners** page (HR & Content section).
+
+| Method | Path | Permission | Notes |
+|---|---|---|---|
+| GET | `/admin/banners` | `banners.view` | full rows ordered `slot` ASC; `image` full URL; includes `status`, `starts_at`, `ends_at` |
+| POST | `/admin/banners` | `banners.manage` | multipart: `title*`, `image*` (file), `subtitle?`, `slot?` (int 1–99, default 1), `starts_at?`, `ends_at?`, `status?` (default 1) |
+| PUT | `/admin/banners/:id` | `banners.manage` | multipart partial: any of `title`, `subtitle`, `slot`, `starts_at`, `ends_at`, `status`; `image` file omitted = keep existing; `starts_at: ""` / `ends_at: ""` clears (always-on) |
+| DELETE | `/admin/banners/:id` | `banners.manage` | |
+
+Rules: `slot` = carousel position (1 = first shown); `ends_at` must be after `starts_at`; public feed (§3.4) only returns banners active now. Every write is audit-logged (`banner.create/update/delete`).
+
 ### 6.7 Properties admin
 
 | Method | Path | Permission |
@@ -861,6 +882,7 @@ jobs.view                 jobs.manage
 sos.view                  sos.manage
 properties.view           properties.manage      properties.enquiries
 services.view             services.manage
+banners.view              banners.manage
 reviews.view              reviews.manage
 hr.view                   hr.manage
 notifications.manage      reports.view           reports.export
