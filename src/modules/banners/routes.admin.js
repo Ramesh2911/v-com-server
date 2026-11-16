@@ -56,13 +56,19 @@ const toView = (r) => ({
   updated_at: r.updated_at,
 });
 
+/* Schedule columns as IST wall-clock strings ('YYYY-MM-DD HH:mm:ss') — same
+   shape datetime-local sends, so comparisons and the web form stay tz-safe
+   regardless of the MySQL server's timezone. */
+const BANNER_SELECT = `SELECT id, title, subtitle, image, slot, status, created_at, updated_at,
+  DATE_FORMAT(starts_at, '%Y-%m-%d %H:%i:%s') AS starts_at,
+  DATE_FORMAT(ends_at, '%Y-%m-%d %H:%i:%s') AS ends_at
+  FROM banners`;
+
 /* ---- list ---- */
 banners.get(
   '/',
   asyncHandler(async (req, res) => {
-    const [rows] = await pool.query(
-      `SELECT * FROM banners ORDER BY slot ASC, id ASC`
-    );
+    const [rows] = await pool.query(`${BANNER_SELECT} ORDER BY slot ASC, id ASC`);
     sendSuccess(res, rows.map(toView), 'Banners fetched');
   })
 );
@@ -100,7 +106,7 @@ banners.post(
       ]
     );
     await writeAudit({ actor: req.user, action: 'banner.create', entity: 'banners', entityId: result.insertId, req });
-    const [[row]] = await pool.query('SELECT * FROM banners WHERE id = ?', [result.insertId]);
+    const [[row]] = await pool.query(`${BANNER_SELECT} WHERE id = ?`, [result.insertId]);
     sendSuccess(res, toView(row), 'Banner created', 201);
   })
 );
@@ -112,7 +118,7 @@ banners.put(
   cloudinaryUpload.single('image'),
   asyncHandler(async (req, res) => {
     const id = parseId(req.params.id);
-    const [rows] = await pool.query('SELECT * FROM banners WHERE id = ?', [id]);
+    const [rows] = await pool.query(`${BANNER_SELECT} WHERE id = ?`, [id]);
     if (!rows.length) throw ApiError.notFound('Banner not found');
 
     const b = req.body || {};
@@ -147,7 +153,7 @@ banners.put(
       await pool.query(`UPDATE banners SET ${sets.join(', ')} WHERE id = ?`, [...vals, id]);
     }
     await writeAudit({ actor: req.user, action: 'banner.update', entity: 'banners', entityId: id, req });
-    const [[row]] = await pool.query('SELECT * FROM banners WHERE id = ?', [id]);
+    const [[row]] = await pool.query(`${BANNER_SELECT} WHERE id = ?`, [id]);
     sendSuccess(res, toView(row), 'Banner updated');
   })
 );

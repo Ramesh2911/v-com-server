@@ -391,7 +391,7 @@ Errors: unknown/inactive/expired/future/usage-exhausted → `404` with clear mes
 
 | Method | Path | Body / Query | Returns |
 |---|---|---|---|
-| GET | `/banners` | — | **Active** banners ordered by `slot` ASC: `{ id, title, subtitle, image, slot }[]` (plain array). Active = `status=1` AND within `starts_at`/`ends_at` window (NULL = open-ended). `image` is a full URL. |
+| GET | `/banners` | — | **Active** banners ordered by `slot` ASC: `{ id, title, subtitle, image, slot }[]` (plain array). Active = `status=1` AND within `starts_at`/`ends_at` window (NULL = open-ended); **window evaluated in IST (Asia/Kolkata)** — matches admin-panel schedule entry. `image` is a full URL. |
 
 No auth required. App home tab renders the list top-to-bottom by `slot` (1 = first position).
 
@@ -782,7 +782,7 @@ Permissions: `banners.view` (reads) / `banners.manage` (writes). Web panel: **Ba
 
 | Method | Path | Permission | Notes |
 |---|---|---|---|
-| GET | `/admin/banners` | `banners.view` | full rows ordered `slot` ASC; `image` full URL; includes `status`, `starts_at`, `ends_at` |
+| GET | `/admin/banners` | `banners.view` | full rows ordered `slot` ASC; `image` full URL; includes `status`, `starts_at`, `ends_at` as IST wall-clock strings `YYYY-MM-DD HH:mm:ss` (as entered; tz-safe) |
 | POST | `/admin/banners` | `banners.manage` | multipart: `title*`, `image*` (file), `subtitle?`, `slot?` (int 1–99, default 1), `starts_at?`, `ends_at?`, `status?` (default 1) |
 | PUT | `/admin/banners/:id` | `banners.manage` | multipart partial: any of `title`, `subtitle`, `slot`, `starts_at`, `ends_at`, `status`; `image` file omitted = keep existing; `starts_at: ""` / `ends_at: ""` clears (always-on) |
 | DELETE | `/admin/banners/:id` | `banners.manage` | |
