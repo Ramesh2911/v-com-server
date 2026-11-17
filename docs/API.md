@@ -367,6 +367,37 @@ Example `GET /services` (first module trimmed):
 }
 ```
 
+### 3.1a Special sub-services (`/api/v1/categories`)
+
+| Method | Path | Auth | Returns |
+|---|---|---|---|
+| GET | `/categories/:id/sub-services` | **none (public)** | `200` `{ category_id, category_name, bg_color, text_color, sub_services[] }` — `message: "Sub-services fetched successfully"` |
+
+`/categories/:id/sub-services` — **special-service work-type cards** (16 special categories × 6–12 cards each). `/api/v1/categories/:id/sub-services` e call korbe (slug route নেই).
+
+```json
+{
+  "success": true,
+  "message": "Sub-services fetched successfully",
+  "data": {
+    "category_id": 36,
+    "category_name": "Interior and Office Inventory",
+    "bg_color": "#4F46E5",
+    "text_color": "#FFFFFF",
+    "sub_services": [
+      { "id": 201, "code": "dream_project_interior", "title": "Dream Project Interior Design",
+        "subtitle": "Complete turnkey luxury interior design for homes and villas.",
+        "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500...",
+        "bg_color": "#FF7E5F", "text_color": "#FFFFFF", "is_active": true }
+    ]
+  }
+}
+```
+
+- `id` numeric only → `400`; unknown/inactive category → `404 Service not found`. Only `is_active = 1` sub-services returned (ordered by id). `image` = absolute URL as stored.
+- **`service_id` / category ids are DB-specific — fetch them from `GET /services` (module `special-service`), never hardcode.** Live ids ≠ spec-doc example ids (e.g. Interior = live `36`, local `6`; Packers = live `33`). Spec-doc id map (live/Clever): Fabrication `31`, CCTV `32`, Packers `33`, Website `34`, Pest `35`, Interior `36`, Electrical `37`, Construction `38`, Accounting `39`, Fire `40`, Housekeeping `41`, Computer `43`, HVAC `44`, Gardening `45`, Water `46`, Health `47` (live `42` = Event — not a special sub-services category).
+- 141 sub-services seeded (`service_sub_services`); category screen theme = `bg_color`/`text_color` per category.
+
 ### 3.2 Properties (`/api/v1/properties`)
 
 | Method | Path | Query | Notes |
@@ -403,11 +434,30 @@ No auth required. App home tab renders the list top-to-bottom by `slot` (1 = fir
 
 | Method | Path | Body / Query |
 |---|---|---|
+| POST | `/customer/requests` | **Special:** multipart — `service_id*, sub_service_ids* (ids or codes; key `sub_service_ids` or `sub_service_ids[]`), address_id*, notes?, scheduled_date? (YYYY-MM-DD), scheduled_time? (HH:mm or HH:mm:ss), attachments?[] (≤8, PDF/JPG/PNG/DWG/DOC/BOQ)` → `201` special shape (below) |
 | POST | `/customer/requests` | **Booking:** `service_id*, address_id*, scheduled_date* (YYYY-MM-DD), scheduled_time* (HH:mm 24hr)` → `201` booking |
 | POST | `/customer/requests` | **Legacy:** `module_id, category_id?, title, description, site_location?, city?, latitude?, longitude?, quantity?, specifications?, priority?` + multipart `attachments[]` (≤8 files) → `{ id, ticket_no }` |
 | GET | `/customer/requests` | `status? (upcoming\|in_progress\|completed\|cancelled or raw DB value), module_id?, search?, page?, limit?` → `{ items[], pagination }` |
 | GET | `/customer/requests/:id` | → booking detail (doc shape) **+** legacy blocks `history[]`, `attachments[]`, `quotations[]`, `job`, `review` |
 | PATCH | `/customer/requests/:id/cancel` | `reason?` → `{ id, status: "cancelled", cancelled_at, refund_status }` (POST alias kept) |
+
+**Special mode** — dispatch: `sub_service_ids` key present → special handler (else booking/legacy unchanged). Validates sub-services belong to `service_id` + active; stores selected work types in `request_sub_services`, `notes` → `requests.description`, `scheduled_*` optional (seconds normalized to `HH:mm`), attachments → `request_attachments`. `booking_ref` = `REQ-{ref_code}-{year}-{id}` (ref_code per category: FAB/CCTV/INT/PM/WEB/PEST/ELE/CON/ACC/FIRE/HSK/COMP/HVAC/GRD/WATER/CARE). `ticket_no` (`VCOM-REQ-*`) generated as usual; staff notified.
+
+```json
+// 201 — message: "Special service request submitted successfully"
+{ "success": true, "message": "Special service request submitted successfully",
+  "data": {
+    "request_id": 195, "booking_ref": "REQ-INT-2026-195", "status": "pending_review",
+    "service": { "id": 36, "name": "Interior and Office Inventory" },
+    "sub_services": [ { "id": 201, "title": "Dream Project Interior Design" } ],
+    "address": { "id": 12, "address_type": "Home", "formatted_address": "12A Rose Valley, Kolkata, West Bengal 700001" },
+    "notes": "Work Types: ...\nRequirements: ...",
+    "attachments": [ { "id": 72, "file_name": "floor_layout.dwg", "file_url": "https://.../requests/....dwg" } ],
+    "created_at": "2026-11-17T11:15:00.000Z"
+  } }
+```
+
+Errors: `400 "Please select at least one sub-service and address."` (missing `sub_service_ids`/`service_id`/`address_id`); `400 "Invalid sub-service selection."` (unknown code/id or wrong category); `404 Service not found` / `404 Address not found` (address must be caller's).
 
 **Booking create** — `service_id` = service category id (`GET /services`), `address_id` = own address book id. Ticket no `VCOM-REQ-*`, booking ref `BK-YYYY-*` (fallback to ticket no for legacy rows).
 

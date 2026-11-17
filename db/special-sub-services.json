@@ -1,0 +1,1574 @@
+{
+  "categories": [
+    {
+      "spec_category_id": 31,
+      "name": "Fabrication and Welding",
+      "spec_name": "Fabrication and Welding",
+      "bg_color": "#1E40AF",
+      "text_color": "#FFFFFF",
+      "ref_code": "FAB",
+      "sub_services": [
+        {
+          "id": 1,
+          "code": "maintenance_repair",
+          "title": "Maintenance or Repair Works",
+          "subtitle": "Repair and maintenance of fabricated structures.",
+          "image": "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EFF6FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 2,
+          "code": "truss_roofing",
+          "title": "Struss and Roofing Systems",
+          "subtitle": "Roof trusses, steel roofing and structural solutions.",
+          "image": "https://images.unsplash.com/photo-1541888946425-d0fbb186156f?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDF4",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 3,
+          "code": "warehouse_peb",
+          "title": "Warehouse and PEB Works",
+          "subtitle": "Pre-engineered buildings and warehouse structures.",
+          "image": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FFFBEB",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 4,
+          "code": "consultation_estimation",
+          "title": "Consultation and Estimation for Fabrication/Welding",
+          "subtitle": "Expert advice and project quotation.",
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FAF5FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 5,
+          "code": "ndt_certification",
+          "title": "NDT and Certification Programmes",
+          "subtitle": "Non-destructive testing and certification services.",
+          "image": "https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDFA",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 6,
+          "code": "smart_fabrication",
+          "title": "Smart Fabrication Services",
+          "subtitle": "Advanced fabrication with automation & robotics.",
+          "image": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EEF2FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        }
+      ]
+    },
+    {
+      "spec_category_id": 32,
+      "name": "CCTV and Automation",
+      "spec_name": "CCTV and Automation",
+      "bg_color": "#1E40AF",
+      "text_color": "#FFFFFF",
+      "ref_code": "CCTV",
+      "sub_services": [
+        {
+          "id": 101,
+          "code": "cctv_installation",
+          "title": "CCTV Installation & New Projects",
+          "subtitle": "New CCTV cameras, surveillance systems and installation.",
+          "image": "https://images.unsplash.com/photo-1557597774-9d273605dfa9?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EFF6FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 102,
+          "code": "repair_maintenance",
+          "title": "Repair and Maintenance of CCTV/Other Devices",
+          "subtitle": "Service and maintenance for CCTV cameras, DVR/NVR and other devices.",
+          "image": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDF4",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 103,
+          "code": "biometric_access",
+          "title": "Biometric / Access Control System",
+          "subtitle": "Fingerprint, face recognition, attendance and entry systems.",
+          "image": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FFFBEB",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 104,
+          "code": "smart_living_automation",
+          "title": "Smart or Intelligent Automation of Your Living Space",
+          "subtitle": "Smart lighting, sensors, curtains, appliances and smart home solutions.",
+          "image": "https://images.unsplash.com/photo-1558002038-1055907df827?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FAF5FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 105,
+          "code": "consultation_estimation",
+          "title": "Consultation & Estimation for CCTV/Automation",
+          "subtitle": "Expert advice, site inspection and project quotations.",
+          "image": "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDFA",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 106,
+          "code": "robotic_industrial",
+          "title": "Robotic & Industrial Automation",
+          "subtitle": "Robotics and automated workflows for workplaces and industries.",
+          "image": "https://images.unsplash.com/photo-1618042164219-62c820f10723?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EEF2FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        }
+      ]
+    },
+    {
+      "spec_category_id": 33,
+      "name": "Interior and Office Inventory",
+      "spec_name": "Interior and Office Inventory",
+      "bg_color": "#4F46E5",
+      "text_color": "#FFFFFF",
+      "ref_code": "INT",
+      "sub_services": [
+        {
+          "id": 201,
+          "code": "dream_project_interior",
+          "title": "Dream Project Interior Design",
+          "subtitle": "Complete turnkey luxury interior design for homes and villas.",
+          "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FF7E5F",
+          "text_color": "#FFFFFF",
+          "is_active": 1
+        },
+        {
+          "id": 202,
+          "code": "renovation_facelift",
+          "title": "Renovation & Facelift",
+          "subtitle": "Complete home and room renovation, repainting and modern facelift.",
+          "image": "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#9333EA",
+          "text_color": "#FFFFFF",
+          "is_active": 1
+        },
+        {
+          "id": 203,
+          "code": "design_consultation_3d_4d",
+          "title": "3D/4D Design & Consultation",
+          "subtitle": "3D layout walkthroughs, 4D renderings and architectural planning.",
+          "image": "https://images.unsplash.com/photo-1600565193348-f74bd3c7ccdf?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#0284C7",
+          "text_color": "#FFFFFF",
+          "is_active": 1
+        },
+        {
+          "id": 204,
+          "code": "carpentry_wooden_work",
+          "title": "Carpentry & Wooden Work",
+          "subtitle": "Custom wooden furniture, doors, frames, paneling and woodwork.",
+          "image": "https://images.unsplash.com/photo-1538688525198-9b88f6f53126?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F59E0B",
+          "text_color": "#FFFFFF",
+          "is_active": 1
+        },
+        {
+          "id": 205,
+          "code": "false_ceiling_pop",
+          "title": "False Ceiling & POP Design",
+          "subtitle": "Gypsum, POP, wooden false ceilings with cove and ambient lighting.",
+          "image": "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#0D9488",
+          "text_color": "#FFFFFF",
+          "is_active": 1
+        },
+        {
+          "id": 206,
+          "code": "estimation_project_execution",
+          "title": "Estimation & Project Execution",
+          "subtitle": "Detailed BOQ estimation, material planning and turnkey project management.",
+          "image": "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#E11D48",
+          "text_color": "#FFFFFF",
+          "is_active": 1
+        },
+        {
+          "id": 207,
+          "code": "modular_kitchen",
+          "title": "Modular Kitchen Design",
+          "subtitle": "L-shaped, U-shaped, parallel modular kitchen with acrylic or PU finish.",
+          "image": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FBBF24",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 208,
+          "code": "wardrobes_storage",
+          "title": "Wardrobes & Storage Solutions",
+          "subtitle": "Sliding, hinged wardrobes, walk-in closets and smart storage units.",
+          "image": "https://images.unsplash.com/photo-1558997519-83ea9252edf8?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#6366F1",
+          "text_color": "#FFFFFF",
+          "is_active": 1
+        },
+        {
+          "id": 209,
+          "code": "living_bedroom_design",
+          "title": "Living Room & Bedroom Design",
+          "subtitle": "Aesthetic living room setups, cozy master bedroom themes and decor.",
+          "image": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EC4899",
+          "text_color": "#FFFFFF",
+          "is_active": 1
+        },
+        {
+          "id": 210,
+          "code": "office_commercial_interiors",
+          "title": "Office & Commercial Interiors",
+          "subtitle": "Corporate workstations, cabins, conference rooms and reception interiors.",
+          "image": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#0891B2",
+          "text_color": "#FFFFFF",
+          "is_active": 1
+        },
+        {
+          "id": 211,
+          "code": "lighting_electrical_design",
+          "title": "Lighting & Electrical Design",
+          "subtitle": "Architectural lighting, chandeliers, ambient tracks and smart switches.",
+          "image": "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FACC15",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 212,
+          "code": "flooring_painting_wall_decor",
+          "title": "Flooring, Painting & Wall Décor",
+          "subtitle": "Vitrified / wooden flooring, texture wall painting, wallpapers and murals.",
+          "image": "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#84CC16",
+          "text_color": "#0F172A",
+          "is_active": 1
+        }
+      ]
+    },
+    {
+      "spec_category_id": 34,
+      "name": "Packers and Movers",
+      "spec_name": "Packers and Movers",
+      "bg_color": "#0F766E",
+      "text_color": "#FFFFFF",
+      "ref_code": "PM",
+      "sub_services": [
+        {
+          "id": 301,
+          "code": "house_shifting",
+          "title": "House Shifting & Residential Relocation",
+          "subtitle": "Complete home relocation for 1BHK, 2BHK, 3BHK flats and villas.",
+          "image": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EFF6FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 302,
+          "code": "office_corporate_relocation",
+          "title": "Office & Commercial Relocation",
+          "subtitle": "Workstations, IT equipment, server racks and office shifting.",
+          "image": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDF4",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 303,
+          "code": "local_city_shifting",
+          "title": "Local Shifting (Within City)",
+          "subtitle": "Fast same-day intra-city pickup and delivery with mini trucks.",
+          "image": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FFFBEB",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 304,
+          "code": "intercity_domestic_relocation",
+          "title": "Intercity & Long Distance Moving",
+          "subtitle": "Safe state-to-state relocation with container trucks & GPS tracking.",
+          "image": "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FAF5FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 305,
+          "code": "vehicle_transportation",
+          "title": "Vehicle Moving (Car & Bike)",
+          "subtitle": "Secure enclosed car carriers and two-wheeler parcel transport.",
+          "image": "https://images.unsplash.com/photo-1549399542-7e3f8b79c341?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDFA",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 306,
+          "code": "warehouse_storage",
+          "title": "Warehouse & Secure Storage",
+          "subtitle": "Safe 24/7 CCTV-monitored short and long-term luggage storage.",
+          "image": "https://images.unsplash.com/photo-1586528116493-a029325540fa?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EEF2FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 307,
+          "code": "few_items_mini_truck",
+          "title": "Single Item / Few Goods Shifting",
+          "subtitle": "Budget moving for fridge, sofa, bed, washing machine or luggage.",
+          "image": "https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FEF3C7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 308,
+          "code": "packing_unpacking_only",
+          "title": "Professional Packing & Unpacking",
+          "subtitle": "Bubble wrap, corrugated boxes, shrink wrap and fragile packing.",
+          "image": "https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FCE7F3",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 309,
+          "code": "furniture_assembly_disassembly",
+          "title": "Furniture Dismantling & Assembly",
+          "subtitle": "Carpenter assistance for bed, wardrobe and modular setup.",
+          "image": "https://images.unsplash.com/photo-1581783342308-f792dbdd27c5?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#CFFAFE",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 310,
+          "code": "loading_unloading_labor",
+          "title": "Helpers / Loading & Unloading Labor",
+          "subtitle": "Verified porters and helpers for heavy lifting and stair carrying.",
+          "image": "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#DCFCE7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        }
+      ]
+    },
+    {
+      "spec_category_id": 35,
+      "name": "Website and Graphic Designing",
+      "spec_name": "Website and Graphic Designing",
+      "bg_color": "#4338CA",
+      "text_color": "#FFFFFF",
+      "ref_code": "WEB",
+      "sub_services": [
+        {
+          "id": 401,
+          "code": "custom_web_development",
+          "title": "Custom Website Development",
+          "subtitle": "Fast, mobile-responsive corporate, business and portfolio websites.",
+          "image": "https://images.unsplash.com/photo-1547658719-da2b51169166?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EFF6FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 402,
+          "code": "ecommerce_store_development",
+          "title": "E-Commerce Store & Online Shop",
+          "subtitle": "Online store with payment gateway, product catalog and cart setup.",
+          "image": "https://images.unsplash.com/photo-1556742049-0a67c5574f73?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDF4",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 403,
+          "code": "ui_ux_design",
+          "title": "UI/UX Design (Web & Mobile Apps)",
+          "subtitle": "Modern Figma prototypes, wireframes and intuitive mobile app UI.",
+          "image": "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FAF5FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 404,
+          "code": "logo_brand_identity",
+          "title": "Logo Design & Brand Identity",
+          "subtitle": "Vector logos, brand color guidelines, business cards & letterheads.",
+          "image": "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FFFBEB",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 405,
+          "code": "social_media_creatives",
+          "title": "Social Media Graphics & Ad Posters",
+          "subtitle": "Instagram posts, banners, YouTube thumbnails and ad creatives.",
+          "image": "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FCE7F3",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 406,
+          "code": "landing_page_sales_funnel",
+          "title": "Landing Page & Sales Funnels",
+          "subtitle": "High-converting promotional landing pages for lead generation.",
+          "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDFA",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 407,
+          "code": "website_maintenance_speed",
+          "title": "Website Maintenance & Speed Optimization",
+          "subtitle": "Bug fixes, speed optimization, SSL certificates & regular backups.",
+          "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EEF2FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 408,
+          "code": "brochure_packaging_print",
+          "title": "Brochure, Packaging & Print Design",
+          "subtitle": "Flyers, product box packaging, labels, catalogs and banners.",
+          "image": "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FEF3C7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 409,
+          "code": "seo_digital_ranking",
+          "title": "SEO & Google Search Ranking",
+          "subtitle": "On-page SEO, Google Search Console, local SEO and keyword ranking.",
+          "image": "https://images.unsplash.com/photo-1571786256017-aee7a0c009b6?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#DCFCE7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 410,
+          "code": "custom_web_app_portal",
+          "title": "Custom Web Applications & Portals",
+          "subtitle": "Full-stack web applications, CRM/ERP dashboards and admin panels.",
+          "image": "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#CFFAFE",
+          "text_color": "#0F172A",
+          "is_active": 1
+        }
+      ]
+    },
+    {
+      "spec_category_id": 36,
+      "name": "Pest Control and Deep Cleaning",
+      "spec_name": "Pest Control and Deep Cleaning",
+      "bg_color": "#047857",
+      "text_color": "#FFFFFF",
+      "ref_code": "PEST",
+      "sub_services": [
+        {
+          "id": 501,
+          "code": "general_pest_control",
+          "title": "General Pest Control (Cockroaches & Ants)",
+          "subtitle": "Odourless gel and spray treatment for kitchen, cabinets & corners.",
+          "image": "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EFF6FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 502,
+          "code": "termite_control",
+          "title": "Termite Control & Wood Protection (Dimak)",
+          "subtitle": "Anti-termite drilling, chemical barrier and wooden furniture protection.",
+          "image": "https://images.unsplash.com/photo-1513694203232-719a280e022f?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FFFBEB",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 503,
+          "code": "bed_bug_treatment",
+          "title": "Bed Bug Treatment (Khatmal Control)",
+          "subtitle": "Intensive 2-round spray on mattresses, bed frames and wardrobes.",
+          "image": "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FCE7F3",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 504,
+          "code": "rodent_rat_control",
+          "title": "Rodent & Rat Control",
+          "subtitle": "Strategic glue boards, bait stations and anti-rodent repellent.",
+          "image": "https://images.unsplash.com/photo-1583337130417-3346a1be7dee?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FAF5FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 505,
+          "code": "mosquito_fogging",
+          "title": "Mosquito & Fly Fogging",
+          "subtitle": "Thermal outdoor fogging and indoor larvicidal anti-mosquito spray.",
+          "image": "https://images.unsplash.com/photo-1585842378054-ee2e52f94ba2?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDFA",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 506,
+          "code": "full_home_deep_cleaning",
+          "title": "Full Home Deep Cleaning",
+          "subtitle": "Floor scrubbing, ceiling dusting, windows, fans and full sanitization.",
+          "image": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDF4",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 507,
+          "code": "kitchen_deep_cleaning",
+          "title": "Kitchen Deep Cleaning & Degreasing",
+          "subtitle": "Chimney, gas stove, oil-stained tiles and cabinet deep degreasing.",
+          "image": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FEF3C7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 508,
+          "code": "bathroom_tile_cleaning",
+          "title": "Bathroom & Toilet Deep Cleaning",
+          "subtitle": "Hard water stain removal, tile descaling and sanitaryware disinfection.",
+          "image": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#CFFAFE",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 509,
+          "code": "sofa_carpet_shampooing",
+          "title": "Sofa, Carpet & Mattress Shampooing",
+          "subtitle": "Wet vacuum extraction, active foam shampoo and deep stain removal.",
+          "image": "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EEF2FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 510,
+          "code": "water_tank_cleaning",
+          "title": "Water Tank Cleaning & Disinfection",
+          "subtitle": "Sludge removal, high pressure jet wash and antibacterial treatment.",
+          "image": "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#E0F2FE",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 511,
+          "code": "office_commercial_cleaning",
+          "title": "Office & Commercial Space Cleaning",
+          "subtitle": "Floor buffing machine wash, workstation sanitization and glass polish.",
+          "image": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#DCFCE7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        }
+      ]
+    },
+    {
+      "spec_category_id": 37,
+      "name": "Electrical and Plumbing",
+      "spec_name": "Electrical and Plumbing",
+      "bg_color": "#B45309",
+      "text_color": "#FFFFFF",
+      "ref_code": "ELE",
+      "sub_services": [
+        {
+          "id": 601,
+          "code": "complete_house_wiring",
+          "title": "Complete House Wiring & Rewiring",
+          "subtitle": "New electrical wiring, conduit fitting and distribution board setup.",
+          "image": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EFF6FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 602,
+          "code": "switchboard_meter_mcb",
+          "title": "Switchboards, MCB & Fuse Box Services",
+          "subtitle": "Installation of modular switchboards, MCB trips, ELCB and power meter.",
+          "image": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FFFBEB",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 603,
+          "code": "fans_lighting_appliances",
+          "title": "Lightings, Chandeliers & Fan Installation",
+          "subtitle": "Ceiling fans, exhaust fans, chandeliers, spotlights & LED profile lights.",
+          "image": "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FAF5FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 604,
+          "code": "inverter_generator_ups",
+          "title": "Inverter, UPS & Generator Installation",
+          "subtitle": "Home inverter wiring, battery backup setup and generator changeover switch.",
+          "image": "https://images.unsplash.com/photo-1618042164219-62c820f10723?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDFA",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 605,
+          "code": "short_circuit_troubleshooting",
+          "title": "Short Circuit & Electrical Fault Troubleshooting",
+          "subtitle": "Emergency shock inspection, burnt wire replacement and earthing fix.",
+          "image": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FEE2E2",
+          "text_color": "#991B1B",
+          "is_active": 1
+        },
+        {
+          "id": 606,
+          "code": "pipe_leakage_seepage_repair",
+          "title": "Pipe Leakage, Burst Pipe & Seepage Repair",
+          "subtitle": "Concealed pipeline leak detection, burst line repair and seepage fix.",
+          "image": "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDF4",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 607,
+          "code": "tap_shower_sanitary_fitting",
+          "title": "Tap, Shower, Basin & Sanitaryware Fitting",
+          "subtitle": "Installation of kitchen sinks, taps, rain showers, washbasins & commodes.",
+          "image": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#CFFAFE",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 608,
+          "code": "water_pump_motor_repair",
+          "title": "Water Pump & Submersible Motor Repair",
+          "subtitle": "Submersible pump fitting, motor rewinding, starter panel and pressure pump.",
+          "image": "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FEF3C7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 609,
+          "code": "drainage_toilet_unclogging",
+          "title": "Drainage & Sewer Line Blockage Clearing",
+          "subtitle": "High-pressure drain unblocking, kitchen sink unclogging & toilet trap cleaning.",
+          "image": "https://images.unsplash.com/photo-1585842378054-ee2e52f94ba2?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EEF2FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 610,
+          "code": "water_heater_geyser_plumbing",
+          "title": "Water Heater & Geyser Plumbing Connection",
+          "subtitle": "Inlet-outlet pipe plumbing, safety valves, electrical wiring and mounting.",
+          "image": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#DCFCE7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        }
+      ]
+    },
+    {
+      "spec_category_id": 38,
+      "name": "Construction, Renovation and Documentation",
+      "spec_name": "Construction, Renovation and Documentation",
+      "bg_color": "#1E3A8A",
+      "text_color": "#FFFFFF",
+      "ref_code": "CON",
+      "sub_services": [
+        {
+          "id": 701,
+          "code": "turnkey_building_construction",
+          "title": "Turnkey Building Construction",
+          "subtitle": "End-to-end residential and commercial building construction with materials.",
+          "image": "https://images.unsplash.com/photo-1541888946425-d0fbb186156f?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EFF6FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 702,
+          "code": "architectural_plan_3d_elevation",
+          "title": "Architectural Floor Plan & 3D Elevation",
+          "subtitle": "Sanctioned building plans, 2D layouts, structural drawings and 3D elevation.",
+          "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDF4",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 703,
+          "code": "building_plan_approval_sanction",
+          "title": "Building Plan Sanction & Municipality Approvals",
+          "subtitle": "Panchayat/Municipality/KMC sanction approvals, mutation & government permits.",
+          "image": "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FFFBEB",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 704,
+          "code": "structural_audit_soil_testing",
+          "title": "Structural Audit & Soil Testing",
+          "subtitle": "Soil bearing test, pillar stability inspection & non-destructive concrete audit.",
+          "image": "https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FAF5FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 705,
+          "code": "house_renovation_expansion",
+          "title": "Home Renovation, Extension & Additional Floors",
+          "subtitle": "Adding extra rooms, roof expansion, bathroom/kitchen remodeling & wall shifting.",
+          "image": "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FCE7F3",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 706,
+          "code": "waterproofing_damp_treatment",
+          "title": "Roof Waterproofing & Damp Treatment",
+          "subtitle": "Terrace crack injection, chemical waterproofing and exterior wall damp cure.",
+          "image": "https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#CFFAFE",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 707,
+          "code": "tiling_marble_granite_masonry",
+          "title": "Brickwork, Plastering & Flooring (Tiles/Marble)",
+          "subtitle": "Brick masonry walls, sand plastering, vitrified tile laying & marble polish.",
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FEF3C7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 708,
+          "code": "boundary_wall_gate_fencing",
+          "title": "Boundary Wall, Paving & Gate Construction",
+          "subtitle": "Compound wall construction, paver blocks, steel gate fitting & drainage.",
+          "image": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EEF2FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 709,
+          "code": "valuation_boq_project_estimation",
+          "title": "Property Valuation & Detailed BOQ Estimation",
+          "subtitle": "Bank loan property valuation reports, detailed bill of quantities & costing.",
+          "image": "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#DCFCE7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 710,
+          "code": "property_legal_documentation",
+          "title": "Property Legal Verification, Deeds & Mutation",
+          "subtitle": "Title search, sale deed drafting, registration assistance and BL&LRO mutation.",
+          "image": "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#E0F2FE",
+          "text_color": "#0F172A",
+          "is_active": 1
+        }
+      ]
+    },
+    {
+      "spec_category_id": 39,
+      "name": "Accounting and Statutory",
+      "spec_name": "Accounting and Statutory Services",
+      "bg_color": "#065F46",
+      "text_color": "#FFFFFF",
+      "ref_code": "ACC",
+      "sub_services": [
+        {
+          "id": 801,
+          "code": "bookkeeping_monthly_accounting",
+          "title": "Bookkeeping & Monthly Financial Accounting",
+          "subtitle": "Tally/Zoho/QuickBooks accounting, bank reconciliation and balance sheet.",
+          "image": "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EFF6FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 802,
+          "code": "gst_registration_return_filing",
+          "title": "GST Registration & Monthly GSTR Filing",
+          "subtitle": "New GST registration, GSTR-1, GSTR-3B monthly filing & input tax reconciliation.",
+          "image": "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDF4",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 803,
+          "code": "income_tax_itr_filing",
+          "title": "Income Tax Return (ITR) Filing (Individual & Business)",
+          "subtitle": "ITR e-filing, capital gains calculation, tax planning and tax refund assistance.",
+          "image": "https://images.unsplash.com/photo-1554224154-26032ffc0d07?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FFFBEB",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 804,
+          "code": "tds_tcs_filing_compliance",
+          "title": "TDS / TCS Return Filing & Form 16/16A",
+          "subtitle": "Quarterly 24Q, 26Q TDS return filing, challan generation & Form 16 issuance.",
+          "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FAF5FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 805,
+          "code": "company_llp_incorporation",
+          "title": "Company & LLP Incorporation (ROC)",
+          "subtitle": "Private Limited, OPC, LLP registration with MCA, DIN, DSC & MOA/AOA drafting.",
+          "image": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FCE7F3",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 806,
+          "code": "annual_roc_filing_compliance",
+          "title": "Annual ROC Compliance & Secretarial Services",
+          "subtitle": "Form AOC-4, MGT-7, DIR-3 KYC filing, AGM documentation and board resolutions.",
+          "image": "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#CFFAFE",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 807,
+          "code": "trade_license_msme_udyam",
+          "title": "Trade License & MSME / Udyam Registration",
+          "subtitle": "Municipal trade license, Udyam MSME certificate and business registrations.",
+          "image": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FEF3C7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 808,
+          "code": "pf_esic_statutory_compliance",
+          "title": "PF & ESIC Registration and Monthly ECR Filing",
+          "subtitle": "EPFO & ESIC employee code setup, monthly ECR challan and labor compliance.",
+          "image": "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EEF2FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 809,
+          "code": "statutory_internal_tax_audit",
+          "title": "Statutory Audit, Tax Audit & Internal Audit",
+          "subtitle": "CA certified Tax Audit u/s 44AB, statutory audit & net worth certificates.",
+          "image": "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#DCFCE7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 810,
+          "code": "fssai_trademark_ip_registration",
+          "title": "FSSAI Food License, Trademark & IP Registration",
+          "subtitle": "FSSAI food safety license, brand trademark registration, copyright and patents.",
+          "image": "https://images.unsplash.com/photo-1626785774573-4b799315345d?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#E0F2FE",
+          "text_color": "#0F172A",
+          "is_active": 1
+        }
+      ]
+    },
+    {
+      "spec_category_id": 40,
+      "name": "Fire and Safety",
+      "spec_name": "Fire and Safety Services",
+      "bg_color": "#DC2626",
+      "text_color": "#FFFFFF",
+      "ref_code": "FIRE",
+      "sub_services": [
+        {
+          "id": 901,
+          "code": "fire_extinguisher_refill",
+          "title": "Fire Extinguisher Supply, Inspection & Refilling",
+          "subtitle": "ABC, CO2, foam and water type fire extinguisher supply and annual refilling.",
+          "image": "https://images.unsplash.com/photo-1582139329536-e7284fece509?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EFF6FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 902,
+          "code": "fire_alarm_smoke_detector",
+          "title": "Fire Alarm & Smoke Detector Installation",
+          "subtitle": "Conventional and addressable smoke detectors, heat sensors and hooters.",
+          "image": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDF4",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 903,
+          "code": "fire_hydrant_sprinkler_system",
+          "title": "Fire Hydrant & Automatic Sprinkler System",
+          "subtitle": "Hydrant valves, hose reels, fire sprinkler network and jockey pumps.",
+          "image": "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FFFBEB",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 904,
+          "code": "fire_noc_audit_certification",
+          "title": "Fire Safety Audit & Fire NOC Certification",
+          "subtitle": "Government fire department NOC approval, risk assessment and compliance audit.",
+          "image": "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FAF5FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 905,
+          "code": "emergency_exit_signage_lighting",
+          "title": "Emergency Exit Signages & Photoluminescent Lighting",
+          "subtitle": "Glow-in-the-dark escape route signs, emergency lights and exit doors.",
+          "image": "https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FCE7F3",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 906,
+          "code": "fire_pumping_diesel_engine",
+          "title": "Fire Fighting Pump & Engine Maintenance",
+          "subtitle": "Diesel engine fire pumps, electrical main pumps and pressure testing.",
+          "image": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#CFFAFE",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 907,
+          "code": "kitchen_suppression_system",
+          "title": "Kitchen Fire Suppression System",
+          "subtitle": "Commercial kitchen hood fire suppression for restaurants and hotels.",
+          "image": "https://images.unsplash.com/photo-1556911220-e15b29be8c8f?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FEF3C7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 908,
+          "code": "fire_safety_training_mock_drill",
+          "title": "Fire Safety Training & Evacuation Mock Drills",
+          "subtitle": "Certified staff training, extinguisher handling drills and evacuation practice.",
+          "image": "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#DCFCE7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        }
+      ]
+    },
+    {
+      "spec_category_id": 41,
+      "name": "Housekeeping and Security",
+      "spec_name": "Housekeeping and Security Services",
+      "bg_color": "#1E293B",
+      "text_color": "#FFFFFF",
+      "ref_code": "HSK",
+      "sub_services": [
+        {
+          "id": 1001,
+          "code": "commercial_office_housekeeping",
+          "title": "Corporate & Office Housekeeping Staff",
+          "subtitle": "Trained housekeeping boys and janitors for office dusting, pantry and washrooms.",
+          "image": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EFF6FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1002,
+          "code": "residential_society_housekeeping",
+          "title": "Residential Apartment & Society Cleaning",
+          "subtitle": "Daily common area mopping, staircases, lifts, clubhouse and garbage disposal.",
+          "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDF4",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1003,
+          "code": "trained_security_guards",
+          "title": "Uniformed Security Guards (Day & Night)",
+          "subtitle": "Verified and background-checked physical security guards for homes and businesses.",
+          "image": "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FFFBEB",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1004,
+          "code": "security_supervisors_bouncers",
+          "title": "Security Supervisors, Gunmen & Bouncers",
+          "subtitle": "Armed security guards, event bouncers, security officers and field supervisors.",
+          "image": "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FAF5FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1005,
+          "code": "visitor_gate_management",
+          "title": "Visitor & Vehicle Gate Entry Management",
+          "subtitle": "Boom barrier operations, visitor log management, register keeping and vehicle passes.",
+          "image": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FCE7F3",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1006,
+          "code": "pantry_boy_office_boy",
+          "title": "Office Boys, Peons & Pantry Staff",
+          "subtitle": "Dedicated office helpers for document filing, serving tea/coffee and errands.",
+          "image": "https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#CFFAFE",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1007,
+          "code": "glass_facade_high_rise_cleaning",
+          "title": "High-Rise Glass Façade Cleaning",
+          "subtitle": "Rope access facade cleaning, exterior glass wash and spider-kit wash.",
+          "image": "https://images.unsplash.com/photo-1541888946425-d0fbb186156f?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FEF3C7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1008,
+          "code": "waste_management_disposal",
+          "title": "Waste Segregation & Garbage Collection",
+          "subtitle": "Eco-friendly dry & wet waste management, compost pit upkeep and trash disposal.",
+          "image": "https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#DCFCE7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        }
+      ]
+    },
+    {
+      "spec_category_id": 42,
+      "name": "Computer and Hardware",
+      "spec_name": "Computer and Hardware Services",
+      "bg_color": "#0284C7",
+      "text_color": "#FFFFFF",
+      "ref_code": "COMP",
+      "sub_services": [
+        {
+          "id": 1101,
+          "code": "laptop_desktop_repair",
+          "title": "Laptop & Desktop Chip-Level Repair",
+          "subtitle": "Motherboard repair, screen replacement, overheating fix, keyboard and battery change.",
+          "image": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EFF6FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1102,
+          "code": "os_windows_mac_software",
+          "title": "OS Installation, Formatting & Software Setup",
+          "subtitle": "Windows 11, macOS, MS Office, Antivirus installation and speed optimization.",
+          "image": "https://images.unsplash.com/photo-1547658719-da2b51169166?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDF4",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1103,
+          "code": "ssd_ram_hardware_upgrade",
+          "title": "SSD & RAM Hardware Upgrades",
+          "subtitle": "High-speed NVMe SSD installation, RAM expansion and system cloning.",
+          "image": "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FFFBEB",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1104,
+          "code": "data_recovery_backup",
+          "title": "Hard Drive & SSD Data Recovery",
+          "subtitle": "Deleted file recovery, crashed hard drive data backup and damaged sector repair.",
+          "image": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FAF5FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1105,
+          "code": "lan_wifi_networking",
+          "title": "Wi-Fi Router, LAN Cabling & Network Setup",
+          "subtitle": "Cat6 cable routing, crimping, Gigabit switch, Wi-Fi mesh and firewall configuration.",
+          "image": "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FCE7F3",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1106,
+          "code": "printer_scanner_refill",
+          "title": "Printer, Scanner & Toner Cartridge Refilling",
+          "subtitle": "Laserjet, inkjet printer repair, paper jam fix, scanner setup and toner refills.",
+          "image": "https://images.unsplash.com/photo-1612815154858-60aa4c59eaa6?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#CFFAFE",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1107,
+          "code": "custom_gaming_workstation_build",
+          "title": "Custom PC Build (Gaming & Architecture/Editing)",
+          "subtitle": "Custom PC assembly with liquid cooling, GPU fitting, cable management and benchmarks.",
+          "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FEF3C7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1108,
+          "code": "corporate_computer_amc",
+          "title": "Annual Maintenance Contract (AMC) for Computers",
+          "subtitle": "Quarterly preventive maintenance, on-site technician visits and server monitoring.",
+          "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#DCFCE7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        }
+      ]
+    },
+    {
+      "spec_category_id": 43,
+      "name": "HVAC",
+      "spec_name": "HVAC (Heating, Ventilation & Air Conditioning)",
+      "bg_color": "#0369A1",
+      "text_color": "#FFFFFF",
+      "ref_code": "HVAC",
+      "sub_services": [
+        {
+          "id": 1201,
+          "code": "split_window_ac_servicing",
+          "title": "Split & Window AC Jet Foam Servicing",
+          "subtitle": "Deep jet pump cleaning of indoor coil, outdoor unit, filter wash and drainage clean.",
+          "image": "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EFF6FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1202,
+          "code": "ac_gas_leakage_refill",
+          "title": "AC Gas Leakage Detection & Refilling",
+          "subtitle": "Nitrogen pressure testing, copper brazing and pure R32/R410A refrigerant gas top-up.",
+          "image": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDF4",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1203,
+          "code": "ac_installation_uninstallation",
+          "title": "AC Installation & Dismantling",
+          "subtitle": "Wall mounting bracket, copper piping insulation, vacuuming and testing.",
+          "image": "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FFFBEB",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1204,
+          "code": "centralized_vrf_ductable_ac",
+          "title": "VRF / VRV & Ductable AC Systems",
+          "subtitle": "Centralized air-conditioning for offices, showrooms, hotels and villas.",
+          "image": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FAF5FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1205,
+          "code": "air_duct_cleaning_sanitization",
+          "title": "Air Duct Cleaning & Decontamination",
+          "subtitle": "Rotary brush duct vacuuming, mold removal, air purification and sanitization.",
+          "image": "https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FCE7F3",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1206,
+          "code": "cooling_tower_chiller_plant",
+          "title": "Chiller Plant & Cooling Tower Maintenance",
+          "subtitle": "Water-cooled and air-cooled chillers, condenser descaling and compressor overhaul.",
+          "image": "https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#CFFAFE",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1207,
+          "code": "ventilation_exhaust_hood_system",
+          "title": "Industrial Ventilation & Exhaust Blowers",
+          "subtitle": "Fresh air intake, kitchen exhaust hood ducts, inline axial fans and blowers.",
+          "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FEF3C7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1208,
+          "code": "hvac_annual_maintenance_amc",
+          "title": "Comprehensive HVAC AMC Services",
+          "subtitle": "Scheduled filter change, electrical contact checks and 24/7 breakdown assistance.",
+          "image": "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#DCFCE7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        }
+      ]
+    },
+    {
+      "spec_category_id": 44,
+      "name": "Gardening and Landscaping",
+      "spec_name": "Gardening and Landscaping",
+      "bg_color": "#15803D",
+      "text_color": "#FFFFFF",
+      "ref_code": "GRD",
+      "sub_services": [
+        {
+          "id": 1301,
+          "code": "landscape_garden_design",
+          "title": "Landscape Garden Design & Development",
+          "subtitle": "Turnkey residential & commercial garden architecture, lawn design and rockeries.",
+          "image": "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EFF6FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1302,
+          "code": "lawn_turfing_grass_laying",
+          "title": "Natural & Artificial Grass Lawn Laying",
+          "subtitle": "Mexican grass turfing, Bermuda grass planting and high-density artificial turf.",
+          "image": "https://images.unsplash.com/photo-1558904541-efa8c4a08931?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDF4",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1303,
+          "code": "balcony_terrace_garden",
+          "title": "Balcony & Terrace Garden Setup",
+          "subtitle": "Vertical garden green walls, planter boxes, ornamental plants and wooden decks.",
+          "image": "https://images.unsplash.com/photo-1598880940371-c756e015fea1?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FFFBEB",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1304,
+          "code": "plant_supply_nursery",
+          "title": "Indoor & Outdoor Ornamental Plants Supply",
+          "subtitle": "Air-purifying indoor plants, flowering shrubs, exotic bonsai and fruit plants.",
+          "image": "https://images.unsplash.com/photo-1485955900006-10f4d324d411?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FAF5FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1305,
+          "code": "drip_sprinkler_irrigation",
+          "title": "Automatic Drip & Sprinkler Irrigation",
+          "subtitle": "Timer-based micro-drip systems, pop-up lawn sprinklers and water savers.",
+          "image": "https://images.unsplash.com/photo-1563245372-f21724e3856d?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FCE7F3",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1306,
+          "code": "tree_pruning_hedge_trimming",
+          "title": "Tree Pruning, Lopping & Hedge Trimming",
+          "subtitle": "Tree branch cutting, boundary hedge shaping, weeding and debris clearance.",
+          "image": "https://images.unsplash.com/photo-1592417817098-8f3d69109853?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#CFFAFE",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1307,
+          "code": "organic_manure_soil_pest_cure",
+          "title": "Organic Fertilizers, Soil Enrichment & Plant Care",
+          "subtitle": "Vermicompost, red soil, cocopeat mixing and organic pesticide spraying.",
+          "image": "https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FEF3C7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1308,
+          "code": "monthly_gardener_mali_service",
+          "title": "Monthly Gardener (Mali) Maintenance Visit",
+          "subtitle": "Scheduled watering, weeding, pruning, hoeing and plant health monitoring.",
+          "image": "https://images.unsplash.com/photo-1523301343968-6a6ebf63c672?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#DCFCE7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        }
+      ]
+    },
+    {
+      "spec_category_id": 45,
+      "name": "Water & Sewage Treatment",
+      "spec_name": "Water & Sewage Treatment",
+      "bg_color": "#0891B2",
+      "text_color": "#FFFFFF",
+      "ref_code": "WATER",
+      "sub_services": [
+        {
+          "id": 1401,
+          "code": "commercial_ro_water_purifier",
+          "title": "Commercial & Industrial RO Plant Setup",
+          "subtitle": "250 LPH to 5000+ LPH RO plants for factories, hospitals, schools and apartments.",
+          "image": "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EFF6FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1402,
+          "code": "water_softener_hard_water",
+          "title": "Water Softener & Iron Removal Filter",
+          "subtitle": "Automatic ion-exchange water softeners for hard water and iron removal filters.",
+          "image": "https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDF4",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1403,
+          "code": "stp_sewage_treatment_plant",
+          "title": "Sewage Treatment Plant (STP) Installation & AMC",
+          "subtitle": "MBBR, SBR, MBR technology sewage plants for residential societies and hotels.",
+          "image": "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FFFBEB",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1404,
+          "code": "etp_effluent_treatment_plant",
+          "title": "Effluent Treatment Plant (ETP) for Industries",
+          "subtitle": "Chemical, textile, and manufacturing industrial wastewater treatment systems.",
+          "image": "https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FAF5FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1405,
+          "code": "rainwater_harvesting_system",
+          "title": "Rainwater Harvesting (RWH) Setup",
+          "subtitle": "Recharge borewells, rooftop filtration units and storage tank integrations.",
+          "image": "https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FCE7F3",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1406,
+          "code": "water_quality_lab_testing",
+          "title": "Water Quality Lab Testing & TDS Analysis",
+          "subtitle": "NABL accredited lab testing for drinking water, bacteria, heavy metals & pH.",
+          "image": "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#CFFAFE",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1407,
+          "code": "membrane_filter_replacement",
+          "title": "Membrane, Sand & Carbon Filter Media Replacement",
+          "subtitle": "RO membrane chemical descaling, activated carbon replacement and quartz sand bed.",
+          "image": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FEF3C7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1408,
+          "code": "pumps_blower_aeration_maintenance",
+          "title": "Air Blowers, Dosing Pumps & Aeration Maintenance",
+          "subtitle": "Diffuser grid cleaning, root blowers, coagulant dosing pumps and bio-culture addition.",
+          "image": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#DCFCE7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        }
+      ]
+    },
+    {
+      "spec_category_id": 46,
+      "name": "Special Care & Health Care",
+      "spec_name": "Special Care & Health Care",
+      "bg_color": "#BE185D",
+      "text_color": "#FFFFFF",
+      "ref_code": "CARE",
+      "sub_services": [
+        {
+          "id": 1501,
+          "code": "home_nursing_elderly_care",
+          "title": "Elderly Care & 24/7 Home Attendant",
+          "subtitle": "Compassionate daily assistance, mobility support, medication and companionship.",
+          "image": "https://images.unsplash.com/photo-1576765608535-5f04d1e3f289?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#EFF6FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1502,
+          "code": "post_operative_clinical_nursing",
+          "title": "Post-Operative & Critical Patient Care",
+          "subtitle": "Certified GNM/B.Sc nurses for wound dressing, injections, cannula and vitals monitoring.",
+          "image": "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#F0FDF4",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1503,
+          "code": "physiotherapy_rehab_at_home",
+          "title": "Physiotherapy & Rehabilitation at Home",
+          "subtitle": "Stroke recovery, paralysis, back pain, knee rehabilitation and orthopaedic physio.",
+          "image": "https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FFFBEB",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1504,
+          "code": "medical_equipment_rental",
+          "title": "Medical Equipment Rental & Purchase",
+          "subtitle": "Oxygen concentrators, BiPAP/CPAP, motorized ICU hospital beds and wheelchairs.",
+          "image": "https://images.unsplash.com/photo-1583912267670-6575ad472688?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FAF5FF",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1505,
+          "code": "baby_care_japa_maid",
+          "title": "Newborn Baby Care & Mother Care (Japa Maid)",
+          "subtitle": "Infant massage, bath, mother postpartum care and 24-hr baby assistance.",
+          "image": "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FCE7F3",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1506,
+          "code": "sample_collection_pathology",
+          "title": "Doorstep Blood Sample Collection & Lab Tests",
+          "subtitle": "NABL certified blood tests, sugar/thyroid profile, urine test and digital reports.",
+          "image": "https://images.unsplash.com/photo-1579154204601-01588f351e67?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#CFFAFE",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1507,
+          "code": "doctor_consultation_home_visit",
+          "title": "Doctor Home Visit & Video Consultation",
+          "subtitle": "General physician home visit for seniors, bedridden patients & emergency checkups.",
+          "image": "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#FEF3C7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        },
+        {
+          "id": 1508,
+          "code": "ambulance_emergency_support",
+          "title": "Emergency Ambulance & Patient Transport",
+          "subtitle": "24/7 basic life support (BLS) and advanced cardiac ICU ambulance services.",
+          "image": "https://images.unsplash.com/photo-1587745416684-47953f16f02f?w=500&auto=format&fit=crop&q=80",
+          "bg_color": "#DCFCE7",
+          "text_color": "#0F172A",
+          "is_active": 1
+        }
+      ]
+    }
+  ]
+}

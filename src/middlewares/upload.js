@@ -28,7 +28,8 @@ const fileFilter = (req, file, cb) => {
   const ok =
     /^image\//.test(file.mimetype) ||
     /^video\//.test(file.mimetype) ||
-    /^(application\/pdf|application\/msword|application\/vnd\.openxmlformats-officedocument\.|text\/)/.test(file.mimetype);
+    /^(application\/pdf|application\/msword|application\/vnd\.openxmlformats-officedocument\.|text\/)/.test(file.mimetype) ||
+    /^(application\/(x-)?dwg|image\/vnd\.dwg|image\/x-dwg)/i.test(file.mimetype);
   if (ok) return cb(null, true);
   cb(ApiError.badRequest(`Unsupported file type: ${file.mimetype}`));
 };

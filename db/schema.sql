@@ -144,6 +144,9 @@ CREATE TABLE service_categories (
   description TEXT NULL,
   image VARCHAR(512) NULL,
   price DECIMAL(10,2) NULL,
+  bg_color VARCHAR(9) NULL,
+  text_color VARCHAR(9) NULL,
+  ref_code VARCHAR(10) NULL,
   is_featured TINYINT(1) NOT NULL DEFAULT 0,
   status TINYINT(1) NOT NULL DEFAULT 1,
   sort_order INT NOT NULL DEFAULT 0,
@@ -151,6 +154,23 @@ CREATE TABLE service_categories (
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   KEY idx_cat_module (module_id),
   CONSTRAINT fk_cat_module FOREIGN KEY (module_id) REFERENCES service_modules(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE service_sub_services (
+  id INT UNSIGNED PRIMARY KEY,
+  category_id INT UNSIGNED NOT NULL,
+  code VARCHAR(64) NOT NULL,
+  title VARCHAR(160) NOT NULL,
+  subtitle VARCHAR(255) NULL,
+  image VARCHAR(512) NULL,
+  bg_color VARCHAR(9) NULL,
+  text_color VARCHAR(9) NULL,
+  is_active TINYINT(1) NOT NULL DEFAULT 1,
+  sort_order INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_sub_code (category_id, code),
+  KEY idx_sub_category (category_id),
+  CONSTRAINT fk_sub_category FOREIGN KEY (category_id) REFERENCES service_categories(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ========================= OFFERS / COUPONS =========================
@@ -367,6 +387,18 @@ CREATE TABLE request_attachments (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_ra_request (request_id),
   CONSTRAINT fk_ra_request FOREIGN KEY (request_id) REFERENCES requests(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE request_sub_services (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  request_id INT UNSIGNED NOT NULL,
+  sub_service_id INT UNSIGNED NOT NULL,
+  code VARCHAR(64) NOT NULL,
+  title VARCHAR(160) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_rss_request (request_id),
+  KEY idx_rss_sub (sub_service_id),
+  CONSTRAINT fk_rss_request FOREIGN KEY (request_id) REFERENCES requests(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE request_assignments (

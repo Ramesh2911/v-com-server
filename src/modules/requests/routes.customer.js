@@ -304,11 +304,188 @@ const createBooking = asyncHandler(async (req, res) => {
   );
 });
 
+/* ================= 1b. special-service mode (sub_service_ids) ================= */
+
+const TIME_RE_S = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
+
+// accepts: repeated fields, JSON array string, comma-separated — keys `sub_service_ids` or `sub_service_ids[]`
+const readSubTokens = (b) => {
+  const raw = b.sub_service_ids !== undefined ? b.sub_service_ids : b['sub_service_ids[]'];
+  const out = [];
+  const push = (v) => {
+    if (v == null) return;
+    if (Array.isArray(v)) {
+      v.forEach(push);
+      return;
+    }
+    const s = String(v).trim();
+    if (!s) return;
+    if (s.startsWith('[')) {
+      try {
+        const arr = JSON.parse(s);
+        if (Array.isArray(arr)) {
+          arr.forEach(push);
+          return;
+        }
+      } catch {
+        /* not JSON — treat as plain token */
+      }
+    }
+    s.split(',').forEach((t) => {
+      const x = t.trim();
+      if (x) out.push(x);
+    });
+  };
+  push(raw);
+  return [...new Set(out)];
+};
+
+const formattedAddress = (a) =>
+  [a.line1, a.line2, a.city, [a.state, a.pincode].filter(Boolean).join(' ')]
+    .filter(Boolean)
+    .join(', ');
+
+const createSpecial = asyncHandler(async (req, res) => {
+  const b = req.body || {};
+  const tokens = readSubTokens(b);
+  const { service_id, address_id, notes, scheduled_date, scheduled_time } = b;
+
+  if (!tokens.length || service_id == null || service_id === '' || address_id == null || address_id === '') {
+    throw ApiError.badRequest('Please select at least one sub-service and address.');
+  }
+
+  const [[svc]] = await pool.query(
+    `SELECT c.id, c.name, c.module_id, c.ref_code, m.name AS module_name
+       FROM service_categories c JOIN service_modules m ON m.id = c.module_id
+      WHERE c.id = ? AND c.status = 1`,
+    [service_id]
+  );
+  if (!svc) throw ApiError.notFound('Service not found');
+
+  const [[addr]] = await pool.query(
+    'SELECT * FROM addresses WHERE id = ? AND user_id = ? AND status = 1',
+    [address_id, req.user.id]
+  );
+  if (!addr) throw ApiError.notFound('Address not found');
+
+  const subRows = [];
+  const seen = new Set();
+  for (const token of tokens) {
+    const isId = /^\d+$/.test(token);
+    const [rows] = await pool.query(
+      `SELECT id, code, title FROM service_sub_services
+        WHERE category_id = ? AND is_active = 1 AND ${isId ? 'id = ?' : 'code = ?'}`,
+      [svc.id, isId ? Number(token) : token]
+    );
+    if (!rows.length) throw ApiError.badRequest('Invalid sub-service selection');
+    if (!seen.has(rows[0].id)) {
+      seen.add(rows[0].id);
+      subRows.push(rows[0]);
+    }
+  }
+
+  let sDate = null;
+  if (scheduled_date !== undefined && scheduled_date !== '') {
+    if (!DATE_RE.test(String(scheduled_date)) || Number.isNaN(new Date(`${scheduled_date}T00:00:00Z`).getTime())) {
+      throw ApiError.badRequest('scheduled_date must be YYYY-MM-DD');
+    }
+    sDate = scheduled_date;
+  }
+  let sTime = null;
+  if (scheduled_time !== undefined && scheduled_time !== '') {
+    if (!TIME_RE_S.test(String(scheduled_time))) {
+      throw ApiError.badRequest('scheduled_time must be HH:mm or HH:mm:ss');
+    }
+    sTime = String(scheduled_time).slice(0, 5);
+  }
+
+  const noteText = notes != null && String(notes).trim() ? String(notes).trim() : null;
+
+  const ticketNo = await generateTicketNo(pool, 'request');
+  const [result] = await pool.query(
+    `INSERT INTO requests (ticket_no, customer_id, module_id, category_id, title, description, site_location, city,
+       latitude, longitude, priority, source, scheduled_date, scheduled_time, address_id)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'normal', 'app', ?, ?, ?)`,
+    [ticketNo, req.user.id, svc.module_id, svc.id, svc.name, noteText, addr.line1, addr.city,
+      addr.latitude, addr.longitude, sDate, sTime, addr.id]
+  );
+  const id = result.insertId;
+
+  const bookingRef = svc.ref_code
+    ? `REQ-${svc.ref_code}-${new Date().getFullYear()}-${id}`
+    : `BK-${new Date().getFullYear()}-${id}`;
+  await pool.query('UPDATE requests SET booking_ref = ? WHERE id = ?', [bookingRef, id]);
+
+  for (const s of subRows) {
+    await pool.query(
+      `INSERT INTO request_sub_services (request_id, sub_service_id, code, title) VALUES (?, ?, ?, ?)`,
+      [id, s.id, s.code, s.title]
+    );
+  }
+
+  const attachments = [];
+  for (const file of req.files || []) {
+    const [att] = await pool.query(
+      `INSERT INTO request_attachments (request_id, file_path, file_type, original_name) VALUES (?, ?, ?, ?)`,
+      [id, `requests/${file.filename}`, classifyFileType(file.mimetype), file.originalname]
+    );
+    attachments.push({
+      id: att.insertId,
+      file_name: file.originalname,
+      file_url: toPublicUrl(`requests/${file.filename}`),
+    });
+  }
+
+  await pool.query(
+    `INSERT INTO request_status_history (request_id, status, note, changed_by)
+     VALUES (?, 'pending_review', 'Special service request submitted', ?)`,
+    [id, req.user.id]
+  );
+
+  const staff = await staffWithPermission('requests.manage');
+  await notifyMany(staff, {
+    event: 'request_created',
+    type: 'request',
+    title: `New request ${ticketNo}`,
+    body: `A new ${svc.name} request has been submitted.`,
+    data: { booking_ref: bookingRef, request_id: id },
+  });
+
+  const [[row]] = await pool.query('SELECT created_at FROM requests WHERE id = ?', [id]);
+  sendSuccess(
+    res,
+    {
+      request_id: id,
+      booking_ref: bookingRef,
+      status: 'pending_review',
+      service: { id: svc.id, name: svc.name },
+      sub_services: subRows.map((s) => ({ id: s.id, title: s.title })),
+      address: {
+        id: addr.id,
+        address_type: addr.label || null,
+        formatted_address: formattedAddress(addr),
+      },
+      notes: noteText,
+      attachments,
+      created_at: row.created_at,
+    },
+    'Special service request submitted successfully',
+    201
+  );
+});
+
 router.post(
   '/requests',
-  requestUpload.array('attachments', 8),
+  requestUpload.any(),
   asyncHandler(async (req, res) => {
     const b = req.body || {};
+    // accept both `attachments` and `attachments[]` file field names (filter keeps legacy behavior identical)
+    req.files = (req.files || []).filter(
+      (f) => f.fieldname === 'attachments' || f.fieldname === 'attachments[]'
+    );
+    if (b.sub_service_ids !== undefined || b['sub_service_ids[]'] !== undefined) {
+      return createSpecial(req, res);
+    }
     const bookingMode = ['service_id', 'address_id', 'scheduled_date', 'scheduled_time'].some(
       (k) => b[k] !== undefined && b[k] !== ''
     );
