@@ -861,3 +861,31 @@ CREATE TABLE settings (
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uk_settings_key (setting_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ========================= EVENTS / CORPORATE EXHIBITIONS =========================
+
+CREATE TABLE events (
+  id VARCHAR(16) PRIMARY KEY,
+  title VARCHAR(200) NOT NULL,
+  organizer VARCHAR(160) NULL,
+  category VARCHAR(60) NULL,
+  event_date DATE NOT NULL,
+  start_time VARCHAR(8) NULL,
+  time_range VARCHAR(40) NULL,
+  location VARCHAR(100) NOT NULL,
+  venue_name VARCHAR(160) NULL,
+  venue_address VARCHAR(255) NULL,
+  banner_url VARCHAR(512) NULL,
+  is_featured TINYINT(1) NOT NULL DEFAULT 0,
+  description TEXT NULL,
+  highlights JSON NULL,
+  amenities JSON NULL,
+  latitude DECIMAL(10,7) NULL,
+  longitude DECIMAL(10,7) NULL,
+  status TINYINT(1) NOT NULL DEFAULT 1,
+  sort_order INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_events_date (event_date),
+  KEY idx_events_location (location)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -426,6 +426,23 @@ Errors: unknown/inactive/expired/future/usage-exhausted → `404` with clear mes
 
 No auth required. App home tab renders the list top-to-bottom by `slot` (1 = first position).
 
+### 3.5 Events — Event & Corporate Arrangements (`/api/v1/events`, public)
+
+| Method | Path | Query / Body | Returns |
+|---|---|---|---|
+| GET | `/events` | `location?` (area/city LIKE), `date?` = `all\|today\|tomorrow\|this_weekend\|this_month\|custom`, `custom_date?` (YYYY-MM-DD), `page?` (1), `limit?` (10, max 100) | `200` `{ items[], pagination }` — `message: "Events retrieved successfully"` |
+| GET | `/events/:id` | — | `200` detail — `message: "Event details fetched successfully"`; unknown → `404 Event not found` |
+| GET | `/events/locations` | `query?` (ba `q`) | `200` **plain string array** `["Salt Lake", ...]` (no other data) |
+| POST | `/events/locations/search` | JSON `{ query? \| q? }` | same string array |
+
+- **Auth optional** — token na dileo chole (endpoint e user context nei).
+- **Dates = IST** (Asia/Kolkata): `event_date`/`start_time` stored IST wall-clock; response `date` = UTC ISO (e.g. IST `09:30` → `...T04:00:00.000Z`). Date filters IST-today dhore kaj kore (live UTC server e same).
+- **Upcoming by default:** `date=all` hole `event_date >= IST-today` (past events list e nei; `/events/:id` detail e ache). `custom` = exact date (past-o dekha jay).
+- `this_weekend` = আগামী Sat–Sun (aj Sat/Sun hole aj theke).
+- Pagination keys spec-shaped: `{ current_page, total_pages, total_items, per_page }`.
+- Item shape: `{ id ("ev-N"), title, organizer, category, date (ISO), time_range, location, venue_name, venue_address, banner_url, is_featured (bool), description, highlights[] }`; detail adds `amenities[]` + `coordinates { latitude, longitude }`.
+- 16 demo events seeded (`events` table, `db/seed-events.js local|clever` — re-run refreshes dates dynamically); `ev-1`/`ev-2` app-dev spec theke verbatim.
+
 ---
 
 ## 4. Customer app (`/api/v1/customer/*`) — auth required, `role_slug = customer`

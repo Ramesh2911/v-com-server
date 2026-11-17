@@ -6,6 +6,7 @@ router.use('/me', require('../modules/users/routes.me'));
 // Shared / customer-facing
 router.use('/services', require('../modules/services/routes.public'));
 router.use('/categories', require('../modules/services/routes.categories'));
+router.use('/events', require('../modules/events/routes.public'));
 router.use('/offers', require('../modules/offers/routes.public').offers);
 router.use('/coupons', require('../modules/offers/routes.public').coupons);
 router.use('/banners', require('../modules/banners/routes.public'));
