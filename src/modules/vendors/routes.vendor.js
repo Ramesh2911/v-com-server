@@ -292,10 +292,11 @@ router.get(
       [vendorId]
     );
 
-    // revenue chart: current week Mon..Sun (WEEKDAY(): Mon=0 → Monday of this week)
-    const monday = new Date();
-    monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
-    const startStr = monday.toISOString().slice(0, 10);
+    // revenue chart: current IST week Mon..Sun (dateStrings:true → DATE columns arrive as 'YYYY-MM-DD')
+    const todayKey = new Date(Date.now() + 330 * 60 * 1000).toISOString().slice(0, 10);
+    const mondayDate = new Date(`${todayKey}T00:00:00Z`);
+    mondayDate.setUTCDate(mondayDate.getUTCDate() - ((mondayDate.getUTCDay() + 6) % 7));
+    const startStr = mondayDate.toISOString().slice(0, 10);
     const [daily] = await pool.query(
       `SELECT DATE(completed_at) AS d, COALESCE(SUM(amount), 0) AS amt
          FROM jobs WHERE vendor_id = ? AND stage = 'completed'
@@ -303,7 +304,7 @@ router.get(
         GROUP BY DATE(completed_at)`,
       [vendorId, startStr, startStr]
     );
-    const dayMap = new Map(daily.map((x) => [x.d.toISOString().slice(0, 10), Number(x.amt)]));
+    const dayMap = new Map(daily.map((x) => [String(x.d).slice(0, 10), Number(x.amt)]));
     const chart = [];
     for (let i = 0; i < 7; i += 1) {
       const dt = new Date(`${startStr}T00:00:00Z`);
@@ -323,7 +324,6 @@ router.get(
       delete c._amt;
     });
     const realWeekTotal = daily.reduce((s, x) => s + Number(x.amt), 0);
-    const todayKey = new Date().toISOString().slice(0, 10);
     const selected = chart.find((c, i) => {
       const dt = new Date(`${startStr}T00:00:00Z`);
       dt.setUTCDate(dt.getUTCDate() + i);
