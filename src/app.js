@@ -44,7 +44,9 @@ app.get('/api/v1', (req, res) =>
       version: 'v1',
       status: 'online',
       health: '/api/v1/health',
-      docs: 'server/docs/API.md',
+      docs: '/api/v1/docs',
+      openapi: '/api/v1/docs.json',
+      markdown: 'server/docs/API.md',
       collections: {
         public: ['/api/v1/services', '/api/v1/properties'],
         auth: [
@@ -66,6 +68,7 @@ app.get('/api/v1', (req, res) =>
   })
 );
 
+app.use('/api/v1', require('./routes/docs'));
 app.use('/api/v1', require('./routes'));
 
 app.use(notFound);

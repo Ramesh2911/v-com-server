@@ -1,5 +1,8 @@
 # V_COM Platform — API Contract
 
+> **Interactive Swagger UI:** [`/api/v1/docs`](https://v-com-server.onrender.com/api/v1/docs) · **OpenAPI JSON:** [`/api/v1/docs.json`](https://v-com-server.onrender.com/api/v1/docs.json)
+> Spec source: `docs/openapi/` (182 paths / 239 operations). This markdown remains the detailed contract reference.
+
 REST API for the V_COM Business Management Platform. Consumed by:
 
 - **Customer mobile app** (`/customer/*`, `/auth/*`, public endpoints)
