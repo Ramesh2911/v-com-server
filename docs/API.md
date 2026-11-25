@@ -764,7 +764,7 @@ All routes below need `Authorization: Bearer …` **and** the listed permission.
 
 | Method | Path | Permission | Notes |
 |---|---|---|---|
-| GET | `/admin/dashboard` | `dashboard.view` | KPI counts, recent activity, monthly series |
+| GET | `/admin/dashboard?days=7\|14\|30` | `dashboard.view` | KPI counts (incl. `events_total`, `events_upcoming`, `vendors_active`, `payouts_pending_amount`, `payouts_processed_amount`, `payouts_*_count`), `module_daily[]` (per-module per-day request counts, zero-filled: `{ module_id, module_code, module_name, total, days: [{date, count}] }`), `by_module`, `by_status`, `recent_requests[]` (with `vendor_name`, `location`), `recent_activity`, `request_chart` (14d). `days` clamped to 7/14/30 (default 14) — affects `module_daily` only |
 | GET | `/admin/reports/overview` | `reports.view` | `{ requests, quotations, vendors, jobs, module_performance[], monthly[] }` |
 | GET | `/admin/reports/:type?format=csv` | `reports.view` | Types: `requests, quotations, jobs, customers, vendors, sos, properties, leaves`. `format=csv` → CSV download (needs auth header — fetch as blob, do not `window.open`) |
 
@@ -794,6 +794,20 @@ All routes below need `Authorization: Bearer …` **and** the listed permission.
 | PATCH | `/admin/vendors/:id/status` | `vendors.manage` | `{ status }` |
 | GET | `/admin/vendors/:id/assignments` | `vendors.view` | requests/jobs history |
 | GET | `/admin/vendors/:id/technicians` | `vendors.view` | read-only: technicians + `today_status` + `present_30d` |
+
+### 6.3a Payouts (manual vendor payouts)
+
+Permissions: `payouts.view` (reads) / `payouts.manage` (writes). Web panel: **Payouts** page (People section). Table `payouts` — manual entries only (no auto-generation), one-way `pending → processed`, no delete (audit trail).
+
+| Method | Path | Permission | Notes |
+|---|---|---|---|
+| GET | `/admin/payouts?status&vendor_id&page&limit` | `payouts.view` | `{ items[], pagination }`; items include `vendor_name`, `job_no`, `amount` (number) |
+| GET | `/admin/payouts/summary` | `payouts.view` | `{ pending_amount, processed_amount, total_amount, pending_count, processed_count }` |
+| GET | `/admin/payouts/export?status` | `payouts.view` | CSV download (auth header — fetch as blob, do not `window.open`) |
+| POST | `/admin/payouts` | `payouts.manage` | `vendor_id*, amount* (>0), note?, job_id?` (job must belong to vendor) → created as `pending` |
+| PATCH | `/admin/payouts/:id/status` | `payouts.manage` | `{ status: "processed" }` only; sets `processed_at`; re-process → 400 |
+
+Rules: `amount` DECIMAL(12,2) > 0; optional `job_id` validated against `vendor_id`; every write audit-logged (`payout.create`, `payout.processed`).
 
 ### 6.4 Requests & quotations & jobs & SOS
 
@@ -864,6 +878,19 @@ Permissions: `banners.view` (reads) / `banners.manage` (writes). Web panel: **Ba
 | DELETE | `/admin/banners/:id` | `banners.manage` | |
 
 Rules: `slot` = carousel position (1 = first shown); `ends_at` must be after `starts_at`; public feed (§3.4) only returns banners active now. Every write is audit-logged (`banner.create/update/delete`).
+
+### 6.6b Events admin
+
+Permissions: `events.view` (reads) / `events.manage` (writes). Web panel: **Events** page (HR & Content section). Same `events` table as the public feed (§3.5); public endpoints unchanged.
+
+| Method | Path | Permission | Notes |
+|---|---|---|---|
+| GET | `/admin/events?q&status` | `events.view` | all rows incl. hidden; `event_date` DESC; `q` matches title/organizer/location; `status=0\|1` filter; ≤500 |
+| POST | `/admin/events` | `events.manage` | `title*, location*, event_date* (YYYY-MM-DD), start_time? (HH:MM), time_range?, organizer?, category?, venue_name?, venue_address?, banner_url?, is_featured? (0\|1), description?, highlights? (array), amenities? (array), latitude? (−90..90), longitude? (−180..180), status? (default 1), sort_order?` → id `ev-<base36>` |
+| PUT | `/admin/events/:id` | `events.manage` | partial update; `highlights`/`amenities` accept array or comma-separated string; `""` clears optional fields |
+| DELETE | `/admin/events/:id` | `events.manage` | hard delete (standalone table, no FK) |
+
+Rules: `title` ≤200 and `location` ≤100 required; audit-logged (`event.create/update/delete`); public feed still filters `status = 1`.
 
 ### 6.7 Properties admin
 
@@ -970,6 +997,8 @@ sos.view                  sos.manage
 properties.view           properties.manage      properties.enquiries
 services.view             services.manage
 banners.view              banners.manage
+events.view               events.manage
+payouts.view              payouts.manage
 reviews.view              reviews.manage
 hr.view                   hr.manage
 notifications.manage      reports.view           reports.export

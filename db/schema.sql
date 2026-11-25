@@ -890,3 +890,23 @@ CREATE TABLE events (
   KEY idx_events_date (event_date),
   KEY idx_events_location (location)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ========================= PAYOUTS (manual vendor payouts) =========================
+
+CREATE TABLE IF NOT EXISTS payouts (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  vendor_id INT UNSIGNED NOT NULL,
+  job_id INT UNSIGNED NULL,
+  amount DECIMAL(12,2) NOT NULL,
+  status ENUM('pending','processed') NOT NULL DEFAULT 'pending',
+  note VARCHAR(255) NULL,
+  processed_at DATETIME NULL,
+  created_by INT UNSIGNED NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_payouts_vendor (vendor_id),
+  KEY idx_payouts_status (status),
+  KEY idx_payouts_job (job_id),
+  CONSTRAINT fk_payouts_vendor FOREIGN KEY (vendor_id) REFERENCES vendors(id),
+  CONSTRAINT fk_payouts_job FOREIGN KEY (job_id) REFERENCES jobs(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -49,6 +49,8 @@ router.use('/admin/services', require('../modules/services/routes.admin'));
 router.use('/admin/offers', require('../modules/offers/routes.admin').offers);
 router.use('/admin/coupons', require('../modules/offers/routes.admin').coupons);
 router.use('/admin/banners', require('../modules/banners/routes.admin').banners);
+router.use('/admin/events', require('../modules/events/routes.admin').eventsAdmin);
+router.use('/admin/payouts', require('../modules/payouts/routes.admin').payouts);
 router.use('/admin/reviews', require('../modules/reviews/routes.admin'));
 router.use('/admin/properties', require('../modules/properties/routes.admin'));
 router.use('/admin/hr', require('../modules/hr/routes.admin'));

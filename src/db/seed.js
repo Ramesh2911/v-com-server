@@ -88,6 +88,10 @@ const PERMISSIONS = [
   ['support.manage', 'support', 'Manage support tickets'],
   ['settings.manage', 'settings', 'Manage system settings'],
   ['audit.view', 'audit', 'View audit logs'],
+  ['events.view', 'events', 'View events'],
+  ['events.manage', 'events', 'Manage events'],
+  ['payouts.view', 'payouts', 'View payouts'],
+  ['payouts.manage', 'payouts', 'Manage payouts'],
   ['modules.all', 'modules', 'Access all service modules'],
 ];
 
