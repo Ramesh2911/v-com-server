@@ -90,7 +90,18 @@ router.post(
   otpVerifyLimiter,
   [
     body('phone').notEmpty().withMessage('Phone is required'),
-    body('code').isLength({ min: 4, max: 6 }).withMessage('OTP must be 4-6 digits').bail().isNumeric(),
+    body('code')
+      .optional({ values: 'null' })
+      .isLength({ min: 4, max: 6 }).withMessage('OTP must be 4-6 digits').bail().isNumeric(),
+    // alias: some clients send `otp` instead of `code`
+    body('otp')
+      .optional({ values: 'null' })
+      .isLength({ min: 4, max: 6 }).withMessage('OTP must be 4-6 digits').bail().isNumeric(),
+    body()
+      .custom((_, { req }) => {
+        if (!req.body.code && !req.body.otp) throw new Error('OTP code is required (code or otp)');
+        return true;
+      }),
     body('client').optional().isIn(['customer', 'vendor', 'technician']).withMessage('client must be "customer", "vendor" or "technician"'),
   ],
   validate,

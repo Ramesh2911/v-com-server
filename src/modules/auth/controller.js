@@ -290,7 +290,7 @@ exports.otpVerify = asyncHandler(async (req, res) => {
         'This mobile number is not registered as a field technician. Please contact your Service Provider / Vendor to add you to their team.'
       );
     }
-    await otp.verifyOtp(phone, req.body.code);
+    await otp.verifyOtp(phone, req.body.code || req.body.otp);
     if (tech.status !== 'active') {
       throw ApiError.forbidden('Your technician account is not active. Please contact your Service Provider.', {
         status: tech.status,
@@ -324,7 +324,7 @@ exports.otpVerify = asyncHandler(async (req, res) => {
     otp.assertClientRole(req.body.client, user.role_slug || (user.user_type === 'customer' ? 'customer' : null));
   }
 
-  await otp.verifyOtp(phone, req.body.code);
+  await otp.verifyOtp(phone, req.body.code || req.body.otp);
 
   // existing user → login right here (no separate login call needed)
   if (user) {

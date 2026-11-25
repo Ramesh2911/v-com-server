@@ -74,9 +74,9 @@ const paths = {
     post: {
       tags: ['Auth'],
       summary: 'Verify OTP',
-      description: 'Existing user → returns tokens. New user → returns verifyToken for /auth/register.',
+      description: 'Existing user → returns tokens. New user → returns verifyToken for /auth/register. Body field is `code` (not otp).',
       security: noSecurity,
-      requestBody: body({ type: 'object', required: ['phone', 'otp'], properties: { phone: { type: 'string' }, otp: { type: 'string' } } }, { phone: '01700000000', otp: '123456' }),
+      requestBody: body({ type: 'object', required: ['phone', 'code'], properties: { phone: { type: 'string' }, code: { type: 'string', description: 'OTP code (4-6 digits)', example: '123456' }, client: { type: 'string', enum: ['customer', 'vendor', 'technician'] } } }, { phone: '9876543210', code: '123456', client: 'customer' }),
       responses: { 200: { description: 'Tokens or verifyToken', content: { 'application/json': { schema: { $ref: '#/components/schemas/SuccessEnvelope' } } } }, 400: { $ref: '#/components/responses/ValidationError' } },
     },
   },
