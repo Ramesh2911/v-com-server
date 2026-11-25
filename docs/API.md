@@ -309,7 +309,7 @@ Refresh rules (for apps):
 
 **Module:** `{ kind: "module", id, code, name, description, icon, theme, colors, image, status, sort_order, created_at, updated_at, categories: [...], review_summary, reviews }`
 
-**Category:** `{ kind: "category", id, module_id, name, description, image, price, is_featured, status, sort_order, module_name, module_code, module_theme, module_colors, review_summary, reviews }`
+**Category:** `{ kind: "category", id, module_id, name, description, image, price, is_featured, status, sort_order, group_name, ref_code, module_name, module_code, module_theme, module_colors, review_summary, reviews }`
 
 **Card theme presets** — admin picks `theme` per module (create/update); every GET returns resolved `colors` so the app just renders them:
 
@@ -345,8 +345,16 @@ Refresh rules (for apps):
 
 - `image`: full URL (Cloudinary `https://res.cloudinary.com/...` or `/uploads/...`), `null` if unset.
 - `price`: `string|null` (DECIMAL, Quick Service pricing), `null` = not priced.
-- Only `status = 1` rows returned (public). 3 modules / 29 categories seeded:
-  `special-service` (17), `quick-service` (6), `general-assistance` (6).
+- Only `status = 1` rows returned (public). 3 modules / **34 categories** seeded:
+  `special-service` → group `professional` (20), `quick-service` → group `quick` (7), `general-assistance` → group `special` (7).
+
+**Catalog groups (v2)** — every category carries `group_name` (`professional` | `quick` | `special`) for the client's three-list UI; `sort_order` = position within its group:
+
+- **professional (20):** includes the 16 special sub-services categories + Housekeeping and Security (12), Events and Offers (13), Manpower and Security (11), Real Estate & Properties (19), Marketing (20).
+- **quick (7):** AC Repair and Services … Sunday Maid (7).
+- **special (7):** General Assistance-style categories: Legal & Advisory (5), Scrap and Waste Management (6), Travel and Insurance Schemes (7), …
+- New in v2 (seeded by `db/seed-catalog-v2.js`): **Manpower and Security**, **Real Estate & Properties**, **Marketing**, **Sunday Maid**, **Legal & Advisory**. Renames: *Interior and Office Inventory → **Interior Design and Carpentry***, *Events and Exhibitions → **Events and Offers***.
+- Admin `POST|PUT /admin/services/categories` accepts/validates `group_name`.
 
 Example `GET /services` (first module trimmed):
 
@@ -360,6 +368,7 @@ Example `GET /services` (first module trimmed):
       "categories": [
         { "id": 1, "module_id": 1, "name": "Fabrication and Welding",
           "image": null, "price": null, "is_featured": 1, "status": 1,
+          "group_name": "professional",
           "module_code": "special-service" }
       ]
     }
@@ -373,7 +382,7 @@ Example `GET /services` (first module trimmed):
 |---|---|---|---|
 | GET | `/categories/:id/sub-services` | **none (public)** | `200` `{ category_id, category_name, bg_color, text_color, sub_services[] }` — `message: "Sub-services fetched successfully"` |
 
-`/categories/:id/sub-services` — **special-service work-type cards** (16 special categories × 6–12 cards each). `/api/v1/categories/:id/sub-services` e call korbe (slug route নেই).
+`/categories/:id/sub-services` — **work-type cards** (now **18 categories**: the 16 special-service ones + Event and Corporate Arrangements (6) + Marketing (6), 6–14 cards each). `/api/v1/categories/:id/sub-services` e call korbe (slug route নেই).
 
 ```json
 {
@@ -381,7 +390,7 @@ Example `GET /services` (first module trimmed):
   "message": "Sub-services fetched successfully",
   "data": {
     "category_id": 36,
-    "category_name": "Interior and Office Inventory",
+    "category_name": "Interior Design and Carpentry",
     "bg_color": "#4F46E5",
     "text_color": "#FFFFFF",
     "sub_services": [
@@ -395,8 +404,8 @@ Example `GET /services` (first module trimmed):
 ```
 
 - `id` numeric only → `400`; unknown/inactive category → `404 Service not found`. Only `is_active = 1` sub-services returned (ordered by id). `image` = absolute URL as stored.
-- **`service_id` / category ids are DB-specific — fetch them from `GET /services` (module `special-service`), never hardcode.** Live ids ≠ spec-doc example ids (e.g. Interior = live `36`, local `6`; Packers = live `33`). Spec-doc id map (live/Clever): Fabrication `31`, CCTV `32`, Packers `33`, Website `34`, Pest `35`, Interior `36`, Electrical `37`, Construction `38`, Accounting `39`, Fire `40`, Housekeeping `41`, Computer `43`, HVAC `44`, Gardening `45`, Water `46`, Health `47` (live `42` = Event — not a special sub-services category).
-- 141 sub-services seeded (`service_sub_services`); category screen theme = `bg_color`/`text_color` per category.
+- **`service_id` / category ids are DB-specific — fetch them from `GET /services` (module `special-service`), never hardcode.** Live ids ≠ spec-doc example ids (e.g. Interior = live `36`, local `6`; Packers = live `33`). Spec-doc id map (live/Clever): Fabrication `31`, CCTV `32`, Packers `33`, Website `34`, Pest `35`, Interior `36`, Electrical `37`, Construction `38`, Accounting `39`, Fire `40`, Housekeeping `41`, Computer `43`, HVAC `44`, Gardening `45`, Water `46`, Health `47` (live `42` = Event — gained 6 sub-services in catalog v2).
+- **171 sub-services** seeded (`service_sub_services`, v2 adds 30 across Fabrication/Packers/Pest/Construction/Fire/Computer + new Event `1601-1606` + Marketing `1701-1706` categories); category screen theme = `bg_color`/`text_color` per category.
 
 ### 3.2 Properties (`/api/v1/properties`)
 
@@ -465,7 +474,7 @@ No auth required. App home tab renders the list top-to-bottom by `slot` (1 = fir
 { "success": true, "message": "Special service request submitted successfully",
   "data": {
     "request_id": 195, "booking_ref": "REQ-INT-2026-195", "status": "pending_review",
-    "service": { "id": 36, "name": "Interior and Office Inventory" },
+    "service": { "id": 36, "name": "Interior Design and Carpentry" },
     "sub_services": [ { "id": 201, "title": "Dream Project Interior Design" } ],
     "address": { "id": 12, "address_type": "Home", "formatted_address": "12A Rose Valley, Kolkata, West Bengal 700001" },
     "notes": "Work Types: ...\nRequirements: ...",
