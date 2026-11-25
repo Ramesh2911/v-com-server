@@ -387,9 +387,8 @@ exports.appRegister = asyncHandler(async (req, res) => {
       if (!file) throw ApiError.badRequest(`${label} is required`);
       if (!/^image\//.test(file.mimetype)) throw ApiError.badRequest(`${label} must be an image`);
     }
-  } else if (!email) {
-    throw ApiError.badRequest('Email is required');
   }
+  // customer OTP register: email optional (phone already verified via OTP)
 
   const [[existsPhone]] = await pool.query('SELECT id FROM users WHERE phone = ?', [phone]);
   if (existsPhone) throw ApiError.conflict('An account already exists for this phone. Please login.');

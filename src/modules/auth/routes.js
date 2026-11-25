@@ -27,11 +27,13 @@ router.post(
   kycUpload.any(),
   [
     body('name').trim().notEmpty().withMessage('Name is required'),
+    // classic register (no verifyToken): email required
     body('email')
-      .if((value, { req }) => !(req.body.verifyToken && req.body.client === 'vendor'))
+      .if((value, { req }) => !req.body.verifyToken)
       .isEmail().withMessage('Valid email is required').normalizeEmail(),
+    // OTP register: email optional, but must be valid when provided (any client)
     body('email')
-      .if((value, { req }) => !!req.body.verifyToken && req.body.client === 'vendor' && String(value || '').trim() !== '')
+      .if((value, { req }) => !!req.body.verifyToken && String(value || '').trim() !== '')
       .isEmail().withMessage('Valid email is required').normalizeEmail(),
     body('phone').optional({ nullable: true }).isLength({ min: 8, max: 20 }),
     body('verifyToken').if(body('verifyToken').exists()).notEmpty().withMessage('verifyToken is required'),
