@@ -15,7 +15,7 @@ const CATEGORIES = {
     'Packers and Movers',
     'Website and Graphic Designing',
     'Pest Control and Deep Cleaning',
-    'Interior and Office Inventory',
+    'Interior Design and Carpentry',
     'Electrical and Plumbing',
     'Construction, Renovation and Documentation',
     'Accounting and Statutory',
@@ -27,6 +27,9 @@ const CATEGORIES = {
     'Gardening and Landscaping',
     'Water & Sewage Treatment',
     'Special Care & Health Care',
+    'Manpower and Security',
+    'Real Estate & Properties',
+    'Marketing',
   ],
   'quick-service': [
     'Electrical Work',
@@ -35,14 +38,16 @@ const CATEGORIES = {
     'Air Conditioning Work',
     'Building Maintenance Work',
     'Repair Work (Any Category)',
+    'Sunday Maid',
   ],
   'general-assistance': [
     'SOS/Emergency',
     'HR and Recruitment',
-    'Events and Exhibitions',
+    'Events and Offers',
     'Bookings and Admissions',
     'Travel and Insurance Schemes',
     'Scrap and Waste Management',
+    'Legal & Advisory',
   ],
 };
 

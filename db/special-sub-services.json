@@ -21,7 +21,7 @@
         {
           "id": 2,
           "code": "truss_roofing",
-          "title": "Struss and Roofing Systems",
+          "title": "Truss, Roofing or Fire Door Systems",
           "subtitle": "Roof trusses, steel roofing and structural solutions.",
           "image": "https://images.unsplash.com/photo-1541888946425-d0fbb186156f?w=500&auto=format&fit=crop&q=80",
           "bg_color": "#F0FDF4",
@@ -41,7 +41,7 @@
         {
           "id": 4,
           "code": "consultation_estimation",
-          "title": "Consultation and Estimation for Fabrication/Welding",
+          "title": "Consultation, Estimate and Project Report",
           "subtitle": "Expert advice and project quotation.",
           "image": "https://images.unsplash.com/photo-1503387762-592deb58ef4e?w=500&auto=format&fit=crop&q=80",
           "bg_color": "#FAF5FF",
@@ -51,7 +51,7 @@
         {
           "id": 5,
           "code": "ndt_certification",
-          "title": "NDT and Certification Programmes",
+          "title": "Test Certification, NDT and Training",
           "subtitle": "Non-destructive testing and certification services.",
           "image": "https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=500&auto=format&fit=crop&q=80",
           "bg_color": "#F0FDFA",
@@ -61,7 +61,7 @@
         {
           "id": 6,
           "code": "smart_fabrication",
-          "title": "Smart Fabrication Services",
+          "title": "Smart Automated Fabrication Service",
           "subtitle": "Advanced fabrication with automation & robotics.",
           "image": "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&auto=format&fit=crop&q=80",
           "bg_color": "#EEF2FF",
@@ -101,7 +101,7 @@
         {
           "id": 103,
           "code": "biometric_access",
-          "title": "Biometric / Access Control System",
+          "title": "Access Control and Biometric Solutions",
           "subtitle": "Fingerprint, face recognition, attendance and entry systems.",
           "image": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=500&auto=format&fit=crop&q=80",
           "bg_color": "#FFFBEB",
@@ -111,7 +111,7 @@
         {
           "id": 104,
           "code": "smart_living_automation",
-          "title": "Smart or Intelligent Automation of Your Living Space",
+          "title": "Smart or Intelligent Automation of Living Space",
           "subtitle": "Smart lighting, sensors, curtains, appliances and smart home solutions.",
           "image": "https://images.unsplash.com/photo-1558002038-1055907df827?w=500&auto=format&fit=crop&q=80",
           "bg_color": "#FAF5FF",
@@ -131,7 +131,7 @@
         {
           "id": 106,
           "code": "robotic_industrial",
-          "title": "Robotic & Industrial Automation",
+          "title": "Robotic and Industrial Automation Solutions",
           "subtitle": "Robotics and automated workflows for workplaces and industries.",
           "image": "https://images.unsplash.com/photo-1618042164219-62c820f10723?w=500&auto=format&fit=crop&q=80",
           "bg_color": "#EEF2FF",
@@ -142,7 +142,7 @@
     },
     {
       "spec_category_id": 33,
-      "name": "Interior and Office Inventory",
+      "name": "Interior Design and Carpentry",
       "spec_name": "Interior and Office Inventory",
       "bg_color": "#4F46E5",
       "text_color": "#FFFFFF",
@@ -301,7 +301,7 @@
         {
           "id": 303,
           "code": "local_city_shifting",
-          "title": "Local Shifting (Within City)",
+          "title": "Local Transportation Arrangements",
           "subtitle": "Fast same-day intra-city pickup and delivery with mini trucks.",
           "image": "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=500&auto=format&fit=crop&q=80",
           "bg_color": "#FFFBEB",
@@ -581,7 +581,7 @@
         {
           "id": 509,
           "code": "sofa_carpet_shampooing",
-          "title": "Sofa, Carpet & Mattress Shampooing",
+          "title": "Carpet or Sofa Cleaning Services",
           "subtitle": "Wet vacuum extraction, active foam shampoo and deep stain removal.",
           "image": "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&auto=format&fit=crop&q=80",
           "bg_color": "#EEF2FF",
@@ -731,7 +731,7 @@
         {
           "id": 701,
           "code": "turnkey_building_construction",
-          "title": "Turnkey Building Construction",
+          "title": "New Property Construction",
           "subtitle": "End-to-end residential and commercial building construction with materials.",
           "image": "https://images.unsplash.com/photo-1541888946425-d0fbb186156f?w=500&auto=format&fit=crop&q=80",
           "bg_color": "#EFF6FF",
@@ -771,7 +771,7 @@
         {
           "id": 705,
           "code": "house_renovation_expansion",
-          "title": "Home Renovation, Extension & Additional Floors",
+          "title": "Renovation or Maintenance of Existing Property",
           "subtitle": "Adding extra rooms, roof expansion, bathroom/kitchen remodeling & wall shifting.",
           "image": "https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=500&auto=format&fit=crop&q=80",
           "bg_color": "#FCE7F3",
@@ -951,7 +951,7 @@
         {
           "id": 901,
           "code": "fire_extinguisher_refill",
-          "title": "Fire Extinguisher Supply, Inspection & Refilling",
+          "title": "Fire Extinguisher Supply and Refilling",
           "subtitle": "ABC, CO2, foam and water type fire extinguisher supply and annual refilling.",
           "image": "https://images.unsplash.com/photo-1582139329536-e7284fece509?w=500&auto=format&fit=crop&q=80",
           "bg_color": "#EFF6FF",
@@ -981,7 +981,7 @@
         {
           "id": 904,
           "code": "fire_noc_audit_certification",
-          "title": "Fire Safety Audit & Fire NOC Certification",
+          "title": "Fire NOC, Documentation and Clearance",
           "subtitle": "Government fire department NOC approval, risk assessment and compliance audit.",
           "image": "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=500&auto=format&fit=crop&q=80",
           "bg_color": "#FAF5FF",
@@ -1021,7 +1021,7 @@
         {
           "id": 908,
           "code": "fire_safety_training_mock_drill",
-          "title": "Fire Safety Training & Evacuation Mock Drills",
+          "title": "Fire Safety Training and Certification",
           "subtitle": "Certified staff training, extinguisher handling drills and evacuation practice.",
           "image": "https://images.unsplash.com/photo-1521791136064-7986c2920216?w=500&auto=format&fit=crop&q=80",
           "bg_color": "#DCFCE7",
@@ -1131,7 +1131,7 @@
         {
           "id": 1101,
           "code": "laptop_desktop_repair",
-          "title": "Laptop & Desktop Chip-Level Repair",
+          "title": "Repair and Maintenance of Computer, Laptop or Printer",
           "subtitle": "Motherboard repair, screen replacement, overheating fix, keyboard and battery change.",
           "image": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=500&auto=format&fit=crop&q=80",
           "bg_color": "#EFF6FF",
@@ -1171,7 +1171,7 @@
         {
           "id": 1105,
           "code": "lan_wifi_networking",
-          "title": "Wi-Fi Router, LAN Cabling & Network Setup",
+          "title": "Networking and LAN Systems",
           "subtitle": "Cat6 cable routing, crimping, Gigabit switch, Wi-Fi mesh and firewall configuration.",
           "image": "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=500&auto=format&fit=crop&q=80",
           "bg_color": "#FCE7F3",

@@ -11,6 +11,8 @@ const { normalizeTheme, withTheme } = require('./themes');
 
 router.use(authMiddleware, requirePermission('services.view'));
 
+const GROUP_NAMES = ['professional', 'quick', 'special'];
+
 // ---- modules ----
 router.get(
   '/modules',
@@ -104,7 +106,8 @@ router.post(
   requirePermission('services.manage'),
   cloudinaryUpload.single('image'),
   asyncHandler(async (req, res) => {
-    const { module_id, name, description, price, is_featured = 0, status = 1, sort_order = 0 } = req.body;
+    const { module_id, name, description, price, is_featured = 0, status = 1, sort_order = 0, group_name = 'professional' } = req.body;
+    if (!GROUP_NAMES.includes(group_name)) throw ApiError.badRequest('group_name must be professional|quick|special');
     const [[mod]] = await pool.query('SELECT id FROM service_modules WHERE id = ?', [module_id]);
     if (!mod) throw ApiError.badRequest('Module does not exist');
     let priceValue = null;
@@ -114,9 +117,9 @@ router.post(
     }
     const image = await cloudinaryImage(req, res);
     const [result] = await pool.query(
-      `INSERT INTO service_categories (module_id, name, description, image, price, is_featured, status, sort_order)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [module_id, name, description || null, image, priceValue, is_featured, status, sort_order]
+      `INSERT INTO service_categories (module_id, name, description, image, price, is_featured, status, sort_order, group_name)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [module_id, name, description || null, image, priceValue, is_featured, status, sort_order, group_name]
     );
     await writeAudit({ actor: req.user, action: 'category.create', entity: 'service_categories', entityId: result.insertId, req });
     sendSuccess(res, { id: result.insertId }, 'Category created', 201);
@@ -128,7 +131,10 @@ router.put(
   requirePermission('services.manage'),
   cloudinaryUpload.single('image'),
   asyncHandler(async (req, res) => {
-    const { name, description, price, is_featured, status, sort_order } = req.body;
+    const { name, description, price, is_featured, status, sort_order, group_name } = req.body;
+    if (group_name !== undefined && group_name !== null && group_name !== '' && !GROUP_NAMES.includes(group_name)) {
+      throw ApiError.badRequest('group_name must be professional|quick|special');
+    }
     const [rows] = await pool.query('SELECT * FROM service_categories WHERE id = ?', [req.params.id]);
     if (!rows.length) throw ApiError.notFound('Category not found');
     let priceValue = rows[0].price;
@@ -143,9 +149,9 @@ router.put(
     await pool.query(
       `UPDATE service_categories SET name = COALESCE(?, name), description = COALESCE(?, description),
               image = ?, price = ?, is_featured = COALESCE(?, is_featured), status = COALESCE(?, status),
-              sort_order = COALESCE(?, sort_order)
+              sort_order = COALESCE(?, sort_order), group_name = COALESCE(?, group_name)
         WHERE id = ?`,
-      [name || null, description ?? null, image, priceValue, is_featured ?? null, status ?? null, sort_order ?? null, req.params.id]
+      [name || null, description ?? null, image, priceValue, is_featured ?? null, status ?? null, sort_order ?? null, group_name || null, req.params.id]
     );
     await writeAudit({ actor: req.user, action: 'category.update', entity: 'service_categories', entityId: req.params.id, req });
     sendSuccess(res, null, 'Category updated');

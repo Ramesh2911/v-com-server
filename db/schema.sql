@@ -147,6 +147,7 @@ CREATE TABLE service_categories (
   bg_color VARCHAR(9) NULL,
   text_color VARCHAR(9) NULL,
   ref_code VARCHAR(10) NULL,
+  group_name VARCHAR(16) NOT NULL DEFAULT 'professional',
   is_featured TINYINT(1) NOT NULL DEFAULT 0,
   status TINYINT(1) NOT NULL DEFAULT 1,
   sort_order INT NOT NULL DEFAULT 0,

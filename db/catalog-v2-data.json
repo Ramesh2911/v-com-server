@@ -1,0 +1,103 @@
+{
+  "sort_updates": [
+    { "name": "Housekeeping and Security", "sort_order": 12 },
+    { "name": "Event and Corporate Arrangements", "sort_order": 13 },
+    { "name": "Computer and Hardware", "sort_order": 14 },
+    { "name": "HVAC", "sort_order": 15 },
+    { "name": "Gardening and Landscaping", "sort_order": 16 },
+    { "name": "Water & Sewage Treatment", "sort_order": 17 },
+    { "name": "Special Care & Health Care", "sort_order": 18 },
+    { "name": "Travel and Insurance Schemes", "sort_order": 7 }
+  ],
+  "renames": [
+    { "from": "Interior and Office Inventory", "to": "Interior Design and Carpentry" },
+    { "from": "Events and Exhibitions", "to": "Events and Offers" }
+  ],
+  "new_categories": [
+    {
+      "name": "Manpower and Security",
+      "module_code": "special-service",
+      "group_name": "professional",
+      "sort_order": 11,
+      "description": "Manpower supply, staffing and security services."
+    },
+    {
+      "name": "Real Estate & Properties",
+      "module_code": "special-service",
+      "group_name": "professional",
+      "sort_order": 19,
+      "description": "Real estate and property services."
+    },
+    {
+      "name": "Marketing",
+      "module_code": "special-service",
+      "group_name": "professional",
+      "sort_order": 20,
+      "description": "Marketing and promotional services."
+    },
+    {
+      "name": "Sunday Maid",
+      "module_code": "quick-service",
+      "group_name": "quick",
+      "sort_order": 7,
+      "description": "Sunday maid and home cleaning help."
+    },
+    {
+      "name": "Legal & Advisory",
+      "module_code": "general-assistance",
+      "group_name": "special",
+      "sort_order": 5,
+      "description": "Legal and advisory services."
+    }
+  ],
+  "sub_adds": [
+    { "category": "Fabrication and Welding", "id": 7, "code": "fabrication_welding_works", "title": "Fabrication or Welding Works", "subtitle": "Custom fabrication and welding works for steel, gates and structures.", "image": "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?w=500&auto=format&fit=crop&q=80", "bg_color": "#EFF6FF", "text_color": "#0F172A" },
+    { "category": "Fabrication and Welding", "id": 8, "code": "aluminium_cpvc_windows", "title": "Aluminium Fabrication & CPVC Windows", "subtitle": "Aluminium works, CPVC windows and glazing solutions.", "image": "https://images.unsplash.com/photo-1504917599217-d4dc5ebe6122?w=500&auto=format&fit=crop&q=80", "bg_color": "#F0FDF4", "text_color": "#0F172A" },
+    { "category": "Packers and Movers", "id": 311, "code": "packers_moving_solutions", "title": "Packers and Moving Solutions", "subtitle": "End-to-end packing and moving solutions.", "image": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=500&auto=format&fit=crop&q=80", "bg_color": "#FFFBEB", "text_color": "#0F172A" },
+    { "category": "Packers and Movers", "id": 312, "code": "industry_machinery_shifting", "title": "Industry and Machinery Shifting", "subtitle": "Industrial machinery and heavy equipment shifting.", "image": "https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=500&auto=format&fit=crop&q=80", "bg_color": "#FAF5FF", "text_color": "#0F172A" },
+    { "category": "Pest Control and Deep Cleaning", "id": 512, "code": "commercial_window_cleaning", "title": "Commercial Building Window Cleaning", "subtitle": "High-rise and commercial window cleaning solutions.", "image": "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=500&auto=format&fit=crop&q=80", "bg_color": "#EFF6FF", "text_color": "#0F172A" },
+    { "category": "Pest Control and Deep Cleaning", "id": 513, "code": "pest_cleaning_amc", "title": "AMC for Pest Control and Cleaning", "subtitle": "Annual maintenance contracts for pest control and cleaning.", "image": "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=500&auto=format&fit=crop&q=80", "bg_color": "#F0FDF4", "text_color": "#0F172A" },
+    { "category": "Pest Control and Deep Cleaning", "id": 514, "code": "consultation_estimation", "title": "Consultation and Estimation", "subtitle": "Expert advice and quotation for pest control and deep cleaning.", "image": "https://images.unsplash.com/photo-1584820927498-cfe5211fd8bf?w=500&auto=format&fit=crop&q=80", "bg_color": "#FFFBEB", "text_color": "#0F172A" },
+    { "category": "Construction, Renovation and Documentation", "id": 711, "code": "design_structural_engineering", "title": "Design, Structural and Engineering Services", "subtitle": "Architectural design, structural and engineering solutions.", "image": "https://images.unsplash.com/photo-1541888946425-d0fbb186156f?w=500&auto=format&fit=crop&q=80", "bg_color": "#EFF6FF", "text_color": "#0F172A" },
+    { "category": "Construction, Renovation and Documentation", "id": 712, "code": "consultation_project_report", "title": "Consultation, Estimate and Project Report", "subtitle": "Consultation, estimates and detailed project reports.", "image": "https://images.unsplash.com/photo-1541888946425-d0fbb186156f?w=500&auto=format&fit=crop&q=80", "bg_color": "#F0FDF4", "text_color": "#0F172A" },
+    { "category": "Fire and Safety", "id": 909, "code": "road_safety_equipment", "title": "Road Safety Equipment Supply and Installation", "subtitle": "Road safety equipment supply and installation.", "image": "https://images.unsplash.com/photo-1582139329536-e7284fece509?w=500&auto=format&fit=crop&q=80", "bg_color": "#EFF6FF", "text_color": "#0F172A" },
+    { "category": "Fire and Safety", "id": 910, "code": "safety_equipment_repair", "title": "Repair or Maintenance of Safety Equipment", "subtitle": "Repair and maintenance of fire and safety equipment.", "image": "https://images.unsplash.com/photo-1582139329536-e7284fece509?w=500&auto=format&fit=crop&q=80", "bg_color": "#F0FDF4", "text_color": "#0F172A" },
+    { "category": "Fire and Safety", "id": 911, "code": "fire_safety_consultation", "title": "Fire Safety Consultation and Other Services", "subtitle": "Fire safety consultation, audits and advisory.", "image": "https://images.unsplash.com/photo-1582139329536-e7284fece509?w=500&auto=format&fit=crop&q=80", "bg_color": "#FFFBEB", "text_color": "#0F172A" },
+    { "category": "Fire and Safety", "id": 912, "code": "fire_equipment_installation", "title": "Fire Equipment Installation and Project Execution", "subtitle": "Fire equipment installation and project execution.", "image": "https://images.unsplash.com/photo-1582139329536-e7284fece509?w=500&auto=format&fit=crop&q=80", "bg_color": "#FAF5FF", "text_color": "#0F172A" },
+    { "category": "Computer and Hardware", "id": 1109, "code": "installation_computers_devices", "title": "Installation of Computers and Other Devices", "subtitle": "Setup and configuration of computers and devices.", "image": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=500&auto=format&fit=crop&q=80", "bg_color": "#EFF6FF", "text_color": "#0F172A" },
+    { "category": "Computer and Hardware", "id": 1110, "code": "software_it_support", "title": "Software and IT Support", "subtitle": "Software installation, updates and IT support.", "image": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=500&auto=format&fit=crop&q=80", "bg_color": "#F0FDF4", "text_color": "#0F172A" },
+    { "category": "Computer and Hardware", "id": 1111, "code": "consultation_estimation", "title": "Consultation and Estimation for Computer and Hardware", "subtitle": "Expert advice and quotation for computer and hardware needs.", "image": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=500&auto=format&fit=crop&q=80", "bg_color": "#FFFBEB", "text_color": "#0F172A" },
+    { "category": "Computer and Hardware", "id": 1112, "code": "certification_training", "title": "Certification and Training Program", "subtitle": "Skill development, certification and training programs.", "image": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=500&auto=format&fit=crop&q=80", "bg_color": "#FAF5FF", "text_color": "#0F172A" },
+    { "category": "Computer and Hardware", "id": 1113, "code": "other_computer_services", "title": "Other Computer and Hardware Services", "subtitle": "Tell us your specific requirements.", "image": "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=500&auto=format&fit=crop&q=80", "bg_color": "#F0FDFA", "text_color": "#0F172A" },
+    { "category": "Event and Corporate Arrangements", "id": 1601, "code": "functions_corporate_get_together", "title": "Functions, Corporate Meetings and Get Together", "subtitle": "Corporate meetings, functions and get-togethers.", "image": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=500&auto=format&fit=crop&q=80", "bg_color": "#EFF6FF", "text_color": "#0F172A" },
+    { "category": "Event and Corporate Arrangements", "id": 1602, "code": "conferences_seminars_celebrations", "title": "Conferences, Seminars and Celebrations", "subtitle": "Conferences, seminars and celebration events.", "image": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=500&auto=format&fit=crop&q=80", "bg_color": "#F0FDF4", "text_color": "#0F172A" },
+    { "category": "Event and Corporate Arrangements", "id": 1603, "code": "food_catering", "title": "Food and Catering", "subtitle": "Catering and food services for events.", "image": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=500&auto=format&fit=crop&q=80", "bg_color": "#FFFBEB", "text_color": "#0F172A" },
+    { "category": "Event and Corporate Arrangements", "id": 1604, "code": "team_building_tours", "title": "Team Building and Tour Arrangements", "subtitle": "Team building activities and tour arrangements.", "image": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=500&auto=format&fit=crop&q=80", "bg_color": "#FAF5FF", "text_color": "#0F172A" },
+    { "category": "Event and Corporate Arrangements", "id": 1605, "code": "exhibitions_trade_shows", "title": "Exhibitions and Trade Shows", "subtitle": "Exhibition and trade show management.", "image": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=500&auto=format&fit=crop&q=80", "bg_color": "#F0FDFA", "text_color": "#0F172A" },
+    { "category": "Event and Corporate Arrangements", "id": 1606, "code": "complete_event_management", "title": "Complete Event Management Solutions", "subtitle": "End-to-end event management solutions.", "image": "https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=500&auto=format&fit=crop&q=80", "bg_color": "#EEF2FF", "text_color": "#0F172A" },
+    { "category": "Marketing", "id": 1701, "code": "digital_marketing_solutions", "title": "Digital Marketing Solutions", "subtitle": "Social media, SEO, online ads, content marketing and campaigns.", "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&auto=format&fit=crop&q=80", "bg_color": "#EFF6FF", "text_color": "#0F172A" },
+    { "category": "Marketing", "id": 1702, "code": "offline_marketing_tieups", "title": "Offline Marketing Tie-ups", "subtitle": "Field marketing, dealer networks, print, outdoor and activation tie-ups.", "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&auto=format&fit=crop&q=80", "bg_color": "#F0FDF4", "text_color": "#0F172A" },
+    { "category": "Marketing", "id": 1703, "code": "freelance_marketing_consultant", "title": "Freelancer Marketing Consultant", "subtitle": "Professional marketing consultants for strategy and brand development.", "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&auto=format&fit=crop&q=80", "bg_color": "#FFFBEB", "text_color": "#0F172A" },
+    { "category": "Marketing", "id": 1704, "code": "complete_marketing_amc", "title": "AMC for Complete Marketing Solutions", "subtitle": "Annual marketing management, CRM and performance monitoring.", "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&auto=format&fit=crop&q=80", "bg_color": "#FAF5FF", "text_color": "#0F172A" },
+    { "category": "Marketing", "id": 1705, "code": "certification_training_programs", "title": "Certification and Training Programs", "subtitle": "Marketing skill development, certification courses and workshops.", "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&auto=format&fit=crop&q=80", "bg_color": "#F0FDFA", "text_color": "#0F172A" },
+    { "category": "Marketing", "id": 1706, "code": "tele_direct_marketing", "title": "Tele Marketing and Direct Marketing Services", "subtitle": "Tele-calling campaigns, direct sales and targeted outreach.", "image": "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=500&auto=format&fit=crop&q=80", "bg_color": "#EEF2FF", "text_color": "#0F172A" }
+  ],
+  "title_syncs": [
+    { "category": "Fabrication and Welding", "code": "truss_roofing", "title": "Truss, Roofing or Fire Door Systems" },
+    { "category": "Fabrication and Welding", "code": "consultation_estimation", "title": "Consultation, Estimate and Project Report" },
+    { "category": "Fabrication and Welding", "code": "ndt_certification", "title": "Test Certification, NDT and Training" },
+    { "category": "Fabrication and Welding", "code": "smart_fabrication", "title": "Smart Automated Fabrication Service" },
+    { "category": "CCTV and Automation", "code": "biometric_access", "title": "Access Control and Biometric Solutions" },
+    { "category": "CCTV and Automation", "code": "smart_living_automation", "title": "Smart or Intelligent Automation of Living Space" },
+    { "category": "CCTV and Automation", "code": "robotic_industrial", "title": "Robotic and Industrial Automation Solutions" },
+    { "category": "Packers and Movers", "code": "local_city_shifting", "title": "Local Transportation Arrangements" },
+    { "category": "Pest Control and Deep Cleaning", "code": "sofa_carpet_shampooing", "title": "Carpet or Sofa Cleaning Services" },
+    { "category": "Construction, Renovation and Documentation", "code": "turnkey_building_construction", "title": "New Property Construction" },
+    { "category": "Construction, Renovation and Documentation", "code": "house_renovation_expansion", "title": "Renovation or Maintenance of Existing Property" },
+    { "category": "Fire and Safety", "code": "fire_extinguisher_refill", "title": "Fire Extinguisher Supply and Refilling" },
+    { "category": "Fire and Safety", "code": "fire_noc_audit_certification", "title": "Fire NOC, Documentation and Clearance" },
+    { "category": "Fire and Safety", "code": "fire_safety_training_mock_drill", "title": "Fire Safety Training and Certification" },
+    { "category": "Computer and Hardware", "code": "laptop_desktop_repair", "title": "Repair and Maintenance of Computer, Laptop or Printer" },
+    { "category": "Computer and Hardware", "code": "lan_wifi_networking", "title": "Networking and LAN Systems" }
+  ]
+}
