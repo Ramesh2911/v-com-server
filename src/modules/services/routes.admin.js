@@ -19,7 +19,7 @@ router.get(
   asyncHandler(async (req, res) => {
     const [rows] = await pool.query(
       `SELECT m.*,
-              (SELECT COUNT(*) FROM service_categories c WHERE c.module_id = m.id) AS category_count,
+              (SELECT COUNT(*) FROM service_categories c WHERE c.module_id = m.id AND c.status = 1) AS category_count,
               (SELECT COUNT(*) FROM requests r WHERE r.module_id = m.id) AS request_count
          FROM service_modules m ORDER BY m.sort_order, m.id`
     );
