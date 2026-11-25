@@ -16,7 +16,9 @@ router.get(
     }
     const id = Number(raw);
     const [cats] = await pool.query(
-      `SELECT id, name, bg_color, text_color FROM service_categories WHERE id = ? AND status = 1`,
+      `SELECT c.id, c.name, c.bg_color, c.text_color FROM service_categories c
+         JOIN service_modules m ON m.id = c.module_id
+        WHERE c.id = ? AND c.status = 1 AND m.status = 1`,
       [id]
     );
     if (!cats.length) throw ApiError.notFound('Service not found');

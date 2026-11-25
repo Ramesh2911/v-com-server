@@ -250,7 +250,7 @@ const createBooking = asyncHandler(async (req, res) => {
   const [[svc]] = await pool.query(
     `SELECT c.id, c.name, c.price, c.module_id, m.name AS module_name
        FROM service_categories c JOIN service_modules m ON m.id = c.module_id
-      WHERE c.id = ? AND c.status = 1`,
+      WHERE c.id = ? AND c.status = 1 AND m.status = 1`,
     [service_id]
   );
   if (!svc) throw ApiError.notFound('Service not found');
