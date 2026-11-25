@@ -17,9 +17,9 @@ const cfg = target === 'clever'
   : { host: 'localhost', user: 'root', password: 'Ramesh@0329', database: 'vcom_db' };
 
 const MODULE_IMG = {
-  'special-service': 'https://placehold.co/800x600/f97316/ffffff?text=Special+Service',
+  'special-service': 'https://placehold.co/800x600/f97316/ffffff?text=Professional+Service',
   'quick-service': 'https://placehold.co/800x600/4f46e5/ffffff?text=Quick+Service',
-  'general-assistance': 'https://placehold.co/800x600/0d9488/ffffff?text=General+Assistance',
+  'general-assistance': 'https://placehold.co/800x600/0d9488/ffffff?text=Special+Service',
 };
 
 const CATEGORY_CONTENT = {

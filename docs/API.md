@@ -363,7 +363,7 @@ Example `GET /services` (first module trimmed):
   "success": true,
   "data": [
     {
-      "id": 1, "code": "special-service", "name": "Special Service",
+      "id": 1, "code": "special-service", "name": "Professional Service",
       "icon": "sparkles", "image": null, "status": 1, "sort_order": 1,
       "categories": [
         { "id": 1, "module_id": 1, "name": "Fabrication and Welding",
@@ -980,7 +980,7 @@ Audit actions: `review.hide`, `review.show`, `review.delete`. Grants: **Super Ad
 
 App OTP login works with any phone above (mock OTP `123456`). New app users: any valid 10-digit phone → register flow (§2.1).
 
-Service catalog (seeded): **3 categories** — Special Service, Quick Service, General Assistance — with **29 services** (price + image per service; Quick Service carries pricing).
+Service catalog (seeded): **3 modules** — Professional Service (18), Quick Service (7), Special Service (6) — with **31 active categories**.
 
 ---
 

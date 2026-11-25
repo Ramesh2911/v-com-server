@@ -3,9 +3,9 @@ const bcrypt = require('bcryptjs');
 const pool = require('../config/db');
 
 const MODULES = [
-  { code: 'special-service', name: 'Special Service', icon: 'sparkles', description: 'Full-service, specialist offerings for homes, offices and businesses.' },
+  { code: 'special-service', name: 'Professional Service', icon: 'sparkles', description: 'Everyday professional offerings — fabrication, CCTV, interiors, construction, accounts, manpower and more for homes, offices and businesses.' },
   { code: 'quick-service', name: 'Quick Service', icon: 'wrench', description: 'Fast, on-demand repair and maintenance jobs with transparent pricing.' },
-  { code: 'general-assistance', name: 'General Assistance', icon: 'megaphone', description: 'Everyday help — emergencies, staffing, events, bookings and more.' },
+  { code: 'general-assistance', name: 'Special Service', icon: 'megaphone', description: 'Urgent and on-demand help — SOS, recruitment, events, bookings, legal advisory and waste management.' },
 ];
 
 const CATEGORIES = {
@@ -463,7 +463,7 @@ async function seed() {
     console.log('  Operations    ops@vcom.com / Ops@123');
     console.log('  HR Manager    hr@vcom.com / Hr@12345');
     console.log('  SOS Coord     sos@vcom.com / Sos@1234');
-    console.log('  Special Service Manager  cctv@vcom.com / Cctv@1234');
+    console.log('  Professional Svc Mgr   cctv@vcom.com / Cctv@1234');
     console.log('  Customer      customer@vcom.com / Customer@123');
     console.log('  Vendor        vendor@vcom.com / Vendor@123');
     console.log('  Employee      employee@vcom.com / Employee@123');
