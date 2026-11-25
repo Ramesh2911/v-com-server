@@ -345,15 +345,15 @@ Refresh rules (for apps):
 
 - `image`: full URL (Cloudinary `https://res.cloudinary.com/...` or `/uploads/...`), `null` if unset.
 - `price`: `string|null` (DECIMAL, Quick Service pricing), `null` = not priced.
-- Only `status = 1` rows returned (public). 3 modules / **34 categories** seeded:
-  `special-service` → group `professional` (20), `quick-service` → group `quick` (7), `general-assistance` → group `special` (7).
+- Only `status = 1` rows returned (public). 3 modules / **31 categories** seeded:
+  `special-service` → group `professional` (18), `quick-service` → group `quick` (7), `general-assistance` → group `special` (6).
 
 **Catalog groups (v2)** — every category carries `group_name` (`professional` | `quick` | `special`) for the client's three-list UI; `sort_order` = position within its group:
 
-- **professional (20):** includes the 16 special sub-services categories + Housekeeping and Security (12), Events and Offers (13), Manpower and Security (11), Real Estate & Properties (19), Marketing (20).
-- **quick (7):** AC Repair and Services … Sunday Maid (7).
-- **special (7):** General Assistance-style categories: Legal & Advisory (5), Scrap and Waste Management (6), Travel and Insurance Schemes (7), …
-- New in v2 (seeded by `db/seed-catalog-v2.js`): **Manpower and Security**, **Real Estate & Properties**, **Marketing**, **Sunday Maid**, **Legal & Advisory**. Renames: *Interior and Office Inventory → **Interior Design and Carpentry***, *Events and Exhibitions → **Events and Offers***.
+- **professional (18):** Fabrication and Welding (1) … Fire and Safety (10), Manpower and Security (11), Event and Corporate Arrangements (12), Computer and Hardware (13), HVAC (14), Gardening and Landscaping (15), Water & Sewage Treatment (16), Special Care & Health Care (17), Real Estate & Properties (18).
+- **quick (7):** Electrical Work (1) … Sunday Maid (7).
+- **special (6):** SOS & Emergency (1), HR and Recruitment (2), Events and Offers (3), Bookings and Admissions (4), Legal & Advisory (5), Scrap and Waste Management (6).
+- Soft-hidden (kept for FK/history, `status = 0`): Housekeeping and Security, Marketing, Travel and Insurance Schemes. Renames: *Interior and Office Inventory → **Interior Design and Carpentry***, *Events and Exhibitions → **Events and Offers***, *SOS/Emergency → **SOS & Emergency***.
 - Admin `POST|PUT /admin/services/categories` accepts/validates `group_name`.
 
 Example `GET /services` (first module trimmed):
@@ -382,7 +382,7 @@ Example `GET /services` (first module trimmed):
 |---|---|---|---|
 | GET | `/categories/:id/sub-services` | **none (public)** | `200` `{ category_id, category_name, bg_color, text_color, sub_services[] }` — `message: "Sub-services fetched successfully"` |
 
-`/categories/:id/sub-services` — **work-type cards** (now **18 categories**: the 16 special-service ones + Event and Corporate Arrangements (6) + Marketing (6), 6–14 cards each). `/api/v1/categories/:id/sub-services` e call korbe (slug route নেই).
+`/categories/:id/sub-services` — **work-type cards** (now **15 categories** with sub-services: the special-service set minus Housekeeping, plus Event and Corporate Arrangements (6); 6–14 cards each). `/api/v1/categories/:id/sub-services` e call korbe (slug route নেই).
 
 ```json
 {
@@ -404,8 +404,8 @@ Example `GET /services` (first module trimmed):
 ```
 
 - `id` numeric only → `400`; unknown/inactive category → `404 Service not found`. Only `is_active = 1` sub-services returned (ordered by id). `image` = absolute URL as stored.
-- **`service_id` / category ids are DB-specific — fetch them from `GET /services` (module `special-service`), never hardcode.** Live ids ≠ spec-doc example ids (e.g. Interior = live `36`, local `6`; Packers = live `33`). Spec-doc id map (live/Clever): Fabrication `31`, CCTV `32`, Packers `33`, Website `34`, Pest `35`, Interior `36`, Electrical `37`, Construction `38`, Accounting `39`, Fire `40`, Housekeeping `41`, Computer `43`, HVAC `44`, Gardening `45`, Water `46`, Health `47` (live `42` = Event — gained 6 sub-services in catalog v2).
-- **171 sub-services** seeded (`service_sub_services`, v2 adds 30 across Fabrication/Packers/Pest/Construction/Fire/Computer + new Event `1601-1606` + Marketing `1701-1706` categories); category screen theme = `bg_color`/`text_color` per category.
+- **`service_id` / category ids are DB-specific — fetch them from `GET /services` (module `special-service`), never hardcode.** Live ids ≠ spec-doc example ids (e.g. Interior = live `36`, local `6`; Packers = live `33`). Spec-doc id map (live/Clever): Fabrication `31`, CCTV `32`, Packers `33`, Website `34`, Pest `35`, Interior `36`, Electrical `37`, Construction `38`, Accounting `39`, Fire `40`, Manpower `60`, Event `42`, Computer `43`, HVAC `44`, Gardening `45`, Water `46`, Health `47`, Real Estate `61`. Hidden: Housekeeping `41`, Travel `58`, Marketing `62`.
+- **165 sub-services** seeded (`service_sub_services`; Housekeeping's 8 remain FK-bound under the hidden category); category screen theme = `bg_color`/`text_color` per category.
 
 ### 3.2 Properties (`/api/v1/properties`)
 

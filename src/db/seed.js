@@ -20,16 +20,14 @@ const CATEGORIES = {
     'Construction, Renovation and Documentation',
     'Accounting and Statutory',
     'Fire and Safety',
-    'Housekeeping and Security',
+    'Manpower and Security',
     'Event and Corporate Arrangements',
     'Computer and Hardware',
     'HVAC',
     'Gardening and Landscaping',
     'Water & Sewage Treatment',
     'Special Care & Health Care',
-    'Manpower and Security',
     'Real Estate & Properties',
-    'Marketing',
   ],
   'quick-service': [
     'Electrical Work',
@@ -41,13 +39,12 @@ const CATEGORIES = {
     'Sunday Maid',
   ],
   'general-assistance': [
-    'SOS/Emergency',
+    'SOS & Emergency',
     'HR and Recruitment',
     'Events and Offers',
     'Bookings and Admissions',
-    'Travel and Insurance Schemes',
-    'Scrap and Waste Management',
     'Legal & Advisory',
+    'Scrap and Waste Management',
   ],
 };
 
