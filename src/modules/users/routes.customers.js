@@ -46,7 +46,7 @@ router.get(
          FROM users WHERE id = ? AND user_type = 'customer'`,
       [req.params.id]
     );
-    if (!rows.length) return sendSuccess(res, null, 'Customer not found');
+    if (!rows.length) return sendSuccess(res, null, 'Customer not found', 404);
     const [requests] = await pool.query(
       `SELECT r.id, r.ticket_no, r.title, r.status, r.priority, r.created_at, m.name AS module_name
          FROM requests r JOIN service_modules m ON m.id = r.module_id
