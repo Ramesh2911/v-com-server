@@ -29,11 +29,11 @@ const haversineKm = (lat1, lon1, lat2, lon2) => {
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 };
 
-// ETA: distance/40kmh + 5min base; null coords → 10 min default
+// ETA: distance/40kmh + 5min base; null coords → 10 min default; cap 90 min
 const estimateEta = (lat1, lon1, lat2, lon2) => {
   const km = haversineKm(lat1, lon1, lat2, lon2);
   if (km == null) return '10 mins';
-  const mins = Math.max(5, Math.round((km / 40) * 60 + 5));
+  const mins = Math.min(90, Math.max(5, Math.round((km / 40) * 60 + 5)));
   return `${mins} mins`;
 };
 
