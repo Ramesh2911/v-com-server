@@ -88,7 +88,7 @@ Validation errors return **400** with `errors[]`. Standard codes:
 - `modules.all` permission = super admin (bypasses module filtering).
 - Module access permissions: `module.<code>.access` for each service module, plus `module.sos.access`, `module.hr.access`.
 
-Full permission list: see §9.
+Full permission list: see section 9.
 
 ---
 
@@ -147,7 +147,7 @@ Headers: Content-Type: application/json
 
 -OTP: 6 digits, TTL **5 min**, max **5 wrong attempts** then burnt, single-use.
 - `client` optional but recommended — enforces app↔role match (403 on mismatch). Values: `"customer" | "vendor" | "technician"`.
-- **`client: "technician"`** → looks up the **technicians table by phone** (not users): unregistered phone → `404` (before OTP burn); inactive tech → `403` + `data: { status }`; on success a shadow `users` row (role `technician`) is created lazily and the response carries a `technician` object instead of `vendor` (see §12).
+- **`client: "technician"`** → looks up the **technicians table by phone** (not users): unregistered phone → `404` (before OTP burn); inactive tech → `403` + `data: { status }`; on success a shadow `users` row (role `technician`) is created lazily and the response carries a `technician` object instead of `vendor` (see section 12).
 
 **2a — existing user → 200 (login payload, ready to use):**
 ```json
@@ -921,11 +921,11 @@ Permissions: `banners.view` (reads) / `banners.manage` (writes). Web panel: **Ba
 | PUT | `/admin/banners/:id` | `banners.manage` | multipart partial: any of `title`, `subtitle`, `slot`, `starts_at`, `ends_at`, `status`; `image` file omitted = keep existing; `starts_at: ""` / `ends_at: ""` clears (always-on) |
 | DELETE | `/admin/banners/:id` | `banners.manage` | |
 
-Rules: `slot` = carousel position (1 = first shown); `ends_at` must be after `starts_at`; public feed (§3.4) only returns banners active now. Every write is audit-logged (`banner.create/update/delete`).
+Rules: `slot` = carousel position (1 = first shown); `ends_at` must be after `starts_at`; public feed (section 3.4) only returns banners active now. Every write is audit-logged (`banner.create/update/delete`).
 
 ### 6.6b Events admin
 
-Permissions: `events.view` (reads) / `events.manage` (writes). Web panel: **Events** page (HR & Content section). Same `events` table as the public feed (§3.5); public endpoints unchanged.
+Permissions: `events.view` (reads) / `events.manage` (writes). Web panel: **Events** page (HR & Content section). Same `events` table as the public feed (section 3.5); public endpoints unchanged.
 
 | Method | Path | Permission | Notes |
 |---|---|---|---|
@@ -1022,7 +1022,7 @@ Audit actions: `review.hide`, `review.show`, `review.delete`. Grants: **Super Ad
 | Vendor (Provider Owner) | `vendor@vcom.com` | `9876500003` | `Vendor@123` |
 | Employee | `employee@vcom.com` | `9876500005` | `Employee@123` |
 
-App OTP login works with any phone above (mock OTP `123456`). New app users: any valid 10-digit phone → register flow (§2.1).
+App OTP login works with any phone above (mock OTP `123456`). New app users: any valid 10-digit phone → register flow (section 2.1).
 
 Service catalog (seeded): **3 modules** — Professional Service (18), Quick Service (7), Special Service (6) — with **31 active categories**.
 

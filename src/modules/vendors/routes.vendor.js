@@ -238,7 +238,7 @@ router.get(
   })
 );
 
-// GET /vendor/dashboard — unified home screen (spec §3)
+// GET /vendor/dashboard — unified home screen (spec section 3)
 router.get(
   '/dashboard',
   requireVendor,
