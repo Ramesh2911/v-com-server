@@ -17,6 +17,8 @@
     { "key": "sosId", "value": "1" },
     { "key": "sosTicketNo", "value": "VCOM-SOS-000001" },
     { "key": "sosVerifyToken", "value": "" },
+    { "key": "legalTicketNo", "value": "VLA-2026-90412" },
+    { "key": "legalAdvocateId", "value": "1" },
     { "key": "propertyId", "value": "1" },
     { "key": "employeeId", "value": "1" },
     { "key": "leaveId", "value": "1" },
@@ -433,6 +435,49 @@
           "request": {
             "method": "GET",
             "url": { "raw": "{{baseUrl}}/sos/history?phone=9876543210", "host": ["{{baseUrl}}"], "path": ["sos", "history"], "query": [{ "key": "phone", "value": "9876543210" }] }
+          }
+        },
+        {
+          "name": "Legal: categories",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/legal-advisory/categories", "host": ["{{baseUrl}}"], "path": ["legal-advisory", "categories"] }
+          }
+        },
+        {
+          "name": "Legal: submit request",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+            "url": { "raw": "{{baseUrl}}/legal-advisory/request", "host": ["{{baseUrl}}"], "path": ["legal-advisory", "request"] },
+            "body": { "mode": "raw", "raw": "{\n  \"category_id\": 1,\n  \"location\": \"Banani, Dhaka\",\n  \"latitude\": 23.7937,\n  \"longitude\": 90.4066\n}" }
+          }
+        },
+        {
+          "name": "Legal: submit request (Other + other_query)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+            "url": { "raw": "{{baseUrl}}/legal-advisory/request", "host": ["{{baseUrl}}"], "path": ["legal-advisory", "request"] },
+            "body": { "mode": "raw", "raw": "{\n  \"category_id\": 8,\n  \"location\": \"Dhanmondi, Dhaka\",\n  \"other_query\": \"Tenancy agreement dispute\"\n}" }
+          }
+        },
+        {
+          "name": "Legal: track",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+            "url": { "raw": "{{baseUrl}}/legal-advisory/track/{{legalTicketNo}}", "host": ["{{baseUrl}}"], "path": ["legal-advisory", "track", "{{legalTicketNo}}"] }
+          }
+        },
+        {
+          "name": "Legal: history",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{accessToken}}", "type": "string" }] },
+            "url": { "raw": "{{baseUrl}}/legal-advisory/history?page=1&limit=15", "host": ["{{baseUrl}}"], "path": ["legal-advisory", "history"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "15" }] }
           }
         },
         {
@@ -1136,6 +1181,62 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "url": { "raw": "{{baseUrl}}/admin/sos/responders", "host": ["{{baseUrl}}"], "path": ["admin", "sos", "responders"] },
             "body": { "mode": "raw", "raw": "{\n  \"unit_name\": \"Rapid Response Unit\",\n  \"contact_no\": \"+91 9000000001\",\n  \"category_id\": 1,\n  \"vehicle_no\": \"KA-01-EM-0002\",\n  \"driver_name\": \"Test Driver\",\n  \"latitude\": 12.97,\n  \"longitude\": 77.59\n}" }
+          }
+        },
+        {
+          "name": "List legal tickets",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/admin/legal/tickets?status=&search=&page=1&limit=15",
+              "host": ["{{baseUrl}}"],
+              "path": ["admin", "legal", "tickets"],
+              "query": [
+                { "key": "status", "value": "" },
+                { "key": "search", "value": "" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "15" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Legal ticket detail",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/legal/tickets/{{legalTicketNo}}", "host": ["{{baseUrl}}"], "path": ["admin", "legal", "tickets", "{{legalTicketNo}}"] }
+          }
+        },
+        {
+          "name": "Update legal status (assign advocate)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/legal/tickets/{{legalTicketNo}}/status", "host": ["{{baseUrl}}"], "path": ["admin", "legal", "tickets", "{{legalTicketNo}}", "status"] },
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"advocate_assigned\",\n  \"advocate_id\": {{legalAdvocateId}},\n  \"note\": \"Assigned to Adv. Menon\"\n}" }
+          }
+        },
+        {
+          "name": "Legal stats",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/legal/stats", "host": ["{{baseUrl}}"], "path": ["admin", "legal", "stats"] }
+          }
+        },
+        {
+          "name": "List legal advocates",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/legal/advocates?page=1&limit=15", "host": ["{{baseUrl}}"], "path": ["admin", "legal", "advocates"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "15" }] }
+          }
+        },
+        {
+          "name": "Create legal advocate",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/legal/advocates", "host": ["{{baseUrl}}"], "path": ["admin", "legal", "advocates"] },
+            "body": { "mode": "raw", "raw": "{\n  \"name\": \"Adv. New Hire\",\n  \"specialization\": \"Tax Law\",\n  \"category_id\": 2,\n  \"phone\": \"+91 9000000111\"\n}" }
           }
         }
       ]

@@ -537,6 +537,20 @@ SOS statuses (DB): `open → acknowledged → dispatched → in_progress → res
 API serialization: `OPEN/ACKNOWLEDGED/DISPATCHED/...`, priority `HIGH_CRITICAL`/`HIGH`.
 Ticket format: `VCOM-SOS-000001`. Responders: `sos_responders` table (admin CRUD under `/admin/sos/responders`).
 
+### 4.3a Legal & Advisory (public)
+
+> Base: `/legal-advisory` — login required for request/track/history; categories are public. Replaces nothing (greenfield).
+
+| Method | Path | Auth | Body / Notes |
+|---|---|---|---|
+| GET | `/legal-advisory/categories` | ❌ | → 8 categories (id, code, title, subtitle, icon, theme_color; id=8 has `requires_custom_input: true`) |
+| POST | `/legal-advisory/request` | 🔒 Bearer | `{ category_id*, location*, latitude?, longitude?, other_query* }` → **201** `{ ticket_no, category, location, other_query, status: REQUEST_RECEIVED, submitted_at }`. `other_query` **required iff category_id=8**; invalid category → 400 |
+| GET | `/legal-advisory/track/:ticket_no` | 🔒 Bearer | Owner only (others → 404). `{ ticket_no, category, location, status, assigned_advocate: { name, specialization, contact_status, phone } \| null, created_at }` |
+| GET | `/legal-advisory/history` | 🔒 Bearer | Own tickets, paginated: id, ticket_no, category, location, status, created_at |
+
+Status flow (DB lowercase → API UPPERCASE): `request_received → advocate_assigned → in_consultation → resolved | cancelled`.
+Ticket format: **`VLA-2026-90412`** (`VLA-<year>-<5digit>`). Tables: `legal_tickets`, `legal_status_history`, `legal_advocates` (seeded 9).
+
 ### 4.4 HR (employee self-service)
 
 > **403 unless the logged-in user is an active employee** (`requireEmployee`). Regular customer accounts receive `403 HR features are only available to employee accounts`. Use `employee@vcom.com` / `Employee@123` to test.
@@ -852,6 +866,20 @@ Rules: `amount` DECIMAL(12,2) > 0; optional `job_id` validated against `vendor_i
 | PATCH | `/admin/sos/responders/:id/status` | `sos.manage` | `{ status: active\|inactive }` |
 | DELETE | `/admin/sos/responders/:id` | `sos.manage` | |
 
+### 6.4a Legal & Advisory (admin)
+
+| Method | Path | Permission | Notes |
+|---|---|---|---|
+| GET | `/admin/legal/tickets?status&category_id&search&page&limit` | `requests.view` | UPPERCASE status + assigned_advocate |
+| GET | `/admin/legal/tickets/:id` | `requests.view` | id or ticket_no; includes `history[]` |
+| POST | `/admin/legal/tickets/:id/status` | `requests.manage` | `{ status, advocate_id?, note? }` — transitions enforced: `request_received → advocate_assigned (advocate_id* required) → in_consultation → resolved \| cancelled`; invalid → 400 |
+| GET | `/admin/legal/stats` | `requests.view` | `{ by_status, active }` |
+| GET | `/admin/legal/advocates?status&category_id&page&limit` | `requests.view` | seeded 9 |
+| POST | `/admin/legal/advocates` | `requests.manage` | `{ name*, specialization*, category_id?, contact_status?, phone?, status? }` |
+| PUT | `/admin/legal/advocates/:id` | `requests.manage` | partial update |
+| PATCH | `/admin/legal/advocates/:id/status` | `requests.manage` | `{ status: active\|inactive }` |
+| DELETE | `/admin/legal/advocates/:id` | `requests.manage` | ticket FK → SET NULL |
+
 ### 6.5 Services & content
 
 | Method | Path | Permission | Notes |
@@ -1034,6 +1062,7 @@ module.<code>.access      (scrap-waste, cctv-automation, fire-safety,
 |---|---|---|
 | Service request | `VCOM-REQ-` | `VCOM-REQ-000123` |
 | SOS | `VCOM-SOS-` | `VCOM-SOS-000007` |
+| Legal & Advisory | `VLA-<year>-` | `VLA-2026-90412` |
 | Quotation | `VCOM-QT-` | `VCOM-QT-000042` |
 | Job | `VCOM-JOB-` | `VCOM-JOB-000018` |
 | Property | `VCOM-PROP-` | `VCOM-PROP-000012` |

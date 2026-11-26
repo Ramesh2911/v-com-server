@@ -7,6 +7,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS service_reviews, coupons, offers, banners, addresses, audit_logs, settings, support_tickets, leave_requests, job_applications, attendance, employees,
   property_enquiries, property_media, properties, areas, projects, builders,
   notification_templates, notifications, sos_status_history, sos_responders, sos_tickets,
+  legal_status_history, legal_tickets, legal_advocates,
   job_attachments, job_status_history, jobs, quotation_items, quotations,
   request_status_history, request_assignments, request_attachments, requests,
   service_categories, service_modules, vendor_service_categories, technicians, technician_attendance, technician_services, technician_locations, request_technicians, vendors,
@@ -627,6 +628,58 @@ CREATE TABLE sos_responders (
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   KEY idx_sr_category (category_id),
   KEY idx_sr_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ========================= LEGAL & ADVISORY =========================
+
+CREATE TABLE legal_advocates (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  category_id INT UNSIGNED NULL,
+  name VARCHAR(120) NOT NULL,
+  specialization VARCHAR(200) NOT NULL,
+  contact_status VARCHAR(100) NOT NULL DEFAULT 'Will call at registered number',
+  phone VARCHAR(30) NULL,
+  status ENUM('active','inactive') NOT NULL DEFAULT 'active',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_la_category (category_id),
+  KEY idx_la_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE legal_tickets (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  ticket_no VARCHAR(30) NOT NULL,
+  customer_id INT UNSIGNED NOT NULL,
+  category_id INT UNSIGNED NOT NULL,
+  category_name VARCHAR(100) NOT NULL,
+  location VARCHAR(255) NOT NULL,
+  latitude DECIMAL(11,8) NULL,
+  longitude DECIMAL(11,8) NULL,
+  other_query TEXT NULL,
+  status ENUM('request_received','advocate_assigned','in_consultation','resolved','cancelled')
+    NOT NULL DEFAULT 'request_received',
+  advocate_id INT UNSIGNED NULL,
+  resolved_at DATETIME NULL,
+  cancelled_at DATETIME NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_legal_ticket (ticket_no),
+  KEY idx_legal_customer (customer_id),
+  KEY idx_legal_status (status),
+  CONSTRAINT fk_legal_customer FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_legal_advocate FOREIGN KEY (advocate_id) REFERENCES legal_advocates(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE legal_status_history (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  legal_id INT UNSIGNED NOT NULL,
+  status VARCHAR(30) NOT NULL,
+  note VARCHAR(500) NULL,
+  changed_by INT UNSIGNED NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_lsh_legal (legal_id),
+  CONSTRAINT fk_lsh_legal FOREIGN KEY (legal_id) REFERENCES legal_tickets(id) ON DELETE CASCADE,
+  CONSTRAINT fk_lsh_user FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ========================= NOTIFICATIONS =========================
