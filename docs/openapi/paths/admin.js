@@ -195,22 +195,88 @@ const paths = {
   '/admin/sos': {
     get: admin({
       summary: 'List SOS alerts',
-      parameters: [{ name: 'status', in: 'query', schema: { type: 'string' } }, { $ref: '#/components/parameters/page' }],
+      parameters: [
+        { name: 'status', in: 'query', schema: { type: 'string', enum: ["open", "acknowledged", "dispatched", "in_progress", "resolved", "closed", "cancelled"] } },
+        { name: 'category_id', in: 'query', schema: { type: 'integer' } },
+        { name: 'search', in: 'query', schema: { type: 'string' } },
+        { $ref: '#/components/parameters/page' },
+      ],
       responses: { 200: okPaginated('#/components/schemas/SOS') },
     }),
   },
   '/admin/sos/stats': {
-    get: admin({ summary: 'SOS counts', responses: { 200: ok(null, { open: 2, resolved: 30 }) } }),
+    get: admin({ summary: 'SOS counts', responses: { 200: ok(null, { by_status: [{ status: 'open', count: 2 }, { status: 'resolved', count: 30 }], active: 5 }) } }),
   },
   '/admin/sos/{id}': {
-    get: admin({ summary: 'SOS detail', parameters: [{ $ref: '#/components/parameters/idPath' }], responses: { 200: ok('#/components/schemas/SOS') } }),
+    get: admin({ summary: 'SOS detail (id or ticket_no)', parameters: [{ $ref: '#/components/parameters/idPath' }], responses: { 200: ok('#/components/schemas/SOS') } }),
   },
   '/admin/sos/{id}/status': {
     post: admin({
       summary: 'Update SOS status',
       parameters: [{ $ref: '#/components/parameters/idPath' }],
-      requestBody: body({ type: 'object', required: ['status'], properties: { status: { type: 'string' }, notes: { type: 'string' } } }),
-      responses: { 200: ok('#/components/schemas/SOS') },
+      requestBody: body({
+        type: 'object',
+        required: ['status'],
+        properties: {
+          status: { type: 'string', enum: ["open", "acknowledged", "dispatched", "in_progress", "resolved", "closed", "cancelled"] },
+          note: { type: 'string', nullable: true },
+          assign_to: { type: 'integer', nullable: true },
+          resolution_notes: { type: 'string', nullable: true },
+        },
+      }),
+      responses: { 200: ok(null, null) },
+    }),
+  },
+
+  // ---- SOS responders (admin CRUD) ----
+  '/admin/sos/responders': {
+    get: admin({
+      summary: 'List SOS responders',
+      parameters: [
+        { name: 'status', in: 'query', schema: { type: 'string', enum: ["active", "inactive"] } },
+        { name: 'category_id', in: 'query', schema: { type: 'integer' } },
+        { $ref: '#/components/parameters/page' },
+      ],
+      responses: { 200: okPaginated('#/components/schemas/SOSResponder') },
+    }),
+    post: admin({
+      summary: 'Create responder',
+      requestBody: body({
+        type: 'object',
+        required: ['unit_name', 'contact_no'],
+        properties: {
+          unit_name: { type: 'string' },
+          contact_no: { type: 'string' },
+          category_id: { type: 'integer', nullable: true, description: 'null = general' },
+          vehicle_no: { type: 'string', nullable: true },
+          driver_name: { type: 'string', nullable: true },
+          latitude: { type: 'number', nullable: true },
+          longitude: { type: 'number', nullable: true },
+          status: { type: 'string', enum: ["active", "inactive"] },
+        },
+      }),
+      responses: { 201: created('#/components/schemas/SOSResponder') },
+    }),
+  },
+  '/admin/sos/responders/{id}': {
+    put: admin({
+      summary: 'Update responder',
+      parameters: [{ $ref: '#/components/parameters/idPath' }],
+      requestBody: body({ type: 'object', properties: { unit_name: { type: 'string' }, contact_no: { type: 'string' }, category_id: { type: 'integer', nullable: true }, status: { type: 'string' } } }),
+      responses: { 200: ok('#/components/schemas/SOSResponder') },
+    }),
+    delete: admin({
+      summary: 'Delete responder',
+      parameters: [{ $ref: '#/components/parameters/idPath' }],
+      responses: { 200: ok(null, null) },
+    }),
+  },
+  '/admin/sos/responders/{id}/status': {
+    patch: admin({
+      summary: 'Activate / deactivate responder',
+      parameters: [{ $ref: '#/components/parameters/idPath' }],
+      requestBody: body({ type: 'object', required: ['status'], properties: { status: { type: 'string', enum: ["active", "inactive"] } } }),
+      responses: { 200: ok(null, null) },
     }),
   },
 

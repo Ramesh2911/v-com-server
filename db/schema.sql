@@ -6,7 +6,7 @@
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS service_reviews, coupons, offers, banners, addresses, audit_logs, settings, support_tickets, leave_requests, job_applications, attendance, employees,
   property_enquiries, property_media, properties, areas, projects, builders,
-  notification_templates, notifications, sos_status_history, sos_tickets,
+  notification_templates, notifications, sos_status_history, sos_responders, sos_tickets,
   job_attachments, job_status_history, jobs, quotation_items, quotations,
   request_status_history, request_assignments, request_attachments, requests,
   service_categories, service_modules, vendor_service_categories, technicians, technician_attendance, technician_services, technician_locations, request_technicians, vendors,
@@ -574,15 +574,29 @@ CREATE TABLE sos_tickets (
   longitude DECIMAL(11,8) NULL,
   address VARCHAR(255) NULL,
   priority ENUM('high','critical') NOT NULL DEFAULT 'critical',
-  status ENUM('open','acknowledged','dispatched','in_progress','resolved','closed') NOT NULL DEFAULT 'open',
+  status ENUM('open','acknowledged','dispatched','in_progress','resolved','closed','cancelled') NOT NULL DEFAULT 'open',
   assigned_to INT UNSIGNED NULL,
   resolution_notes VARCHAR(500) NULL,
   resolved_at DATETIME NULL,
+  category_id INT UNSIGNED NULL,
+  photo_url VARCHAR(500) NULL,
+  requester_phone VARCHAR(20) NULL,
+  requester_location VARCHAR(255) NULL,
+  is_for_other TINYINT(1) NOT NULL DEFAULT 0,
+  other_person_name VARCHAR(100) NULL,
+  relationship VARCHAR(50) NULL,
+  other_person_phone VARCHAR(20) NULL,
+  patient_location VARCHAR(255) NULL,
+  special_instructions VARCHAR(500) NULL,
+  verification_phone VARCHAR(20) NULL,
+  cancelled_at DATETIME NULL,
+  responder_id INT UNSIGNED NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   UNIQUE KEY uk_sos_ticket (ticket_no),
   KEY idx_sos_customer (customer_id),
   KEY idx_sos_status (status),
+  KEY idx_sos_category (category_id),
   CONSTRAINT fk_sos_customer FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE CASCADE,
   CONSTRAINT fk_sos_assignee FOREIGN KEY (assigned_to) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -597,6 +611,22 @@ CREATE TABLE sos_status_history (
   KEY idx_ssh_sos (sos_id),
   CONSTRAINT fk_ssh_sos FOREIGN KEY (sos_id) REFERENCES sos_tickets(id) ON DELETE CASCADE,
   CONSTRAINT fk_ssh_user FOREIGN KEY (changed_by) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE sos_responders (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  category_id INT UNSIGNED NULL,
+  unit_name VARCHAR(120) NOT NULL,
+  contact_no VARCHAR(30) NOT NULL,
+  vehicle_no VARCHAR(30) NULL,
+  driver_name VARCHAR(100) NULL,
+  latitude DECIMAL(11,8) NULL,
+  longitude DECIMAL(11,8) NULL,
+  status ENUM('active','inactive') NOT NULL DEFAULT 'active',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_sr_category (category_id),
+  KEY idx_sr_status (status)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- ========================= NOTIFICATIONS =========================

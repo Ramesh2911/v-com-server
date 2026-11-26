@@ -3,6 +3,7 @@ const { components } = require('./components');
 const paths = {
   ...require('./paths/core'),
   ...require('./paths/public'),
+  ...require('./paths/sos'),
   ...require('./paths/customer'),
   ...require('./paths/vendor'),
   ...require('./paths/technician'),
@@ -14,7 +15,8 @@ const tags = [
   { name: 'Auth', description: 'Register / login / OTP / tokens' },
   { name: 'Me', description: 'Current user profile' },
   { name: 'Public', description: 'No auth — services, properties, banners, offers, events' },
-  { name: 'Customer', description: 'Customer app (requests, addresses, SOS, HR, support, reviews)' },
+  { name: 'SOS', description: 'Emergency SOS — categories, OTP, dispatch (photo), track, cancel, history' },
+  { name: 'Customer', description: 'Customer app (requests, addresses, HR, support, reviews)' },
   { name: 'Vendor', description: 'Vendor app (profile, technicians, quotations, jobs, bookings)' },
   { name: 'Technician', description: 'Field technician app (jobs, attendance, earnings, location)' },
   { name: 'Admin', description: 'Web admin — dashboard, requests, jobs, services, payouts, HR, reports, settings' },

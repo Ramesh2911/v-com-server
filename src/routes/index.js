@@ -11,11 +11,11 @@ router.use('/offers', require('../modules/offers/routes.public').offers);
 router.use('/coupons', require('../modules/offers/routes.public').coupons);
 router.use('/banners', require('../modules/banners/routes.public'));
 router.use('/properties', require('../modules/properties/routes.public'));
+router.use('/sos', require('../modules/sos/routes.public'));
 
 // Customer app
 router.use('/customer', require('../modules/requests/routes.customer'));
 router.use('/customer', require('../modules/quotations/routes.customer'));
-router.use('/customer/sos', require('../modules/sos/routes.customer'));
 router.use('/customer/hr', require('../modules/hr/routes.customer'));
 router.use('/customer/notifications', require('../modules/notifications/routes.customer'));
 router.use('/customer/support', require('../modules/support/routes.customer'));

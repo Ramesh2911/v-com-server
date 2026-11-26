@@ -86,25 +86,33 @@ const assertSendRate = async (phone) => {
   }
 };
 
-const createOtp = async (phone) => {
+const createOtp = async (phone, purpose = PURPOSE) => {
   await assertSendRate(phone);
-  const code = isMockProvider() ? env.sms.fixedCode : String(crypto.randomInt(100000, 1000000));
-  await pool.query(`UPDATE otp_codes SET consumed_at = NOW() WHERE phone = ? AND consumed_at IS NULL`, [phone]);
+  const isSos = purpose === 'sos';
+  const code = isMockProvider()
+    ? (isSos ? '1234' : env.sms.fixedCode)
+    : isSos
+      ? String(crypto.randomInt(1000, 10000))
+      : String(crypto.randomInt(100000, 1000000));
+  await pool.query(`UPDATE otp_codes SET consumed_at = NOW() WHERE phone = ? AND purpose = ? AND consumed_at IS NULL`, [
+    phone,
+    purpose,
+  ]);
   await pool.query(
     `INSERT INTO otp_codes (phone, code, purpose, expires_at)
      VALUES (?, ?, ?, DATE_ADD(NOW(), INTERVAL ? MINUTE))`,
-    [phone, code, PURPOSE, env.sms.otpTtlMinutes]
+    [phone, code, purpose, env.sms.otpTtlMinutes]
   );
   await sendSms(phone, code);
   return code;
 };
 
-const verifyOtp = async (phone, code) => {
+const verifyOtp = async (phone, code, purpose = PURPOSE) => {
   const [rows] = await pool.query(
     `SELECT * FROM otp_codes
       WHERE phone = ? AND purpose = ? AND consumed_at IS NULL
       ORDER BY id DESC LIMIT 1`,
-    [phone, PURPOSE]
+    [phone, purpose]
   );
   const row = rows[0];
   if (!row) throw ApiError.badRequest('OTP not found or already used. Please request a new one.');
@@ -125,17 +133,17 @@ const verifyOtp = async (phone, code) => {
   if (!result.affectedRows) throw ApiError.badRequest('OTP already used. Please request a new one.');
 };
 
-const signVerifyToken = (phone) =>
-  jwt.sign({ phone, p: 'otp' }, env.jwt.secret, { expiresIn: `${env.sms.otpTtlMinutes}m` });
+const signVerifyToken = (phone, purpose = 'otp', ttl = `${env.sms.otpTtlMinutes}m`) =>
+  jwt.sign({ phone, p: purpose }, env.jwt.secret, { expiresIn: ttl });
 
-const readVerifyToken = (token) => {
+const readVerifyToken = (token, expectedPurpose = 'otp') => {
   let decoded;
   try {
     decoded = jwt.verify(token, env.jwt.secret);
   } catch (_) {
     throw ApiError.unauthorized('Invalid or expired verification token');
   }
-  if (decoded.p !== 'otp' || !PHONE_RE.test(decoded.phone || '')) {
+  if (decoded.p !== expectedPurpose || !PHONE_RE.test(decoded.phone || '')) {
     throw ApiError.unauthorized('Invalid verification token');
   }
   return decoded;
@@ -159,6 +167,8 @@ module.exports = {
   CLIENT_ROLES,
   normalizePhone,
   assertValidPhone,
+  assertSendRate,
+  sendSms,
   createOtp,
   verifyOtp,
   signVerifyToken,

@@ -519,15 +519,23 @@ Errors: `400 service_id, address_id, scheduled_date and scheduled_time are requi
 | GET | `/customer/quotations/:id` | detail with `items[]` |
 | POST | `/customer/quotations/:id/decision` | `decision: "accepted" \| "rejected" \| "clarification_requested", note?` |
 
-### 4.3 SOS
+### 4.3 Emergency SOS (public)
 
-| Method | Path | Body |
+> Base: `/sos` — no login required (OTP-verified dispatch). Old `/customer/sos` removed (replaced).
+
+| Method | Path | Body / Notes |
 |---|---|---|
-| POST | `/customer/sos` | `description, latitude?, longitude?, address?, priority? (default "critical")` → `VCOM-SOS-*` |
-| GET | `/customer/sos` | → list |
-| GET | `/customer/sos/:id` | → detail |
+| GET | `/sos/categories` | → 10 emergency categories (code, helpline, theme_color, image_url) |
+| POST | `/sos/send-otp` | `{ phone }` → 4-digit OTP; mock returns `default_test_otp` |
+| POST | `/sos/verify-otp` | `{ phone, otp }` → `{ is_verified, phone, verification_token }` (15 min) |
+| POST | `/sos/dispatch` | **multipart/form-data**: `category_id*, photo* (image), requester_phone*, requester_location*, is_for_other*, description*, verification_token*`; optional `latitude, longitude, special_instructions`; conditional `other_person_name*, relationship*, other_person_phone, patient_location` when `is_for_other=true`. Auth optional (Bearer). → 201 full ticket + `assigned_responder` |
+| GET | `/sos/track/:ticket_no` | → ticket status (UPPERCASE), history, assigned responder + ETA |
+| POST | `/sos/cancel/:ticket_no` | Login owner **or** `{ phone }` matching ticket. Only `open/acknowledged/dispatched/in_progress` → `cancelled` |
+| GET | `/sos/history` | `?phone=` (no login) or Bearer → paginated history |
 
-SOS statuses: `open → acknowledged → dispatched → resolved`.
+SOS statuses (DB): `open → acknowledged → dispatched → in_progress → resolved | closed | cancelled`.
+API serialization: `OPEN/ACKNOWLEDGED/DISPATCHED/...`, priority `HIGH_CRITICAL`/`HIGH`.
+Ticket format: `VCOM-SOS-000001`. Responders: `sos_responders` table (admin CRUD under `/admin/sos/responders`).
 
 ### 4.4 HR (employee self-service)
 
@@ -834,10 +842,15 @@ Rules: `amount` DECIMAL(12,2) > 0; optional `job_id` validated against `vendor_i
 | GET | `/admin/jobs/:id` | `jobs.view` | |
 | PATCH | `/admin/jobs/:id/stage` | `jobs.manage` | `{ stage, note? }` |
 | POST | `/admin/jobs` | `jobs.manage` | `{ request_id, vendor_id, ... }` — idempotent (existing job → backfill + `Job already exists`) |
-| GET | `/admin/sos?status&search&page&limit` | `sos.view` | |
-| GET | `/admin/sos/stats` | `sos.view` | |
-| GET | `/admin/sos/:id` | `sos.view` | |
-| POST | `/admin/sos/:id/status` | `sos.manage` | `{ status, note?, assign_to?, resolution_notes? }` |
+| GET | `/admin/sos?status&category_id&search&page&limit` | `sos.view` | |
+| GET | `/admin/sos/stats` | `sos.view` | `{ by_status, active }` |
+| GET | `/admin/sos/:id` | `sos.view` | id or ticket_no; includes category_name, responder_*, history |
+| POST | `/admin/sos/:id/status` | `sos.manage` | `{ status, note?, assign_to?, resolution_notes? }` (status incl. `cancelled`) |
+| GET | `/admin/sos/responders?status&category_id&page&limit` | `sos.view` | responder units |
+| POST | `/admin/sos/responders` | `sos.manage` | `{ unit_name, contact_no, category_id?, vehicle_no?, driver_name?, latitude?, longitude?, status? }` |
+| PUT | `/admin/sos/responders/:id` | `sos.manage` | partial update |
+| PATCH | `/admin/sos/responders/:id/status` | `sos.manage` | `{ status: active\|inactive }` |
+| DELETE | `/admin/sos/responders/:id` | `sos.manage` | |
 
 ### 6.5 Services & content
 

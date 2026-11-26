@@ -15,6 +15,8 @@
     { "key": "quotationId", "value": "1" },
     { "key": "jobId", "value": "1" },
     { "key": "sosId", "value": "1" },
+    { "key": "sosTicketNo", "value": "VCOM-SOS-000001" },
+    { "key": "sosVerifyToken", "value": "" },
     { "key": "propertyId", "value": "1" },
     { "key": "employeeId", "value": "1" },
     { "key": "leaveId", "value": "1" },
@@ -366,26 +368,71 @@
           }
         },
         {
-          "name": "Raise SOS",
+          "name": "SOS: categories",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/sos/categories", "host": ["{{baseUrl}}"], "path": ["sos", "categories"] }
+          }
+        },
+        {
+          "name": "SOS: send-otp",
           "request": {
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": { "raw": "{{baseUrl}}/customer/sos", "host": ["{{baseUrl}}"], "path": ["customer", "sos"] },
-            "body": { "mode": "raw", "raw": "{\n  \"description\": \"Fire smoke near electrical panel\",\n  \"latitude\": 12.9784,\n  \"longitude\": 77.6408,\n  \"address\": \"3rd floor, Tower B\",\n  \"priority\": \"critical\"\n}" }
+            "url": { "raw": "{{baseUrl}}/sos/send-otp", "host": ["{{baseUrl}}"], "path": ["sos", "send-otp"] },
+            "body": { "mode": "raw", "raw": "{\n  \"phone\": \"9876543210\"\n}" }
           }
         },
         {
-          "name": "My SOS list",
+          "name": "SOS: verify-otp",
           "request": {
-            "method": "GET",
-            "url": { "raw": "{{baseUrl}}/customer/sos", "host": ["{{baseUrl}}"], "path": ["customer", "sos"] }
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/sos/verify-otp", "host": ["{{baseUrl}}"], "path": ["sos", "verify-otp"] },
+            "body": { "mode": "raw", "raw": "{\n  \"phone\": \"9876543210\",\n  \"otp\": \"1234\"\n}" }
           }
         },
         {
-          "name": "SOS detail",
+          "name": "SOS: dispatch (multipart photo)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "multipart/form-data" }],
+            "url": { "raw": "{{baseUrl}}/sos/dispatch", "host": ["{{baseUrl}}"], "path": ["sos", "dispatch"] },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "category_id", "value": "1", "type": "text" },
+                { "key": "photo", "type": "file", "src": [] },
+                { "key": "requester_phone", "value": "9876543210", "type": "text" },
+                { "key": "requester_location", "value": "Bejai, Mangalore", "type": "text" },
+                { "key": "is_for_other", "value": "false", "type": "text" },
+                { "key": "description", "value": "Emergency assistance needed", "type": "text" },
+                { "key": "verification_token", "value": "{{sosVerifyToken}}", "type": "text" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "SOS: track",
           "request": {
             "method": "GET",
-            "url": { "raw": "{{baseUrl}}/customer/sos/{{sosId}}", "host": ["{{baseUrl}}"], "path": ["customer", "sos", "{{sosId}}"] }
+            "url": { "raw": "{{baseUrl}}/sos/track/{{sosTicketNo}}", "host": ["{{baseUrl}}"], "path": ["sos", "track", "{{sosTicketNo}}"] }
+          }
+        },
+        {
+          "name": "SOS: cancel",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/sos/cancel/{{sosTicketNo}}", "host": ["{{baseUrl}}"], "path": ["sos", "cancel", "{{sosTicketNo}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"phone\": \"9876543210\"\n}" }
+          }
+        },
+        {
+          "name": "SOS: history",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/sos/history?phone=9876543210", "host": ["{{baseUrl}}"], "path": ["sos", "history"], "query": [{ "key": "phone", "value": "9876543210" }] }
           }
         },
         {
@@ -1073,6 +1120,22 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "url": { "raw": "{{baseUrl}}/admin/sos/{{sosId}}/status", "host": ["{{baseUrl}}"], "path": ["admin", "sos", "{{sosId}}", "status"] },
             "body": { "mode": "raw", "raw": "{\n  \"status\": \"dispatched\",\n  \"note\": \"Team 2 en route\",\n  \"assign_to\": 1,\n  \"resolution_notes\": \"\"\n}" }
+          }
+        },
+        {
+          "name": "List SOS responders",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/admin/sos/responders", "host": ["{{baseUrl}}"], "path": ["admin", "sos", "responders"] }
+          }
+        },
+        {
+          "name": "Create SOS responder",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/sos/responders", "host": ["{{baseUrl}}"], "path": ["admin", "sos", "responders"] },
+            "body": { "mode": "raw", "raw": "{\n  \"unit_name\": \"Rapid Response Unit\",\n  \"contact_no\": \"+91 9000000001\",\n  \"category_id\": 1,\n  \"vehicle_no\": \"KA-01-EM-0002\",\n  \"driver_name\": \"Test Driver\",\n  \"latitude\": 12.97,\n  \"longitude\": 77.59\n}" }
           }
         }
       ]

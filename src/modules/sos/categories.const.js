@@ -1,0 +1,98 @@
+// Emergency SOS categories — public contract (docs/sos_api.md)
+// Hardcoded: admin CRUD nei, stable IDs mobile app er jonno.
+const SOS_CATEGORIES = [
+  {
+    id: 1,
+    code: 'MEDICAL',
+    name: 'Medical Emergency',
+    subtitle: 'Ambulance, first aid, medical assistance and emergency transport',
+    helpline: '108',
+    theme_color: '#DC2626',
+    image_url: 'https://images.unsplash.com/photo-1587745416684-47b88f3ce0b6?w=700&auto=format&fit=crop&q=80',
+  },
+  {
+    id: 2,
+    code: 'FIRE',
+    name: 'Fire Emergency',
+    subtitle: 'Fire brigade, rescue and fire hazard reporting',
+    helpline: '101',
+    theme_color: '#EA580C',
+    image_url: 'https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=700&auto=format&fit=crop&q=80',
+  },
+  {
+    id: 3,
+    code: 'POLICE',
+    name: 'Police Assistance',
+    subtitle: 'Theft, assault, threats and suspicious activities',
+    helpline: '100',
+    theme_color: '#2563EB',
+    image_url: 'https://images.unsplash.com/photo-1577495508048-b635879837f1?w=700&auto=format&fit=crop&q=80',
+  },
+  {
+    id: 4,
+    code: 'WOMEN_CHILD',
+    name: 'Women & Child Safety',
+    subtitle: 'Harassment, stalking, missing children and personal safety',
+    helpline: '1091',
+    theme_color: '#9333EA',
+    image_url: 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=700&auto=format&fit=crop&q=80',
+  },
+  {
+    id: 5,
+    code: 'ROAD_ACCIDENT',
+    name: 'Road Accident',
+    subtitle: 'Accident reporting, ambulance and rescue coordination',
+    helpline: '1073',
+    theme_color: '#D97706',
+    image_url: 'https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=700&auto=format&fit=crop&q=80',
+  },
+  {
+    id: 6,
+    code: 'BREAKDOWN',
+    name: 'Vehicle Breakdown',
+    subtitle: 'Towing, puncture, battery jump-start and roadside help',
+    helpline: null,
+    theme_color: '#0D9488',
+    image_url: 'https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=700&auto=format&fit=crop&q=80',
+  },
+  {
+    id: 7,
+    code: 'DISASTER',
+    name: 'Natural Disaster',
+    subtitle: 'Floods, landslides, storms and disaster assistance',
+    helpline: '1077',
+    theme_color: '#0284C7',
+    image_url: 'https://images.unsplash.com/photo-1547683905-f686c993aae5?w=700&auto=format&fit=crop&q=80',
+  },
+  {
+    id: 8,
+    code: 'UTILITY',
+    name: 'Electrical & Utility Emergency',
+    subtitle: 'Electric shock, fallen wires, gas leaks and water hazards',
+    helpline: '1912',
+    theme_color: '#F59E0B',
+    image_url: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=700&auto=format&fit=crop&q=80',
+  },
+  {
+    id: 9,
+    code: 'DOCTOR',
+    name: 'Connect to a Doctor for Emergency',
+    subtitle: 'Emergency doctor consultation, medical advice and urgent support',
+    helpline: null,
+    theme_color: '#059669',
+    image_url: 'https://images.unsplash.com/photo-1579684385127-1ef15d508118?w=700&auto=format&fit=crop&q=80',
+  },
+  {
+    id: 10,
+    code: 'GENERAL',
+    name: 'General Emergency / Other',
+    subtitle: 'Any other critical emergency situation requiring quick help',
+    helpline: '112',
+    theme_color: '#1E293B',
+    image_url: 'https://images.unsplash.com/photo-1506521781263-d8422e82f27a?w=700&auto=format&fit=crop&q=80',
+  },
+];
+
+const byId = (id) => SOS_CATEGORIES.find((c) => c.id === Number(id)) || null;
+
+module.exports = { SOS_CATEGORIES, byId };

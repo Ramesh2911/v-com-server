@@ -105,18 +105,7 @@ const paths = {
     },
   },
 
-  // ---- SOS ----
-  '/customer/sos': {
-    get: { tags: ['Customer'], summary: 'My SOS history', security: security(), parameters: [{ $ref: '#/components/parameters/page' }], responses: { 200: okPaginated('#/components/schemas/SOS') } },
-    post: {
-      tags: ['Customer'], summary: 'Raise SOS', security: security(),
-      requestBody: body({ type: 'object', properties: { location: { type: 'string' }, latitude: { type: 'number' }, longitude: { type: 'number' }, notes: { type: 'string' } } }),
-      responses: { 201: created('#/components/schemas/SOS') },
-    },
-  },
-  '/customer/sos/{id}': {
-    get: { tags: ['Customer'], summary: 'SOS detail', security: security(), parameters: [{ $ref: '#/components/parameters/idPath' }], responses: { 200: ok('#/components/schemas/SOS') } },
-  },
+  // ---- SOS: moved to /sos (public emergency contract) ----
 
   // ---- HR (attendance / leaves / profile) ----
   '/customer/hr/me': {
