@@ -32,6 +32,8 @@
     "morgan": "^1.10.0",
     "multer": "^2.4.0",
     "mysql2": "^3.12.0",
+    "pdfkit": "^0.21.0",
+    "qrcode": "^1.5.4",
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
