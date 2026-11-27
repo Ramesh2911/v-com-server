@@ -1117,3 +1117,51 @@ CREATE TABLE IF NOT EXISTS hotel_reviews (
   CONSTRAINT fk_hrev_property FOREIGN KEY (property_id) REFERENCES hotel_properties(id) ON DELETE CASCADE,
   CONSTRAINT fk_hrev_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ===== Scrap & Waste Management =====
+CREATE TABLE IF NOT EXISTS scrap_buyers (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(120) NOT NULL,
+  phone VARCHAR(30) NOT NULL,
+  vehicle_no VARCHAR(30) NULL,
+  scale_type VARCHAR(120) NULL,
+  status ENUM('active','inactive') NOT NULL DEFAULT 'active',
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS scrap_requests (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  request_code VARCHAR(30) NOT NULL,
+  user_id INT UNSIGNED NOT NULL,
+  material_categories JSON NOT NULL,
+  approx_weight_range VARCHAR(60) NOT NULL,
+  pickup_type ENUM('Doorstep','Bulk') NOT NULL DEFAULT 'Doorstep',
+  pickup_address VARCHAR(500) NOT NULL,
+  latitude DOUBLE NULL,
+  longitude DOUBLE NULL,
+  contact_phone VARCHAR(30) NOT NULL,
+  preferred_date VARCHAR(30) NOT NULL,
+  preferred_time_slot VARCHAR(60) NOT NULL,
+  scrap_photo_url VARCHAR(500) NULL,
+  special_instructions TEXT NULL,
+  status ENUM('REQUEST_PLACED','BUYER_ASSIGNED','OUT_FOR_PICKUP','WEIGHING_COMPLETED','PAYMENT_COMPLETED','CANCELLED') NOT NULL DEFAULT 'REQUEST_PLACED',
+  assigned_buyer_id INT UNSIGNED NULL,
+  actual_weight_kg DECIMAL(10,2) NULL,
+  final_amount DECIMAL(12,2) NULL,
+  payment_mode VARCHAR(40) NULL,
+  assigned_at DATETIME NULL,
+  out_at DATETIME NULL,
+  weighed_at DATETIME NULL,
+  paid_at DATETIME NULL,
+  cancellation_reason VARCHAR(500) NULL,
+  cancelled_at DATETIME NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uk_swr_code (request_code),
+  KEY idx_swr_user (user_id),
+  KEY idx_swr_status (status),
+  KEY idx_swr_buyer (assigned_buyer_id),
+  CONSTRAINT fk_swr_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  CONSTRAINT fk_swr_buyer FOREIGN KEY (assigned_buyer_id) REFERENCES scrap_buyers(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -179,10 +179,34 @@ const uploadSosPhoto = async (file) => {
 
 const toPublicUrl = (value) => {
   if (!value) return null;
-  if (/^[a-z][a-z0-9+.-]*:/i.test(value)) return value; // http(s):, data:, blob:, file:, content: … pass through
+  if (/^[a-z][a-z0-9+.-]*:/i.test(value)) return value; // http(s):, data:, blob:, file: — pass through
   if (value.startsWith('/')) return value; // absolute site path as-is
   if (!value.includes('.') && value.length > 64 && /^[A-Za-z0-9+/=\r\n]+$/.test(value)) return value; // raw base64 as-is (no file extension)
   return `${env.publicFileBaseUrl}/${value.replace(/\\/g, '/')}`;
+};
+
+// ---- Scrap pickup photo (single image, memory -> Cloudinary, disk fallback) ----
+const scrapPhotoUpload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter: imageFileFilter,
+  limits: { fileSize: env.upload.maxImageSizeMb * 1024 * 1024, files: 1 },
+});
+
+const uploadScrapPhoto = async (file) => {
+  if (!file) return null;
+  if (cloudinaryConfigured) {
+    try {
+      const result = await uploadBufferToCloudinary(file);
+      return result.secure_url;
+    } catch (err) {
+      throw ApiError.internal(`Cloudinary upload failed: ${err.message}`);
+    }
+  }
+  const dest = ensureDir(path.join(UPLOAD_ROOT, 'scrap'));
+  const ext = path.extname(file.originalname || '').toLowerCase().slice(0, 10) || '.jpg';
+  const filename = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}${ext}`;
+  fs.writeFileSync(path.join(dest, filename), file.buffer);
+  return toPublicUrl(`scrap/${filename}`);
 };
 
 module.exports = {
@@ -199,6 +223,8 @@ module.exports = {
   uploadBufferToCloudinary,
   sosPhotoUpload,
   uploadSosPhoto,
+  scrapPhotoUpload,
+  uploadScrapPhoto,
   classifyFileType,
   toPublicUrl,
 };
